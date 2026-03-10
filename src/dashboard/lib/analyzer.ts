@@ -83,22 +83,52 @@ export async function runAnalysis(
 }
 
 // In-memory store for MVP (replace with Supabase in Phase 1)
-const analysisStore = new Map<string, AnalyzeResponse>();
-const shareStore = new Map<string, { analysis_id: string; created_at: string }>();
+// TTL: 24 hours for analysis results, 7 days for share links
+const ANALYSIS_TTL_MS = 24 * 60 * 60 * 1000;
+const SHARE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_STORE_SIZE = 1000;
+
+const analysisStore = new Map<string, AnalyzeResponse & { _stored_at: number }>();
+const shareStore = new Map<string, { analysis_id: string; created_at: string; _stored_at: number }>();
+
+function evictExpired() {
+  const now = Date.now();
+  for (const [key, val] of analysisStore) {
+    if (now - val._stored_at > ANALYSIS_TTL_MS) analysisStore.delete(key);
+  }
+  for (const [key, val] of shareStore) {
+    if (now - val._stored_at > SHARE_TTL_MS) shareStore.delete(key);
+  }
+}
 
 export function storeAnalysis(response: AnalyzeResponse): void {
-  analysisStore.set(response.id, response);
+  // Evict expired entries and cap store size
+  evictExpired();
+  if (analysisStore.size >= MAX_STORE_SIZE) {
+    const oldestKey = analysisStore.keys().next().value;
+    if (oldestKey) analysisStore.delete(oldestKey);
+  }
+  analysisStore.set(response.id, { ...response, _stored_at: Date.now() });
 }
 
 export function getAnalysis(id: string): AnalyzeResponse | undefined {
-  return analysisStore.get(id);
+  const entry = analysisStore.get(id);
+  if (!entry) return undefined;
+  if (Date.now() - entry._stored_at > ANALYSIS_TTL_MS) {
+    analysisStore.delete(id);
+    return undefined;
+  }
+  const { _stored_at: _, ...response } = entry;
+  return response;
 }
 
 export function createShareId(analysisId: string): string {
+  evictExpired();
   const shareId = nanoid(21);
   shareStore.set(shareId, {
     analysis_id: analysisId,
     created_at: new Date().toISOString(),
+    _stored_at: Date.now(),
   });
   return shareId;
 }
@@ -106,5 +136,9 @@ export function createShareId(analysisId: string): string {
 export function getShareAnalysis(shareId: string): AnalyzeResponse | undefined {
   const share = shareStore.get(shareId);
   if (!share) return undefined;
-  return analysisStore.get(share.analysis_id);
+  if (Date.now() - share._stored_at > SHARE_TTL_MS) {
+    shareStore.delete(shareId);
+    return undefined;
+  }
+  return getAnalysis(share.analysis_id);
 }

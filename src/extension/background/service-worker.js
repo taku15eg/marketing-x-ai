@@ -6,11 +6,18 @@
  * Phase 0.5 MVP: Tab 1 (LP Analysis) only.
  */
 
-// --- Configuration ---
-const API_BASE = 'http://localhost:3000';
-const ENDPOINTS = {
-  ANALYZE: API_BASE + '/api/analyze',
-};
+// --- Configuration (imported from constants.js via importScripts) ---
+try {
+  importScripts('../constants.js');
+} catch (e) {
+  console.warn('Failed to import constants.js, using defaults:', e);
+}
+// API_BASE and ENDPOINTS are defined in constants.js
+// Fallback if import failed
+if (typeof ENDPOINTS === 'undefined') {
+  var API_BASE = 'http://localhost:3000';
+  var ENDPOINTS = { ANALYZE: API_BASE + '/api/analyze' };
+}
 
 // --- Side Panel activation on action click ---
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })

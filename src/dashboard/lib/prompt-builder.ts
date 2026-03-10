@@ -33,7 +33,7 @@ export async function analyzeWithClaude(params: {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 8192,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
@@ -255,7 +255,7 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
       metadata: {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 0,
-        model_used: 'claude-sonnet-4-5-20250514',
+        model_used: 'claude-sonnet-4-6',
         vision_used: false,
         dom_extracted: true,
       },

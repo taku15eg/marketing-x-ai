@@ -15,8 +15,11 @@
  * }
  */
 
-// --- Configuration ---
-const API_BASE = 'http://localhost:3000';
+// --- Configuration (uses API_BASE from constants.js loaded in sidepanel.html) ---
+// Fallback if constants.js not loaded
+if (typeof API_BASE === 'undefined') {
+  var API_BASE = 'http://localhost:3000';
+}
 const DASHBOARD_URL = API_BASE;
 
 // --- State ---

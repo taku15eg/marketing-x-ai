@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
+import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
 
 // CORS headers for Chrome extension access
 const CORS_HEADERS = {
@@ -33,6 +34,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'リクエストボディのJSONが不正です' },
         { status: 400, headers: CORS_HEADERS }
+      );
+    }
+
+    // Rate limit share creation (30/min per IP)
+    const clientIP = getClientIP(request);
+    const rateCheck = checkRateLimit(`share:${clientIP}`, { max_requests: 30, window_ms: 60_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: '共有リンクの作成が制限されています。しばらくお待ちください。' },
+        { status: 429, headers: CORS_HEADERS }
       );
     }
 
