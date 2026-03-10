@@ -16,6 +16,16 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
   async function handleShare() {
     if (state === 'loading') return;
 
+    // If we already have a share URL, just copy it again
+    if (shareUrl) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setState('copied');
+        setTimeout(() => setState('idle'), 3000);
+      } catch { /* clipboard unavailable */ }
+      return;
+    }
+
     setState('loading');
     setErrorMessage('');
 
@@ -37,7 +47,6 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
       await navigator.clipboard.writeText(url);
       setState('copied');
 
-      // Reset to idle after 3 seconds
       setTimeout(() => {
         setState('idle');
       }, 3000);

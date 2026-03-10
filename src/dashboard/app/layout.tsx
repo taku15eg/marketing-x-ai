@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -48,7 +49,9 @@ export default function RootLayout({
             </div>
           </div>
         </header>
-        <main>{children}</main>
+        <main>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
       </body>
     </html>
   );
