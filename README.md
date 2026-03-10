@@ -96,7 +96,7 @@ publish-gate-claude-code/
 │
 ├── context/
 │   └── interviews/              # インタビュー原文
-│       ├── sevendex_marketing_lead.txt  # 七條型（63KB）
+│       ├── marketing_lead_shichijo.txt  # 七條型（63KB）
 │       ├── navicle_marketing.txt        # 浦田型（26KB）
 │       └── freelance_marketing.txt      # 藤野型（31KB）
 │
