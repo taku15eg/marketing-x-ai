@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import UrlInput from '@/components/UrlInput';
 import LoadingProgress from '@/components/LoadingProgress';
@@ -21,14 +21,26 @@ function HomePageContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [progressMessage, setProgressMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleCancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+    setIsLoading(false);
+    setError(null);
+  }, []);
 
   async function handleSubmit(url: string) {
+    // Abort any in-flight request
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsLoading(true);
     setError(null);
     setCurrentStep(1);
     setProgressMessage('企業情報を調査中...');
 
-    // Simulate progress updates
+    // Simulate progress updates (approximation of actual pipeline steps)
     const progressTimers = [
       setTimeout(() => { setCurrentStep(2); setProgressMessage('ページを読み取り中...'); }, 3000),
       setTimeout(() => { setCurrentStep(3); setProgressMessage('課題を診断中...'); }, 8000),
@@ -40,11 +52,17 @@ function HomePageContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, ref }),
+        signal: controller.signal,
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        // Specific error messages based on HTTP status
+        if (res.status === 429) {
+          const resetAt = data.reset_at ? `（リセット: ${new Date(data.reset_at).toLocaleString('ja-JP')}）` : '';
+          throw new Error(`${data.error}${resetAt}`);
+        }
         throw new Error(data.error || `分析に失敗しました (${res.status})`);
       }
 
@@ -60,6 +78,10 @@ function HomePageContent() {
       // Navigate to results page
       router.push(`/analysis/${data.id}`);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User cancelled — do nothing
+        return;
+      }
       setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
       setIsLoading(false);
     } finally {
@@ -90,16 +112,24 @@ function HomePageContent() {
       {isLoading && (
         <div className="mt-8">
           <LoadingProgress currentStep={currentStep} message={progressMessage} />
+          <div className="mt-4 text-center">
+            <button
+              onClick={handleCancel}
+              className="text-sm text-[#64748B] underline hover:no-underline cursor-pointer"
+            >
+              キャンセル
+            </button>
+          </div>
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 text-sm">
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 text-sm" role="alert">
           {error}
           <button
             onClick={() => { setError(null); setIsLoading(false); }}
-            className="ml-3 underline hover:no-underline"
+            className="ml-3 underline hover:no-underline cursor-pointer"
           >
             再試行
           </button>

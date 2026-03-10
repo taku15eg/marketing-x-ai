@@ -76,9 +76,10 @@ export default function UrlInput({ onSubmit, isLoading = false }: UrlInputProps)
               setUrl(e.target.value);
               if (error) setError('');
             }}
-            placeholder="https://example.com/lp"
+            placeholder="https://example.com"
             className="flex-1 px-4 py-5 text-lg bg-transparent outline-none placeholder-gray-400"
             disabled={isLoading}
+            autoFocus
             aria-label="分析するURLを入力"
             aria-invalid={!!error}
             aria-describedby={error ? 'url-error' : undefined}

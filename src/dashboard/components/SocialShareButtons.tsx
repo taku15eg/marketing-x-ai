@@ -4,12 +4,35 @@ import { useState } from 'react';
 
 interface SocialShareButtonsProps {
   shareUrl: string;
+  /** Top finding title for dynamic share text */
+  topFinding?: string;
 }
 
-export default function SocialShareButtons({ shareUrl }: SocialShareButtonsProps) {
+export default function SocialShareButtons({ shareUrl, topFinding }: SocialShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const text = 'LP分析結果を共有します - Publish Gate';
-  const encodedUrl = encodeURIComponent(shareUrl);
+
+  // Dynamic share text with top finding if available
+  const text = topFinding
+    ? `LP分析で「${topFinding}」などの改善点が見つかりました - Publish Gate`
+    : 'URLを入れるだけでLP改善点が見える - Publish Gate';
+
+  // Add UTM parameters for viral tracking
+  const shareUrlWithUtm = (source: string) => {
+    try {
+      const url = new URL(shareUrl);
+      url.searchParams.set('utm_source', source);
+      url.searchParams.set('utm_medium', 'social');
+      url.searchParams.set('utm_campaign', 'share');
+      return url.toString();
+    } catch {
+      return shareUrl;
+    }
+  };
+
+  const twitterUrl = shareUrlWithUtm('twitter');
+  const lineUrl = shareUrlWithUtm('line');
+  const encodedTwitterUrl = encodeURIComponent(twitterUrl);
+  const encodedLineUrl = encodeURIComponent(lineUrl);
   const encodedText = encodeURIComponent(text);
 
   async function handleCopy() {
@@ -24,7 +47,7 @@ export default function SocialShareButtons({ shareUrl }: SocialShareButtonsProps
     <div className="flex items-center gap-2">
       {/* X (Twitter) */}
       <a
-        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`}
+        href={`https://twitter.com/intent/tweet?url=${encodedTwitterUrl}&text=${encodedText}`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
@@ -37,7 +60,7 @@ export default function SocialShareButtons({ shareUrl }: SocialShareButtonsProps
 
       {/* LINE */}
       <a
-        href={`https://social-plugins.line.me/lineit/share?url=${encodedUrl}`}
+        href={`https://social-plugins.line.me/lineit/share?url=${encodedLineUrl}`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-white text-[#06C755] hover:bg-[#06C755]/5 transition-colors"

@@ -78,7 +78,10 @@ export default function SharePage() {
             </div>
             <p className="text-sm font-medium text-[#1B3A5C] truncate max-w-md">{data.url}</p>
             <div className="mt-2">
-              <SocialShareButtons shareUrl={typeof window !== 'undefined' ? window.location.href : ''} />
+              <SocialShareButtons
+                shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
+                topFinding={data.result?.issues?.[0]?.title}
+              />
             </div>
           </div>
           <Link
