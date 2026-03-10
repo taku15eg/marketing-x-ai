@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import AnalysisResult from '@/components/AnalysisResult';
 import PoweredByBadge from '@/components/PoweredByBadge';
 import type { AnalyzeResponse } from '@/lib/types';
@@ -48,12 +49,12 @@ export default function SharePage() {
         <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
           <h2 className="text-xl font-bold text-[#1B3A5C] mb-2">リンクが無効です</h2>
           <p className="text-[#64748B] mb-6">{error || '分析結果が見つかりません'}</p>
-          <a
+          <Link
             href="/"
             className="inline-block rounded-lg bg-[#1B3A5C] px-6 py-3 text-white font-medium hover:bg-[#2A5580]"
           >
             Publish Gateで分析してみる
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -68,12 +69,12 @@ export default function SharePage() {
             <p className="text-sm text-[#64748B]">共有された分析結果</p>
             <p className="text-sm font-medium text-[#1B3A5C] mt-1">{data.url}</p>
           </div>
-          <a
+          <Link
             href="/"
             className="rounded-lg bg-[#1B3A5C] px-4 py-2 text-sm text-white font-medium hover:bg-[#2A5580]"
           >
             自分のLPも分析する
-          </a>
+          </Link>
         </div>
       </div>
 

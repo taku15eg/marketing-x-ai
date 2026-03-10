@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import TabNavigation from '@/components/TabNavigation';
 import AnalysisResult from '@/components/AnalysisResult';
 import ShareButton from '@/components/ShareButton';
@@ -61,9 +62,9 @@ export default function AnalysisPage() {
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
           <p className="text-red-700 mb-4">{error || '分析結果が見つかりません'}</p>
-          <a href="/" className="text-[#1B3A5C] underline hover:no-underline">
+          <Link href="/" className="text-[#1B3A5C] underline hover:no-underline">
             トップに戻って再分析
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -79,12 +80,12 @@ export default function AnalysisPage() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <ShareButton analysisId={data.id} />
-          <a
+          <Link
             href="/"
             className="rounded-lg border border-[#E2E8F0] bg-white px-4 py-2 text-sm text-[#64748B] hover:bg-gray-50"
           >
             新しい分析
-          </a>
+          </Link>
         </div>
       </div>
 
