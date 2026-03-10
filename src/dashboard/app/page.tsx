@@ -96,25 +96,34 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Feature highlights */}
+      {/* Feature highlights - persona-driven copy */}
       {!isLoading && !error && (
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FeatureCard
-            icon="🔍"
-            title="なぜその数字なのか、分かる"
-            description="AI分析エンジンが課題をインパクト順に構造化。数字が悪い理由が可視化される"
-          />
-          <FeatureCard
-            icon="📋"
-            title="依頼書まで自動生成"
-            description="デザイナー・エンジニアにそのまま渡せる改善ブリーフ。ディレクション不要"
-          />
-          <FeatureCard
-            icon="⚖️"
-            title="薬機法・景表法も自動チェック"
-            description="法令リスクのある表現を自動検知。健康食品・化粧品LPも安心"
-          />
-        </div>
+        <>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FeatureCard
+              icon="🔍"
+              title="数字が悪い理由が、見える"
+              description="「なんでこの数字なの？」がもう怖くない。課題をインパクト順に構造化して根因を特定"
+            />
+            <FeatureCard
+              icon="📋"
+              title="依頼書まで自動で出る"
+              description="マーケを知らないデザイナーにも伝わる改善ブリーフ。ディレクションの時間がゼロに"
+            />
+            <FeatureCard
+              icon="⚖️"
+              title="法令リスクも自動チェック"
+              description="薬機法・景表法に抵触する表現を検知。健康食品・化粧品LPでも安心して公開できる"
+            />
+          </div>
+
+          {/* Social proof */}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-[#64748B]">
+              アカウント登録不要・完全無料・分析結果はURLで共有可能
+            </p>
+          </div>
+        </>
       )}
     </div>
   );

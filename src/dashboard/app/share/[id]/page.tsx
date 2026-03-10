@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import AnalysisResult from '@/components/AnalysisResult';
 import PoweredByBadge from '@/components/PoweredByBadge';
+import SocialShareButtons from '@/components/SocialShareButtons';
 import type { AnalyzeResponse } from '@/lib/types';
 
 export default function SharePage() {
@@ -76,6 +77,9 @@ export default function SharePage() {
               </span>
             </div>
             <p className="text-sm font-medium text-[#1B3A5C] truncate max-w-md">{data.url}</p>
+            <div className="mt-2">
+              <SocialShareButtons shareUrl={typeof window !== 'undefined' ? window.location.href : ''} />
+            </div>
           </div>
           <Link
             href="/"

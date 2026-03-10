@@ -3,12 +3,18 @@ import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Publish Gate - URLを入れるだけでLP改善',
-  description: 'URLを入力するだけで、LP分析・課題診断・改善ブリーフを自動生成。マーケティングの全体が見えるAI分析ツール。',
+  title: 'Publish Gate - URLを入れるだけで、プロのマーケ責任者がやることを全部やってくれる',
+  description: 'URLを入力するだけで、LP分析・課題診断・デザイナーへの改善依頼書まで自動生成。何を聞くべきかすら知らなくても、答えが出るAI分析エンジン。',
   openGraph: {
-    title: 'Publish Gate',
-    description: 'URLを入れるだけでLP改善提案を自動生成',
+    title: 'Publish Gate — URLを入れるだけでLP改善が見える',
+    description: '課題の診断からデザイナーへの依頼書まで自動生成。アカウント登録不要・完全無料。',
     type: 'website',
+    siteName: 'Publish Gate',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Publish Gate — URLを入れるだけでLP改善が見える',
+    description: '課題の診断からデザイナーへの依頼書まで自動生成。アカウント登録不要・完全無料。',
   },
 };
 
