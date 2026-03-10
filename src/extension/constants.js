@@ -4,7 +4,11 @@
  */
 
 // --- API ---
-const API_BASE = 'http://localhost:3000';
+// In production, replace with the deployed URL (e.g., https://publishgate.jp)
+// Build tools can override this via environment variables
+const API_BASE = typeof process !== 'undefined' && process.env?.PUBLISH_GATE_API_BASE
+  ? process.env.PUBLISH_GATE_API_BASE
+  : 'http://localhost:3000';
 
 // --- Endpoints ---
 const ENDPOINTS = {

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
-import { runAnalysis, storeAnalysis } from '../../../lib/analyzer';
+import { runAnalysis, storeAnalysis, getAnalysis } from '../../../lib/analyzer';
 import type { AnalyzeRequest } from '../../../lib/types';
 
 // CORS headers for Chrome extension access
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
@@ -22,6 +22,35 @@ export async function OPTIONS() {
 }
 
 /**
+ * GET /api/analyze?id=<analysisId>
+ *
+ * Retrieves a stored analysis result by its ID.
+ */
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json(
+      { error: '分析IDが指定されていません' },
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
+
+  const analysis = getAnalysis(id);
+  if (!analysis) {
+    return NextResponse.json(
+      { error: '指定された分析結果が見つかりません' },
+      { status: 404, headers: CORS_HEADERS }
+    );
+  }
+
+  return NextResponse.json(analysis, {
+    status: 200,
+    headers: CORS_HEADERS,
+  });
+}
+
+/**
  * POST /api/analyze
  *
  * Accepts { url: string }, validates the URL, checks rate limits,
@@ -30,6 +59,15 @@ export async function OPTIONS() {
  */
 export async function POST(request: NextRequest) {
   try {
+    // --- Check body size (max 10KB) ---
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > 10240) {
+      return NextResponse.json(
+        { error: 'リクエストボディが大きすぎます（上限10KB）' },
+        { status: 413, headers: CORS_HEADERS }
+      );
+    }
+
     // --- Parse request body ---
     let body: AnalyzeRequest;
     try {

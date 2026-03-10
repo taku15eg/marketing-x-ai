@@ -1,20 +1,20 @@
+import Link from 'next/link';
+
 interface PoweredByBadgeProps {
   className?: string;
 }
 
 export default function PoweredByBadge({ className = '' }: PoweredByBadgeProps) {
   return (
-    <a
-      href="https://publishgate.jp"
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href="/"
       className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
         bg-gray-50 border border-gray-200
         text-[11px] text-gray-500 font-medium
         hover:bg-gray-100 hover:text-gray-600 hover:border-gray-300
         transition-all duration-200
-        font-['Noto_Sans_JP']
+
         ${className}
       `}
     >
@@ -33,6 +33,6 @@ export default function PoweredByBadge({ className = '' }: PoweredByBadgeProps) 
         />
       </svg>
       <span>Powered by <span className="font-semibold text-[#1B3A5C]">Publish Gate</span></span>
-    </a>
+    </Link>
   );
 }

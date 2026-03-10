@@ -93,7 +93,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
                 {/* Label */}
                 <span
                   className={`
-                    mt-2 text-xs font-medium font-['Noto_Sans_JP'] transition-colors duration-300
+                    mt-2 text-xs font-medium transition-colors duration-300
                     ${isCompleted || isActive ? 'text-[#1B3A5C]' : 'text-gray-400'}
                   `}
                 >
@@ -134,10 +134,10 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
 
       {/* Message */}
       <div className="text-center">
-        <p className="text-base text-[#1B3A5C] font-medium font-['Noto_Sans_JP'] animate-pulse">
+        <p className="text-base text-[#1B3A5C] font-medium animate-pulse">
           {message}
         </p>
-        <p className="mt-2 text-sm text-gray-400 font-['Noto_Sans_JP']">
+        <p className="mt-2 text-sm text-gray-400">
           ステップ {currentStep} / 4
         </p>
       </div>

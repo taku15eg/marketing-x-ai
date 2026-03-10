@@ -77,7 +77,7 @@ export default function UrlInput({ onSubmit, isLoading = false }: UrlInputProps)
               if (error) setError('');
             }}
             placeholder="https://example.com/lp"
-            className="flex-1 px-4 py-5 text-lg bg-transparent outline-none placeholder-gray-400 font-['Noto_Sans_JP']"
+            className="flex-1 px-4 py-5 text-lg bg-transparent outline-none placeholder-gray-400"
             disabled={isLoading}
             aria-label="分析するURLを入力"
             aria-invalid={!!error}
@@ -89,7 +89,7 @@ export default function UrlInput({ onSubmit, isLoading = false }: UrlInputProps)
               disabled={isLoading}
               className={`
                 px-8 py-3 rounded-lg text-white font-bold text-base transition-all duration-200
-                font-['Noto_Sans_JP']
+               
                 ${isLoading
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-[#1B3A5C] hover:bg-[#152e4a] active:scale-[0.97] cursor-pointer'
@@ -115,14 +115,14 @@ export default function UrlInput({ onSubmit, isLoading = false }: UrlInputProps)
       {error && (
         <p
           id="url-error"
-          className="mt-3 text-sm text-red-500 pl-2 font-['Noto_Sans_JP']"
+          className="mt-3 text-sm text-red-500 pl-2"
           role="alert"
         >
           {error}
         </p>
       )}
 
-      <p className="mt-4 text-center text-sm text-gray-500 font-['Noto_Sans_JP']">
+      <p className="mt-4 text-center text-sm text-gray-500">
         URLを入力するだけで、LPの課題分析と改善ブリーフを自動生成します
       </p>
     </div>

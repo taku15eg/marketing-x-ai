@@ -7,7 +7,7 @@
 ## プロジェクト概要
 
 **プロダクト名**: Publish Gate  
-**開発元**: SEVENDEX  
+**開発元**: Hashigaya Takuya  
 **定義**: AIを活用してLPを分析し、具体的な改善提案と実装指示を生成するChrome拡張機能
 
 ---

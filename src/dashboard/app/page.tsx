@@ -42,6 +42,11 @@ export default function HomePage() {
         throw new Error(data.error || '分析中にエラーが発生しました');
       }
 
+      // Store in sessionStorage for analysis page to retrieve
+      try {
+        sessionStorage.setItem(`analysis_${data.id}`, JSON.stringify(data));
+      } catch { /* storage full or unavailable */ }
+
       // Navigate to results page
       router.push(`/analysis/${data.id}`);
     } catch (err) {
@@ -56,11 +61,13 @@ export default function HomePage() {
     <div className="mx-auto max-w-4xl px-4 pt-16 pb-24">
       {/* Hero Section */}
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-[#1B3A5C] mb-3">
-          URLを入れるだけで、LP改善が見える
+        <h1 className="text-3xl font-bold text-[#1B3A5C] mb-3 leading-tight">
+          URLを入れるだけで、<br className="sm:hidden" />
+          プロのマーケ責任者が<br className="hidden sm:block" />やることを全部やってくれる
         </h1>
-        <p className="text-[#64748B] text-lg">
-          AI分析エンジンが課題を診断し、デザイナー・エンジニアへの改善ブリーフを自動生成
+        <p className="text-[#64748B] text-lg max-w-2xl mx-auto">
+          課題の診断からデザイナーへの依頼書まで自動生成。<br className="hidden sm:block" />
+          何を聞くべきかすら知らなくても、答えが出るAI分析エンジン。
         </p>
       </div>
 
@@ -94,18 +101,18 @@ export default function HomePage() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard
             icon="🔍"
-            title="4ステップAI分析"
-            description="企業理解→ページ読取→課題診断→ブリーフ生成を全自動で実行"
+            title="なぜその数字なのか、分かる"
+            description="AI分析エンジンが課題をインパクト順に構造化。数字が悪い理由が可視化される"
           />
           <FeatureCard
             icon="📋"
-            title="依頼パック自動生成"
-            description="デザイナー・エンジニアにそのまま渡せる改善指示書"
+            title="依頼書まで自動生成"
+            description="デザイナー・エンジニアにそのまま渡せる改善ブリーフ。ディレクション不要"
           />
           <FeatureCard
             icon="⚖️"
-            title="薬機法・景表法チェック"
-            description="法令リスクのある表現を自動検知して警告"
+            title="薬機法・景表法も自動チェック"
+            description="法令リスクのある表現を自動検知。健康食品・化粧品LPも安心"
           />
         </div>
       )}

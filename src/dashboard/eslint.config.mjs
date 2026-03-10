@@ -14,6 +14,12 @@ const eslintConfig = [
   {
     ignores: ['e2e/**', '__tests__/**'],
   },
+  {
+    rules: {
+      // App Router loads fonts globally via layout.tsx <head>, not _document.js
+      '@next/next/no-page-custom-font': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;

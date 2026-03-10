@@ -33,15 +33,15 @@ function RegulatoryWarningItem({ risk }: { risk: RegulatoryRisk }) {
     <div className={`p-4 rounded-lg border ${config.className}`}>
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${config.dotClassName}`} />
-        <span className="text-xs font-bold font-['Noto_Sans_JP']">{config.label}</span>
+        <span className="text-xs font-bold">{config.label}</span>
       </div>
-      <p className="text-sm font-medium mb-1 font-['Noto_Sans_JP']">
+      <p className="text-sm font-medium mb-1">
         {risk.expression}
       </p>
-      <p className="text-xs leading-relaxed mb-2 font-['Noto_Sans_JP']">
+      <p className="text-xs leading-relaxed mb-2">
         {risk.reason}
       </p>
-      <p className="text-xs font-['Noto_Sans_JP']">
+      <p className="text-xs">
         <span className="font-semibold">推奨対応:</span> {risk.recommendation}
       </p>
     </div>
@@ -63,9 +63,9 @@ function SummaryCard({
         <div className="w-8 h-8 rounded-lg bg-[#1B3A5C]/10 flex items-center justify-center text-[#1B3A5C]">
           {icon}
         </div>
-        <h3 className="text-sm font-bold text-gray-900 font-['Noto_Sans_JP']">{title}</h3>
+        <h3 className="text-sm font-bold text-gray-900">{title}</h3>
       </div>
-      <div className="text-sm text-gray-700 leading-relaxed font-['Noto_Sans_JP']">
+      <div className="text-sm text-gray-700 leading-relaxed">
         {children}
       </div>
     </div>
@@ -84,8 +84,8 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
       <div className="bg-gradient-to-r from-[#1B3A5C] to-[#2a5a8c] rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold font-['Noto_Sans_JP']">改善ポテンシャル</h2>
-            <p className="text-white/80 text-sm mt-1 font-['Noto_Sans_JP']">
+            <h2 className="text-lg font-bold">改善ポテンシャル</h2>
+            <p className="text-white/80 text-sm mt-1">
               分析に基づく推定改善幅
             </p>
           </div>
@@ -180,14 +180,14 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <h3 className="text-base font-bold text-red-800 font-['Noto_Sans_JP']">
+            <h3 className="text-base font-bold text-red-800">
               法規制リスク
             </h3>
           </div>
           <div className="p-5 space-y-6">
             {result.regulatory!.yakujiho_risks.length > 0 && (
               <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2 font-['Noto_Sans_JP']">
+                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">薬機法</span>
                   リスク項目
                 </h4>
@@ -201,7 +201,7 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
 
             {result.regulatory!.keihinhyoujiho_risks.length > 0 && (
               <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2 font-['Noto_Sans_JP']">
+                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">景品表示法</span>
                   リスク項目
                 </h4>
@@ -219,10 +219,10 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
       {/* Issues List */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900 font-['Noto_Sans_JP']">
+          <h2 className="text-lg font-bold text-gray-900">
             改善課題
           </h2>
-          <span className="text-sm text-gray-500 font-['Noto_Sans_JP']">
+          <span className="text-sm text-gray-500">
             {result.issues.length}件の課題
           </span>
         </div>
@@ -236,7 +236,7 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
       </div>
 
       {/* Analysis Metadata */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 text-xs text-gray-400 font-['Noto_Sans_JP']">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200 text-xs text-gray-400">
         <div className="flex items-center gap-4">
           <span>分析日時: {new Date(result.metadata.analyzed_at).toLocaleString('ja-JP')}</span>
           <span>処理時間: {(result.metadata.analysis_duration_ms / 1000).toFixed(1)}秒</span>

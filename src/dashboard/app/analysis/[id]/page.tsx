@@ -18,12 +18,16 @@ export default function AnalysisPage() {
   useEffect(() => {
     async function fetchAnalysis() {
       try {
-        const res = await fetch(`/api/share?id=${id}`);
+        // Fetch by analysis ID from the analyze endpoint
+        const res = await fetch(`/api/analyze?id=${id}`);
         if (res.ok) {
           const result = await res.json();
           setData(result);
+          // Cache for future navigation
+          try {
+            sessionStorage.setItem(`analysis_${id}`, JSON.stringify(result));
+          } catch { /* storage full */ }
         } else {
-          // Try direct from memory (same session)
           setError('分析結果が見つかりません。URLを再入力してください。');
         }
       } catch {

@@ -179,7 +179,7 @@ publish-gate-claude-code/
 
 ## 連絡先
 
-- **開発元**: SEVENDEX
+- **開発元**: Hashigaya Takuya
 - **プロジェクト開始**: 2026-02-27
 - **現在のバージョン**: v2.0
 
