@@ -9,7 +9,7 @@
 ## 1. プロジェクト概要
 
 **プロダクト名：** Publish Gate
-**開発元：** SEVENDEX
+**開発元：** Hashigaya Takuya
 **プロダクト定義：** AIを活用してランディングページを分析し、具体的な改善提案と実装指示を生成するChrome拡張機能＋Webツール
 **技術スタック：** Chrome Side Panel API / Cloudflare Workers（APIプロキシ）/ Supabase（バックエンド）/ Claude AI（コンテンツ分析）
 
@@ -67,7 +67,7 @@
 **日時：** 2026-02-27 16:37〜
 **ユーザーリクエスト：** 「添付とすべてを理解のうえ、本質的な最上位の目的とゴール状態がどんなか、あなたが考えるならばどうなる？」
 **提供されたフレームワーク：** 最上位スタンス（新規事業×マーケティンググロース×UX×提案設計の専門パートナー）、フェーズ設計（0-5）、出力フォーマット（結論→根拠→選択肢→リスク→次アクション）
-**成果：** SEVENDEXの14案件ポートフォリオ分析、3名インタビュー分析、Chrome拡張要件の構造的評価
+**成果：** 14案件ポートフォリオ分析、3名インタビュー分析、Chrome拡張要件の構造的評価
 
 #### Session 2: MVP生産準備計画
 **日時：** 2026-02-28 06:04〜
@@ -207,7 +207,7 @@
 
 **Part 2 — リリースプロセス（Week 1-16）：**
 - F0 Foundation（Week 1-3）：Layer 0-1実装、E2Eテスト
-- F1 Internal Beta（Week 4-6）：SEVENDEXドッグフーディング → 「1人の行動変容」> 「12ドキュメント」
+- F1 Internal Beta（Week 4-6）：ドッグフーディング → 「1人の行動変容」> 「12ドキュメント」
 - F2 Public Beta（Week 7-10）：Wave 1（既存クライアント10-30人）→ Wave 2（公開募集+50人）
 - F3 Official Launch（Week 11）：CWS公開、Stripe Pro課金、Product Hunt
 - F3+ Post-Launch（Week 12-16）：Layer 3、レポート生成、テンプレート、Team Plan

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
-
-// CORS headers for Chrome extension access
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
+import { CORS_HEADERS } from '../../../lib/cors';
+import { logEvent } from '../../../lib/event-logger';
 
 /**
  * OPTIONS handler for CORS preflight requests from Chrome extension.
@@ -36,6 +32,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limit share creation (30/min per IP)
+    const clientIP = getClientIP(request);
+    const rateCheck = checkRateLimit(`share:${clientIP}`, { max_requests: 30, window_ms: 60_000 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: '共有リンクの作成が制限されています。しばらくお待ちください。' },
+        { status: 429, headers: CORS_HEADERS }
+      );
+    }
+
     const { analysis_id } = body;
 
     if (!analysis_id || typeof analysis_id !== 'string') {
@@ -62,6 +68,8 @@ export async function POST(request: NextRequest) {
       || request.headers.get('x-forwarded-host')
       || request.nextUrl.origin;
     const shareUrl = `${origin}/share/${shareId}`;
+
+    logEvent('share_url_generated', { analysis_id, share_id: shareId });
 
     return NextResponse.json(
       {
@@ -107,6 +115,8 @@ export async function GET(request: NextRequest) {
         { status: 404, headers: CORS_HEADERS }
       );
     }
+
+    logEvent('share_page_viewed', { share_id: shareId });
 
     return NextResponse.json(analysis, {
       status: 200,

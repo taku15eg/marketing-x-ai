@@ -16,6 +16,16 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
   async function handleShare() {
     if (state === 'loading') return;
 
+    // If we already have a share URL, just copy it again
+    if (shareUrl) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setState('copied');
+        setTimeout(() => setState('idle'), 3000);
+      } catch { /* clipboard unavailable */ }
+      return;
+    }
+
     setState('loading');
     setErrorMessage('');
 
@@ -31,13 +41,12 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
       }
 
       const data = await response.json();
-      const url = `${window.location.origin}/share/${data.id}`;
+      const url = data.share_url || `${window.location.origin}/share/${data.share_id}`;
       setShareUrl(url);
 
       await navigator.clipboard.writeText(url);
       setState('copied');
 
-      // Reset to idle after 3 seconds
       setTimeout(() => {
         setState('idle');
       }, 3000);
@@ -58,7 +67,7 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
         disabled={state === 'loading'}
         className={`
           inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
-          transition-all duration-200 font-['Noto_Sans_JP']
+          transition-all duration-200
           ${state === 'copied'
             ? 'bg-green-50 text-green-700 border border-green-200'
             : state === 'error'
@@ -131,7 +140,7 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
 
       {/* Error message */}
       {errorMessage && (
-        <p className="mt-2 text-xs text-red-500 font-['Noto_Sans_JP']" role="alert">
+        <p className="mt-2 text-xs text-red-500" role="alert">
           {errorMessage}
         </p>
       )}

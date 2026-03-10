@@ -69,17 +69,17 @@ export default function IssueCard({ issue }: IssueCardProps) {
 
         {/* Title */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 truncate font-['Noto_Sans_JP']">
+          <h3 className="text-sm font-semibold text-gray-900 truncate">
             {issue.title}
           </h3>
         </div>
 
         {/* Badges */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-medium font-['Noto_Sans_JP'] ${impact.className}`}>
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${impact.className}`}>
             影響: {impact.label}
           </span>
-          <span className={`px-2.5 py-1 rounded-full text-xs font-medium font-['Noto_Sans_JP'] ${handoff.className}`}>
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${handoff.className}`}>
             {handoff.label}
           </span>
         </div>
@@ -105,27 +105,27 @@ export default function IssueCard({ issue }: IssueCardProps) {
           <div className="pt-4 space-y-5">
             {/* Diagnosis */}
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-['Noto_Sans_JP']">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                 診断
               </h4>
-              <p className="text-sm text-gray-700 leading-relaxed font-['Noto_Sans_JP']">
+              <p className="text-sm text-gray-700 leading-relaxed">
                 {issue.diagnosis}
               </p>
             </div>
 
             {/* Evidence */}
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 font-['Noto_Sans_JP']">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                 根拠
               </h4>
-              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-3 font-['Noto_Sans_JP']">
+              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-3">
                 {issue.evidence}
               </p>
             </div>
 
             {/* Handoff Brief */}
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 font-['Noto_Sans_JP']">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                 改善ブリーフ
               </h4>
               <BriefPanel brief={issue.brief} />

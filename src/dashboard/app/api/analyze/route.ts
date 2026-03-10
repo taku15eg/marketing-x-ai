@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
-import { runAnalysis, storeAnalysis } from '../../../lib/analyzer';
+import { runAnalysis, storeAnalysis, getAnalysis, getCachedAnalysisByUrl } from '../../../lib/analyzer';
+import { CORS_HEADERS } from '../../../lib/cors';
+import { logEvent } from '../../../lib/event-logger';
 import type { AnalyzeRequest } from '../../../lib/types';
-
-// CORS headers for Chrome extension access
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
 
 /**
  * OPTIONS handler for CORS preflight requests from Chrome extension.
@@ -17,6 +12,35 @@ const CORS_HEADERS = {
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+/**
+ * GET /api/analyze?id=<analysisId>
+ *
+ * Retrieves a stored analysis result by its ID.
+ */
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json(
+      { error: '分析IDが指定されていません' },
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
+
+  const analysis = getAnalysis(id);
+  if (!analysis) {
+    return NextResponse.json(
+      { error: '指定された分析結果が見つかりません' },
+      { status: 404, headers: CORS_HEADERS }
+    );
+  }
+
+  return NextResponse.json(analysis, {
+    status: 200,
     headers: CORS_HEADERS,
   });
 }
@@ -30,6 +54,15 @@ export async function OPTIONS() {
  */
 export async function POST(request: NextRequest) {
   try {
+    // --- Check body size (max 10KB) ---
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > 10240) {
+      return NextResponse.json(
+        { error: 'リクエストボディが大きすぎます（上限10KB）' },
+        { status: 413, headers: CORS_HEADERS }
+      );
+    }
+
     // --- Parse request body ---
     let body: AnalyzeRequest;
     try {
@@ -41,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url } = body;
+    const { url, ref } = body as AnalyzeRequest & { ref?: string };
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
@@ -108,17 +141,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Check URL cache (same URL analyzed within 1h returns cached result) ---
+    // This avoids redundant Claude API calls, reducing cost significantly.
+    // Cache hit does NOT consume monthly rate limit.
+    const referralSource = ref === 'share' ? 'share' : 'direct';
+    logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
+
+    const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
+    if (cached) {
+      logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: {
+          ...CORS_HEADERS,
+          'X-Cache': 'HIT',
+          'X-RateLimit-Remaining': String(monthlyLimit.remaining + 1), // refund the count
+          'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
+        },
+      });
+    }
+
     // --- Run analysis pipeline ---
     const result = await runAnalysis(validation.sanitized_url!);
 
     // --- Store result ---
     storeAnalysis(result);
 
+    if (result.status === 'completed') {
+      logEvent('analysis_completed', { url: validation.sanitized_url!, referral_source: referralSource });
+    } else {
+      logEvent('analysis_error', { url: validation.sanitized_url!, error: result.error || '' });
+    }
+
     // --- Return response ---
     return NextResponse.json(result, {
-      status: result.status === 'error' ? 500 : 200,
+      status: 200,
       headers: {
         ...CORS_HEADERS,
+        'X-Cache': 'MISS',
         'X-RateLimit-Remaining': String(monthlyLimit.remaining),
         'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
       },

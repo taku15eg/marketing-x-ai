@@ -40,7 +40,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
                 aria-disabled={isLocked}
                 className={`
                   relative px-6 py-3.5 text-sm font-medium transition-all duration-200
-                  font-['Noto_Sans_JP'] flex items-center gap-1.5
+                  flex items-center gap-1.5
                   ${isActive
                     ? 'text-[#1B3A5C] border-b-2 border-[#1B3A5C]'
                     : isLocked
@@ -81,7 +81,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
                   className="
                     absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50
                     bg-gray-900 text-white text-xs rounded-lg px-4 py-3 whitespace-nowrap
-                    shadow-xl font-['Noto_Sans_JP']
+                    shadow-xl
                   "
                   role="tooltip"
                 >

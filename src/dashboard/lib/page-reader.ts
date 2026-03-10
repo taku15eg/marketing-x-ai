@@ -2,6 +2,7 @@
 // DOM extraction + Screenshot capture via Vision API
 
 import { fetchWithSSRFProtection } from './url-validator';
+import { stripHtml as sharedStripHtml, sanitizeHtml as sharedSanitizeHtml } from './html-utils';
 import type { DOMData, CTAInfo } from './types';
 
 export async function readPage(url: string): Promise<{
@@ -68,10 +69,7 @@ function extractDOMData(html: string, url: string): DOMData {
 }
 
 function sanitizeHtml(html: string): string {
-  return html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
+  return sharedSanitizeHtml(html);
 }
 
 function extractTag(html: string, tag: string): string | null {
@@ -134,7 +132,7 @@ function extractCTAs(html: string): CTAInfo[] {
     const text = stripHtml(match[2]).trim();
     if (!text || text.length > 50) continue;
 
-    const ctaPatterns = /お問い合わせ|資料|ダウンロード|無料|申し込|購入|登録|エントリー|相談|見積|体験|トライアル|カウンセリング|予約|contact|sign\s?up|free|trial|demo|buy|cart/i;
+    const ctaPatterns = /お問い合わせ|資料請求|資料|ダウンロード|無料|申し込|購入|登録|エントリー|相談|見積|体験|トライアル|カウンセリング|予約|始める|導入|詳しく|今すぐ|特典|限定|キャンペーン|お試し|デモ|見学|参加|入会|契約|お申込|ご相談|contact|sign\s?up|free|trial|demo|buy|cart|get\s?started|subscribe|book|order/i;
     if (ctaPatterns.test(text) || ctaPatterns.test(href)) {
       ctas.push({
         text,
@@ -190,7 +188,7 @@ function extractImages(html: string): { alt: string; width: number; height: numb
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return sharedStripHtml(html);
 }
 
 /**
