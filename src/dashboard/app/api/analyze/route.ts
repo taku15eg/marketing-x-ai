@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
-import { runAnalysis, storeAnalysis, getAnalysis } from '../../../lib/analyzer';
+import { runAnalysis, storeAnalysis, getAnalysis, getCachedAnalysisByUrl } from '../../../lib/analyzer';
 import { CORS_HEADERS } from '../../../lib/cors';
+import { logEvent } from '../../../lib/event-logger';
 import type { AnalyzeRequest } from '../../../lib/types';
 
 /**
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url } = body;
+    const { url, ref } = body as AnalyzeRequest & { ref?: string };
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
@@ -140,17 +141,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Check URL cache (same URL analyzed within 1h returns cached result) ---
+    // This avoids redundant Claude API calls, reducing cost significantly.
+    // Cache hit does NOT consume monthly rate limit.
+    const referralSource = ref === 'share' ? 'share' : 'direct';
+    logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
+
+    const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
+    if (cached) {
+      logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: {
+          ...CORS_HEADERS,
+          'X-Cache': 'HIT',
+          'X-RateLimit-Remaining': String(monthlyLimit.remaining + 1), // refund the count
+          'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
+        },
+      });
+    }
+
     // --- Run analysis pipeline ---
     const result = await runAnalysis(validation.sanitized_url!);
 
     // --- Store result ---
     storeAnalysis(result);
 
+    if (result.status === 'completed') {
+      logEvent('analysis_completed', { url: validation.sanitized_url!, referral_source: referralSource });
+    } else {
+      logEvent('analysis_error', { url: validation.sanitized_url!, error: result.error || '' });
+    }
+
     // --- Return response ---
     return NextResponse.json(result, {
       status: 200,
       headers: {
         ...CORS_HEADERS,
+        'X-Cache': 'MISS',
         'X-RateLimit-Remaining': String(monthlyLimit.remaining),
         'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
       },

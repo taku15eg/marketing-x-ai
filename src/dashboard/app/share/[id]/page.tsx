@@ -51,7 +51,7 @@ export default function SharePage() {
           <h2 className="text-xl font-bold text-[#1B3A5C] mb-2">リンクが無効です</h2>
           <p className="text-[#64748B] mb-6">{error || '分析結果が見つかりません'}</p>
           <Link
-            href="/"
+            href="/?ref=share"
             className="inline-block rounded-lg bg-[#1B3A5C] px-6 py-3 text-white font-medium hover:bg-[#2A5580]"
           >
             Publish Gateで分析してみる
@@ -82,7 +82,7 @@ export default function SharePage() {
             </div>
           </div>
           <Link
-            href="/"
+            href="/?ref=share"
             className="inline-flex items-center gap-2 rounded-lg bg-[#1B3A5C] px-6 py-3 text-sm text-white font-bold hover:bg-[#2A5580] transition-colors shadow-md hover:shadow-lg shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

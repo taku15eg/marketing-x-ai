@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import UrlInput from '@/components/UrlInput';
 import LoadingProgress from '@/components/LoadingProgress';
 
 export default function HomePage() {
+  return (
+    <Suspense>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+
+function HomePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const ref = searchParams.get('ref') || undefined;
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [progressMessage, setProgressMessage] = useState('');
@@ -29,7 +39,7 @@ export default function HomePage() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, ref }),
       });
 
       const data = await res.json();

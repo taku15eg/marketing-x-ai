@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
 import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
 import { CORS_HEADERS } from '../../../lib/cors';
+import { logEvent } from '../../../lib/event-logger';
 
 /**
  * OPTIONS handler for CORS preflight requests from Chrome extension.
@@ -68,6 +69,8 @@ export async function POST(request: NextRequest) {
       || request.nextUrl.origin;
     const shareUrl = `${origin}/share/${shareId}`;
 
+    logEvent('share_url_generated', { analysis_id, share_id: shareId });
+
     return NextResponse.json(
       {
         share_id: shareId,
@@ -112,6 +115,8 @@ export async function GET(request: NextRequest) {
         { status: 404, headers: CORS_HEADERS }
       );
     }
+
+    logEvent('share_page_viewed', { share_id: shareId });
 
     return NextResponse.json(analysis, {
       status: 200,

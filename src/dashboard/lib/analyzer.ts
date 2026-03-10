@@ -84,12 +84,16 @@ export async function runAnalysis(
 
 // In-memory store for MVP (replace with Supabase in Phase 1)
 // TTL: 24 hours for analysis results, 7 days for share links
+// URL cache TTL: 1 hour (same URL analyzed within 1h returns cached result)
 const ANALYSIS_TTL_MS = 24 * 60 * 60 * 1000;
 const SHARE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const URL_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_STORE_SIZE = 1000;
 
 const analysisStore = new Map<string, AnalyzeResponse & { _stored_at: number }>();
 const shareStore = new Map<string, { analysis_id: string; created_at: string; _stored_at: number }>();
+// URL → analysis ID cache: avoids re-running full pipeline for same URL
+const urlCacheStore = new Map<string, { analysis_id: string; _stored_at: number }>();
 
 function evictExpired() {
   const now = Date.now();
@@ -99,6 +103,46 @@ function evictExpired() {
   for (const [key, val] of shareStore) {
     if (now - val._stored_at > SHARE_TTL_MS) shareStore.delete(key);
   }
+  for (const [key, val] of urlCacheStore) {
+    if (now - val._stored_at > URL_CACHE_TTL_MS) urlCacheStore.delete(key);
+  }
+}
+
+/**
+ * Normalize URL for cache key: strip trailing slash, fragment, sort query params
+ */
+function normalizeUrlForCache(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.hash = '';
+    // Sort search params for consistent keys
+    const params = [...parsed.searchParams.entries()].sort(([a], [b]) => a.localeCompare(b));
+    parsed.search = params.length ? '?' + params.map(([k, v]) => `${k}=${v}`).join('&') : '';
+    // Strip trailing slash
+    let normalized = parsed.toString();
+    if (normalized.endsWith('/') && parsed.pathname !== '/') {
+      normalized = normalized.slice(0, -1);
+    }
+    return normalized;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Check if a recent analysis for the same URL exists (within URL_CACHE_TTL_MS).
+ * Returns the cached AnalyzeResponse or undefined if not cached.
+ * This avoids re-running the full Claude API pipeline for the same URL.
+ */
+export function getCachedAnalysisByUrl(url: string): AnalyzeResponse | undefined {
+  const cacheKey = normalizeUrlForCache(url);
+  const cached = urlCacheStore.get(cacheKey);
+  if (!cached) return undefined;
+  if (Date.now() - cached._stored_at > URL_CACHE_TTL_MS) {
+    urlCacheStore.delete(cacheKey);
+    return undefined;
+  }
+  return getAnalysis(cached.analysis_id);
 }
 
 export function storeAnalysis(response: AnalyzeResponse): void {
@@ -109,6 +153,12 @@ export function storeAnalysis(response: AnalyzeResponse): void {
     if (oldestKey) analysisStore.delete(oldestKey);
   }
   analysisStore.set(response.id, { ...response, _stored_at: Date.now() });
+
+  // Index by URL for cache hits
+  if (response.url && response.status === 'completed') {
+    const cacheKey = normalizeUrlForCache(response.url);
+    urlCacheStore.set(cacheKey, { analysis_id: response.id, _stored_at: Date.now() });
+  }
 }
 
 export function getAnalysis(id: string): AnalyzeResponse | undefined {

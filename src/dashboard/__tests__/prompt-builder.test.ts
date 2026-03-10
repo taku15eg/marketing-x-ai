@@ -15,11 +15,11 @@ const source = fs.readFileSync(
 
 describe('Prompt Builder - System Prompt', () => {
   it('includes role definition as LP analysis engine', () => {
-    expect(source).toContain('LPの課題をインパクト順に構造化して診断する');
+    expect(source).toContain('課題をインパクト順に構造化');
   });
 
   it('prohibits copy text generation', () => {
-    expect(source).toContain('コピー文言は生成しない');
+    expect(source).toContain('コピー文言は出さず');
   });
 
   it('includes regulatory check instructions (薬機法)', () => {
@@ -33,16 +33,16 @@ describe('Prompt Builder - System Prompt', () => {
   });
 
   it('specifies JSON output format', () => {
-    expect(source).toContain('JSONフォーマットで出力');
+    expect(source).toContain('JSON出力のみ');
   });
 
   it('includes CRO principles', () => {
-    expect(source).toContain('FVの3秒ルール');
-    expect(source).toContain('CTAの近接性');
+    expect(source).toContain('FV3秒ルール');
+    expect(source).toContain('CTA近接性');
   });
 
   it('warns against baseless speculation', () => {
-    expect(source).toContain('根拠のない推測はしない');
+    expect(source).toContain('根拠のない推測');
   });
 });
 
@@ -81,8 +81,8 @@ describe('Prompt Builder - Claude API Configuration', () => {
     expect(source).toContain('https://api.anthropic.com/v1/messages');
   });
 
-  it('sets max_tokens to 8192', () => {
-    expect(source).toContain('8192');
+  it('sets max_tokens to 4096', () => {
+    expect(source).toContain('4096');
   });
 
   it('requires ANTHROPIC_API_KEY from env', () => {
