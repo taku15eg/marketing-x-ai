@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
 import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
-
-// CORS headers for Chrome extension access
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+import { CORS_HEADERS } from '../../../lib/cors';
 
 /**
  * OPTIONS handler for CORS preflight requests from Chrome extension.

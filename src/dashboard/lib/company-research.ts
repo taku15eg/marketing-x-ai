@@ -2,6 +2,7 @@
 // Fetches and understands the company behind the URL
 
 import { fetchWithSSRFProtection } from './url-validator';
+import { stripHtml as sharedStripHtml } from './html-utils';
 import type { CompanyResearchResult, BrandTone } from './types';
 
 export async function researchCompany(url: string): Promise<CompanyResearchResult> {
@@ -72,12 +73,7 @@ function extractCompanyInfo(
 }
 
 function stripHtml(html: string): string {
-  return html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return sharedStripHtml(html);
 }
 
 function analyzeBrandTone(text: string): BrandTone {

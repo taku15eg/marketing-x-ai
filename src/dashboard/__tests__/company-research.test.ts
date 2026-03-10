@@ -82,14 +82,23 @@ describe('Company Research - Credential Extraction', () => {
 });
 
 describe('Company Research - HTML Stripping', () => {
+  const htmlUtilsSource = fs.readFileSync(
+    path.resolve(__dirname, '../lib/html-utils.ts'),
+    'utf-8'
+  );
+
   it('strips script and style tags', () => {
-    expect(source).toMatch(/<script/i);
-    expect(source).toMatch(/<style/i);
+    expect(htmlUtilsSource).toMatch(/<script/i);
+    expect(htmlUtilsSource).toMatch(/<style/i);
   });
 
   it('strips HTML tags for text extraction', () => {
     // The stripHtml function uses /<[^>]+>/g regex
-    expect(source).toContain('<[^>]+>');
+    expect(htmlUtilsSource).toContain('<[^>]+>');
+  });
+
+  it('company-research imports shared html utils', () => {
+    expect(source).toContain('html-utils');
   });
 });
 

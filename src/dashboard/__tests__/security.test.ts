@@ -437,8 +437,9 @@ describe('SEC-13: Gitignore Protects Environment Files', () => {
 // ---------------------------------------------------------------------------
 describe('SEC-14: DOM Sanitization', () => {
   it('page-reader strips script tags from HTML', () => {
-    const source = readLib('page-reader.ts');
-    expect(source).toMatch(/<script/);
+    // Sanitization delegated to shared html-utils
+    const htmlUtils = readLib('html-utils.ts');
+    expect(htmlUtils).toMatch(/<script/);
   });
 
   it('page-reader strips inline event handlers (onXXX)', () => {
@@ -534,14 +535,16 @@ describe('SEC-16: Chrome Extension Security', () => {
 describe('SEC-17: CORS Configuration', () => {
   it('analyze API route sets CORS headers', () => {
     const source = readRoute('analyze/route.ts');
-    expect(source).toContain('Access-Control-Allow-Origin');
-    expect(source).toContain('Access-Control-Allow-Methods');
+    // CORS imported from shared module
+    expect(source).toContain('CORS_HEADERS');
+    const corsSource = readLib('cors.ts');
+    expect(corsSource).toContain('Access-Control-Allow-Origin');
+    expect(corsSource).toContain('Access-Control-Allow-Methods');
   });
 
   it('share API route sets CORS headers', () => {
     const source = readRoute('share/route.ts');
-    expect(source).toContain('Access-Control-Allow-Origin');
-    expect(source).toContain('Access-Control-Allow-Methods');
+    expect(source).toContain('CORS_HEADERS');
   });
 
   it('API routes handle OPTIONS preflight', () => {

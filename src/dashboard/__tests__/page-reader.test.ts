@@ -18,21 +18,25 @@ describe('Page Reader - Sanitization Patterns', () => {
     path.resolve(__dirname, '../lib/page-reader.ts'),
     'utf-8'
   );
+  const htmlUtilsSource = fs.readFileSync(
+    path.resolve(__dirname, '../lib/html-utils.ts'),
+    'utf-8'
+  );
 
   it('removes script tags with regex', () => {
-    // Verify the sanitization function removes script tags
-    expect(source).toContain('<script');
-    // In regex, closing tag is escaped as <\/script>
-    expect(source).toContain('script>');
+    // Sanitization is now in shared html-utils
+    expect(htmlUtilsSource).toContain('<script');
+    expect(htmlUtilsSource).toContain('script>');
   });
 
   it('removes style tags with regex', () => {
-    expect(source).toMatch(/<style/i);
+    expect(htmlUtilsSource).toMatch(/<style/i);
   });
 
   it('removes inline event handlers (onXXX attributes)', () => {
-    // The sanitize function strips on* event attributes
-    expect(source).toMatch(/on\w+\s*=/);
+    // page-reader delegates to sharedSanitizeHtml which strips on* event attributes
+    // In source code the regex is escaped: \\son\\w+\\s*=
+    expect(htmlUtilsSource).toContain('on\\w+');
   });
 
   it('limits CTA extraction to 20 items', () => {

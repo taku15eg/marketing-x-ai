@@ -2,15 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
 import { runAnalysis, storeAnalysis, getAnalysis } from '../../../lib/analyzer';
+import { CORS_HEADERS } from '../../../lib/cors';
 import type { AnalyzeRequest } from '../../../lib/types';
-
-// CORS headers: '*' required for Chrome extension (chrome-extension:// origins are unpredictable)
-// Phase 1+: restrict to dashboard origin + extension ID when auth is added
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
 
 /**
  * OPTIONS handler for CORS preflight requests from Chrome extension.
@@ -155,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // --- Return response ---
     return NextResponse.json(result, {
-      status: result.status === 'error' ? 500 : 200,
+      status: 200,
       headers: {
         ...CORS_HEADERS,
         'X-RateLimit-Remaining': String(monthlyLimit.remaining),
