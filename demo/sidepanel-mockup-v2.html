@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=320">
+<title>Publish Gate v2.0 — Side Panel Mockup</title>
+<style>
+  :root { --primary:#2563EB;--primary-light:#EFF6FF;--success:#059669;--success-light:#ECFDF5;--warning:#D97706;--warning-light:#FFFBEB;--danger:#DC2626;--danger-light:#FEF2F2;--text:#1E293B;--text2:#64748B;--bg:#F8FAFC;--surface:#FFF;--border:#E2E8F0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans JP',system-ui,sans-serif; font-size:14px; line-height:1.6; color:var(--text); background:#e5e7eb; display:flex; justify-content:center; padding:40px 0; gap:24px; flex-wrap:wrap; }
+  .phone { width:360px; background:var(--bg); border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,.12); overflow:hidden; }
+  .phone-label { text-align:center; font-size:12px; color:var(--text2); margin-bottom:8px; font-weight:600; }
+  .header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border); }
+  .header-left { display:flex; align-items:center; gap:8px; }
+  .logo { background:var(--primary); color:#fff; font-weight:700; font-size:12px; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+  .title { font-weight:600; font-size:15px; }
+  .gear { background:none; border:none; font-size:18px; color:var(--text2); cursor:pointer; }
+  .body { padding:16px; }
+  .btn { display:block; width:100%; padding:14px; border-radius:8px; font-weight:600; font-size:15px; border:none; cursor:pointer; text-align:center; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-outline { background:var(--surface); color:var(--primary); border:1px solid var(--primary); }
+  .btn-success { background:var(--success); color:#fff; }
+  .btn-sm { padding:6px 12px; font-size:12px; display:inline-flex; }
+  .section-label { font-size:12px; color:var(--text2); font-weight:600; letter-spacing:.5px; margin:20px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+  .log-card { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:4px; }
+  .log-domain { font-size:13px; font-weight:500; }
+  .log-meta { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); }
+  .badge { display:inline-flex; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+  .badge-pass { background:var(--success-light); color:var(--success); }
+  .badge-hold { background:var(--warning-light); color:var(--warning); }
+  .badge-fail { background:var(--danger-light); color:var(--danger); }
+  .badge-high { background:var(--success-light); color:var(--success); }
+  .badge-medium { background:var(--warning-light); color:var(--warning); }
+  .layer-hint { padding:8px 12px; background:var(--primary-light); border-radius:8px; margin-top:16px; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--primary); }
+  .rate { text-align:center; margin-top:12px; font-size:12px; color:var(--text2); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:8px; }
+  .card-title { font-weight:600; font-size:14px; margin-bottom:4px; }
+  .goal-item { padding:8px 12px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; }
+  .goal-label { font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px; }
+  .goal-value { font-size:14px; font-weight:500; }
+  .conf-bar { height:6px; border-radius:3px; background:var(--border); margin-top:4px; overflow:hidden; }
+  .conf-fill { height:100%; border-radius:3px; }
+  .conf-high { width:85%; background:var(--success); }
+  .conf-medium { width:55%; background:var(--warning); }
+  .judgment-banner { padding:12px; border-radius:8px; text-align:center; font-weight:600; font-size:15px; margin-bottom:12px; }
+  .j-pass { background:var(--success-light); color:var(--success); }
+  .diff-label { font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px; }
+  .diff-before { padding:6px 10px; border-left:3px solid var(--danger); background:var(--danger-light); border-radius:0 4px 4px 0; font-size:13px; margin-bottom:6px; }
+  .diff-after { padding:6px 10px; border-left:3px solid var(--success); background:var(--success-light); border-radius:0 4px 4px 0; font-size:13px; }
+  .evidence { font-size:12px; color:var(--text2); padding:8px; background:var(--bg); border-radius:4px; margin-top:8px; }
+  .action-row { display:flex; gap:8px; margin-top:8px; }
+  .action-row .btn-sm { flex:1; text-align:center; justify-content:center; border-radius:6px; }
+  .screen-header { display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border); font-weight:600; font-size:15px; }
+  .back { color:var(--primary); font-size:14px; }
+  .rating-group { display:flex; gap:12px; justify-content:center; margin:16px 0; }
+  .rating-btn { display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 16px; border:2px solid var(--border); border-radius:8px; background:var(--surface); min-width:72px; font-size:12px; }
+  .rating-btn.sel { border-color:var(--primary); background:var(--primary-light); }
+  .rating-emoji { font-size:28px; }
+  .applied { padding:12px; background:var(--success-light); border-radius:8px; display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+  .applied-label { color:var(--success); font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- Screen 1: Dashboard -->
+<div>
+<p class="phone-label">① Dashboard（Layer 0）</p>
+<div class="phone">
+  <div class="header"><div class="header-left"><div class="logo">PG</div><span class="title">Publish Gate</span></div><button class="gear">⚙</button></div>
+  <div class="body">
+    <button class="btn btn-primary">🔍 このページをチェック</button>
+    <div class="section-label">直近の判断</div>
+    <div class="log-card"><span class="log-domain">example.com/lp</span><span class="log-meta"><span class="badge badge-pass">PASS</span>2/28 14:30</span></div>
+    <div class="log-card"><span class="log-domain">example.com/price</span><span class="log-meta"><span class="badge badge-hold">HOLD</span>2/27 10:15</span></div>
+    <div class="rate">残り 4/5 回（今日）</div>
+    <div class="layer-hint"><span>💡 アカウント作成で全ログを永続保存</span><a href="#" style="font-weight:600;color:var(--primary)">→</a></div>
+  </div>
+</div>
+</div>
+
+<!-- Screen 2: Estimation -->
+<div>
+<p class="phone-label">② 推定結果</p>
+<div class="phone">
+  <div class="screen-header"><span class="back">← 戻る</span><span>推定結果</span></div>
+  <div class="body">
+    <div class="goal-item"><div class="goal-label">🏢 会社・事業</div><div class="goal-value">BtoB SaaS企業のマーケティング支援</div><div class="conf-bar"><div class="conf-fill conf-high"></div></div></div>
+    <div class="goal-item"><div class="goal-label">📄 ページの役割</div><div class="goal-value">獲得LP</div></div>
+    <div class="goal-item"><div class="goal-label">🎯 主要CV</div><div class="goal-value">問い合わせ（主）　<span style="color:var(--text2);font-size:12px">副: 資料DL</span></div></div>
+    <div class="goal-item"><div class="goal-label">💡 良い成果の仮説</div><div class="goal-value">予算500万以上の3ヶ月以内案件の問い合わせ</div></div>
+    <button class="btn btn-primary" style="margin-top:16px">✓ この内容で進める</button>
+    <button class="btn btn-outline" style="margin-top:8px">✎ 修正する</button>
+    <div style="text-align:center;margin-top:8px;font-size:13px;color:var(--text2)">⏸ 保留にする</div>
+  </div>
+</div>
+</div>
+
+<!-- Screen 3: Proposals -->
+<div>
+<p class="phone-label">③ 提案一覧</p>
+<div class="phone">
+  <div class="screen-header"><span class="back">← 戻る</span><span>提案</span></div>
+  <div class="body">
+    <div class="judgment-banner j-pass">✓ PASS　3件の改善提案</div>
+    <div class="card">
+      <div style="font-size:11px;font-weight:600;color:var(--text2)">★ 優先度 1</div>
+      <div class="card-title">CTAのマイクロコピー改善</div>
+      <div class="diff-label">Before</div><div class="diff-before">「お問い合わせ」</div>
+      <div class="diff-label">After</div><div class="diff-after">「3分で無料相談」</div>
+      <div class="evidence">根拠: CTAが一般的な表現で訴求力が弱い</div>
+      <div style="margin-top:4px"><span class="badge badge-high">確度: high</span></div>
+      <div class="action-row">
+        <button class="btn-sm btn-success" style="border:none;color:#fff;border-radius:6px">即時反映</button>
+        <button class="btn-sm btn-outline" style="border-radius:6px">依頼パック</button>
+      </div>
+    </div>
+    <div class="card" style="opacity:.7">
+      <div style="font-size:11px;font-weight:600;color:var(--text2)">優先度 2（折りたたみ）</div>
+      <div class="card-title">ファーストビュー直下に実績数値を追加</div>
+    </div>
+    <button class="btn btn-outline" style="margin-top:12px">📋 承認メモを作成</button>
+    <button class="btn btn-primary" style="margin-top:8px">📝 結果を記録</button>
+    <div class="layer-hint" style="margin-top:16px"><span>📊 GSC連携でクエリベースの深い分析</span><a href="#" style="font-weight:600;color:var(--primary)">→</a></div>
+  </div>
+</div>
+</div>
+
+<!-- Screen 4: Result -->
+<div>
+<p class="phone-label">④ 結果記録</p>
+<div class="phone">
+  <div class="screen-header"><span class="back">← 戻る</span><span>結果を記録</span></div>
+  <div class="body">
+    <p style="font-weight:600;text-align:center;margin-bottom:12px">この施策の結果は？</p>
+    <div class="rating-group">
+      <div class="rating-btn sel"><span class="rating-emoji">😊</span>良い</div>
+      <div class="rating-btn"><span class="rating-emoji">😐</span>普通</div>
+      <div class="rating-btn"><span class="rating-emoji">😞</span>悪い</div>
+    </div>
+    <div style="margin-top:12px"><label style="font-size:12px;font-weight:600;color:var(--text2)">コメント（任意）</label><textarea style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;resize:vertical;min-height:64px;margin-top:4px" placeholder="気づいたことがあれば…"></textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px"><input type="checkbox"><label>テンプレートとして保存する</label></div>
+    <button class="btn btn-primary" style="margin-top:16px">記録する</button>
+    <div class="layer-hint" style="margin-top:16px"><span>💡 結果を記録すると次回の分析精度が上がります</span></div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>

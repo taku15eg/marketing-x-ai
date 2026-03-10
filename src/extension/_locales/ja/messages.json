@@ -1,0 +1,4 @@
+{
+  "extName": { "message": "Publish Gate", "description": "Extension name" },
+  "extDesc": { "message": "ページを開くだけで、改善の判断が前に進む。根拠つきのAI分析・提案・即時反映・ログ蓄積。", "description": "Extension description" }
+}

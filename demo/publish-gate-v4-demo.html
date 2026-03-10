@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=420">
+<title>Publish Gate v4.0 — Zero-Base Redesign Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Publish Gate v4.0 — Design System (Zero-Base Redesign)
+   ============================================================ */
+
+:root {
+  /* Refined palette — warmer, more confident */
+  --accent: #3B5BDB;
+  --accent-light: #EDF2FF;
+  --accent-hover: #364FC7;
+  --success: #2B8A3E;
+  --success-light: #EBFBEE;
+  --success-mid: #D3F9D8;
+  --warning: #E67700;
+  --warning-light: #FFF9DB;
+  --danger: #C92A2A;
+  --danger-light: #FFF5F5;
+  --neutral: #495057;
+  --text: #212529;
+  --text2: #868E96;
+  --text3: #ADB5BD;
+  --bg: #F8F9FA;
+  --surface: #FFFFFF;
+  --border: #DEE2E6;
+  --border-light: #F1F3F5;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+  --font: 'Noto Sans JP', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  background: #E9ECEF;
+  padding: 32px 20px 60px;
+}
+
+/* --- Version header --- */
+.version-header {
+  max-width: 1600px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.version-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+}
+.version-header .tag {
+  display: inline-flex;
+  padding: 3px 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  letter-spacing: .02em;
+}
+.version-header .subtitle {
+  font-size: 13px;
+  color: var(--text2);
+  width: 100%;
+}
+
+/* --- Design notes --- */
+.design-notes {
+  max-width: 1600px;
+  margin: 0 auto 32px;
+  background: var(--accent-light);
+  border: 1px solid #C5D2F0;
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #364FC7;
+}
+.design-notes strong { font-weight: 600; }
+.design-notes .note-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Screen grid --- */
+.screen-grid {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* --- Phone frame --- */
+.phone-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.phone-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 8px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.phone-sublabel {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 6px;
+  text-align: center;
+  max-width: 340px;
+}
+.phone {
+  width: 360px;
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+/* --- Header --- */
+.pg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.pg-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pg-logo {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: .02em;
+}
+.pg-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.pg-gear {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text3);
+  cursor: default;
+}
+
+/* --- Body --- */
+.pg-body { padding: 16px; }
+
+/* --- Buttons --- */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: default;
+  text-align: center;
+  transition: all .15s;
+  font-family: var(--font);
+  line-height: 1.4;
+}
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-accent-outline {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost {
+  background: none;
+  color: var(--text2);
+  font-weight: 500;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+.btn-sm {
+  padding: 7px 14px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  border-radius: 8px;
+}
+
+/* --- Section labels --- */
+.section-label {
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 600;
+  letter-spacing: .04em;
+  margin: 20px 0 8px;
+  text-transform: uppercase;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+/* --- Badges --- */
+.badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.badge-high { background: var(--danger-light); color: var(--danger); }
+.badge-medium { background: var(--warning-light); color: var(--warning); }
+.badge-low { background: var(--success-light); color: var(--success); }
+.badge-impact { background: #F3F0FF; color: #7048E8; }
+
+/* --- Log cards --- */
+.log-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+.log-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.log-dot-success { background: var(--success); }
+.log-dot-warning { background: var(--warning); }
+.log-content { flex: 1; min-width: 0; }
+.log-domain {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.log-meta {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* --- Rate info --- */
+.rate-info {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* --- Layer hint --- */
+.layer-hint {
+  padding: 10px 14px;
+  background: var(--accent-light);
+  border-radius: 8px;
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.layer-hint-arrow { font-weight: 600; }
+
+/* --- Back header --- */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 14px;
+}
+.back { color: var(--accent); font-size: 13px; cursor: default; }
+
+/* --- Estimation items --- */
+.est-item {
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.est-label {
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.est-value {
+  font-size: 13px;
+  font-weight: 500;
+}
+.conf-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-light);
+  margin-top: 6px;
+  overflow: hidden;
+}
+.conf-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* --- Insight banner (replaces PASS/FAIL) --- */
+.insight-banner {
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.insight-banner .icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.insight-banner .text {
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.insight-positive {
+  background: var(--success-light);
+  border: 1px solid var(--success-mid);
+  color: var(--success);
+}
+.insight-improve {
+  background: #FFF4E6;
+  border: 1px solid #FFE0B2;
+  color: #E65100;
+}
+
+/* --- Proposal cards --- */
+.proposal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.proposal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.proposal-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.proposal-title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+  line-height: 1.4;
+}
+.proposal-category {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #F8F9FA;
+  color: var(--text2);
+  white-space: nowrap;
+}
+.proposal-reason {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 10px;
+  padding-left: 30px;
+}
+.proposal-reason strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* --- Diff (Before/After) --- */
+.diff-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-left: 30px;
+}
+.diff-block {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.diff-before {
+  background: #FFF5F5;
+  border: 1px solid #FFC9C9;
+  color: #C92A2A;
+}
+.diff-after {
+  background: #EBFBEE;
+  border: 1px solid #B2F2BB;
+  color: #2B8A3E;
+}
+.diff-label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  opacity: .7;
+}
+
+/* --- Proposal actions --- */
+.proposal-actions {
+  display: flex;
+  gap: 6px;
+  padding-left: 30px;
+}
+.proposal-actions .btn-sm { flex: 1; }
+.btn-primary-sm {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+.btn-outline-sm {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* --- Handoff pack --- */
+.handoff-pack {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.handoff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--accent-light);
+  border-bottom: 1px solid #C5D2F0;
+}
+.handoff-header-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.handoff-body { padding: 14px; }
+.handoff-section {
+  margin-bottom: 12px;
+}
+.handoff-section:last-child { margin-bottom: 0; }
+.handoff-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 4px;
+  letter-spacing: .02em;
+}
+.handoff-content {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.handoff-code {
+  background: #F1F3F5;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+.handoff-checklist {
+  list-style: none;
+  padding: 0;
+}
+.handoff-checklist li {
+  font-size: 12px;
+  padding: 3px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text);
+}
+.handoff-checklist li::before {
+  content: "☐";
+  color: var(--text3);
+  font-size: 13px;
+}
+.handoff-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+.handoff-actions .btn-sm { flex: 1; }
+
+/* --- Gate overlay for Layer 0 handoff pack preview --- */
+.handoff-gate {
+  position: relative;
+}
+.handoff-gate::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(transparent, rgba(255,255,255,.95));
+  pointer-events: none;
+}
+.gate-cta {
+  position: relative;
+  z-index: 2;
+  margin: -8px 14px 14px;
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border: 1.5px dashed var(--accent);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.gate-cta strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* --- Experiment note (result recording) --- */
+.exp-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.exp-note-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.exp-note-icon {
+  font-size: 18px;
+}
+.exp-note-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+.exp-note-subtitle {
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.exp-status-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.exp-status-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: center;
+  font-family: var(--font);
+  cursor: default;
+}
+.exp-status-btn.active {
+  border-color: var(--success);
+  background: var(--success-light);
+}
+.exp-status-emoji { font-size: 20px; display: block; margin-bottom: 2px; }
+.exp-status-label { font-size: 11px; color: var(--text2); font-weight: 500; }
+.exp-status-btn.active .exp-status-label { color: var(--success); }
+
+.exp-auto-fields {
+  background: #F8F9FA;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.exp-auto-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.exp-auto-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 3px 0;
+}
+.exp-auto-key { color: var(--text2); }
+.exp-auto-val { color: var(--text); font-weight: 500; }
+
+.exp-metric-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.exp-metric-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.exp-metric-label {
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 500;
+}
+.exp-metric-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 12px;
+  color: var(--text2);
+  font-family: var(--font);
+}
+.exp-metric-arrow {
+  color: var(--text3);
+  font-size: 14px;
+}
+
+/* --- Loading screen --- */
+.loading-body {
+  padding: 48px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--border-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 72%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+@keyframes progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+.loading-text {
+  font-size: 13px;
+  color: var(--text2);
+  text-align: center;
+}
+.skeleton-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.skeleton {
+  height: 14px;
+  background: var(--border-light);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.sk-80 { width: 80%; }
+.sk-60 { width: 60%; }
+.sk-70 { width: 70%; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+.cancel-link {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 8px;
+}
+
+/* --- Change annotations --- */
+.change-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  background: #FFF3BF;
+  border: 1px solid #FFE066;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #E67700;
+  letter-spacing: .02em;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+/* --- Section divider --- */
+.section-divider {
+  max-width: 1600px;
+  margin: 40px auto 24px;
+  padding: 16px 0 0;
+  border-top: 2px solid var(--border);
+}
+.section-divider h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-divider p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* --- Comparison table --- */
+.comparison-table {
+  max-width: 1600px;
+  margin: 0 auto 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.comparison-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.comparison-table th,
+.comparison-table td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+.comparison-table th {
+  background: #F8F9FA;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: .02em;
+}
+.comparison-table tr:last-child td { border-bottom: none; }
+.old { color: var(--danger); text-decoration: line-through; opacity: .7; }
+.new { color: var(--success); font-weight: 500; }
+
+/* --- Responsive --- */
+@media (max-width: 800px) {
+  .screen-grid { flex-direction: column; align-items: center; }
+  body { padding: 20px 12px 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- VERSION HEADER -->
+<!-- ============================================================ -->
+<div class="version-header">
+  <h1>Publish Gate v4.0</h1>
+  <span class="tag">ZERO-BASE REDESIGN</span>
+  <p class="subtitle">
+    全52ファイル＋インタビュー3名＋7つの構造的矛盾を踏まえたゼロベース再設計。
+    フレーミング・コア機能・ログ構造・価格・ターゲットを全て刷新。
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<!-- DESIGN NOTES -->
+<!-- ============================================================ -->
+<div class="design-notes">
+  <div class="note-title">📐 再設計の3原則</div>
+  <strong>① フレーミング転換</strong> ——「公開判断（合否を出す門番）」→「改善推進（次のアクションを加速する）」。インタビュー3名全員が「チェック」にピンと来ていない。<br>
+  <strong>② 依頼パック中心</strong> ——「即時反映（プレビュー）」を脇役に降格。代理業/フリーランス（藤野型）が最も反応する「デザイナー/開発者への指示書自動生成」を主役に。<br>
+  <strong>③ 実験ノート型ログ</strong> —— Before/After＋数値変化が自動蓄積。10件溜まると「この会社ではtrustカテゴリの改善が効きやすい」等のパターン学習が動く。<br>
+  <span style="margin-top:8px;display:inline-block;opacity:.8">※ 黄色タグ <span class="change-tag">変更</span> は v2.0 からの差分を示します</span>
+</div>
+
+<!-- ============================================================ -->
+<!-- COMPARISON TABLE -->
+<!-- ============================================================ -->
+<div class="comparison-table">
+  <table>
+    <tr>
+      <th style="width:20%">要素</th>
+      <th style="width:38%">v2.0（現設計）</th>
+      <th style="width:42%">v4.0（ゼロベース再設計）</th>
+    </tr>
+    <tr>
+      <td style="font-weight:600">AIの入力</td>
+      <td class="old">DOM構造情報のみ（本文なし）</td>
+      <td class="new">構造 ＋ FVテキスト ＋ CTA周辺コピー ＋ 見出し下段落</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">核の機能</td>
+      <td class="old">即時反映（プレビュー）</td>
+      <td class="new">依頼パック（指示書自動生成）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">フレーミング</td>
+      <td class="old">公開判断（PASS/FAIL/HOLD）</td>
+      <td class="new">改善推進（インサイト＋次のアクション）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">ログの中身</td>
+      <td class="old">判断種別 ＋ 理由 ＋ 結果</td>
+      <td class="new">Before/After ＋ カテゴリ ＋ 数値変化（実験ノート）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">価格の刻み</td>
+      <td class="old">Free → ¥9,800 の崖</td>
+      <td class="new">Free → ¥4,980 → ¥14,800 の階段</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">初期ターゲット</td>
+      <td class="old">SEVENDEX社内</td>
+      <td class="new">代理業/フリーランス（藤野型）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">L0→L1転換キー</td>
+      <td class="old">ログの永続保存</td>
+      <td class="new">依頼パックがコピー可能に</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">画面数</td>
+      <td class="old">7画面</td>
+      <td class="new">3コア画面（Dashboard→分析→アクション）</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: CORE FLOW -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>🔄 コアフロー（Layer 0 体験）</h2>
+  <p>インストール → ページを開く → ボタン1つ → 30秒で「おっ」→ 依頼パック生成。アカウント不要。</p>
+</div>
+
+<div class="screen-grid">
+
+  <!-- SCREEN 1: Dashboard -->
+  <div class="phone-wrap">
+    <p class="phone-label">① Dashboard</p>
+    <p class="phone-sublabel">CTA文言を「チェック」→「改善ポイントを見つける」に変更</p>
+    <div class="phone">
+      <div class="pg-header">
+        <div class="pg-header-left">
+          <div class="pg-logo">PG</div>
+          <span class="pg-title">Publish Gate</span>
+        </div>
+        <button class="pg-gear">⚙</button>
+      </div>
+      <div class="pg-body">
+        <button class="btn btn-accent">
+          📈 改善ポイントを見つける <span class="change-tag">変更</span>
+        </button>
+
+        <div class="section-label">直近の分析</div>
+
+        <div class="log-card">
+          <div class="log-dot log-dot-success"></div>
+          <div class="log-content">
+            <div class="log-domain">client-a.com/lp</div>
+            <div class="log-meta">提案3件 · 3/4 14:30</div>
+          </div>
+          <span class="badge badge-impact">CVR系</span>
+        </div>
+
+        <div class="log-card">
+          <div class="log-dot log-dot-warning"></div>
+          <div class="log-content">
+            <div class="log-domain">client-b.co.jp/service</div>
+            <div class="log-meta">提案2件 · 3/3 10:15</div>
+          </div>
+          <span class="badge badge-impact">信頼性</span>
+        </div>
+
+        <div class="log-card">
+          <div class="log-dot log-dot-success"></div>
+          <div class="log-content">
+            <div class="log-domain">my-site.com/about</div>
+            <div class="log-meta">提案3件 · 3/2 16:40</div>
+          </div>
+          <span class="badge badge-impact">構成</span>
+        </div>
+
+        <!-- Layer hint: 依頼パックが転換キー -->
+        <div class="layer-hint">
+          <span>📋 アカウント作成で依頼パックをコピー可能に <span class="change-tag">変更</span></span>
+          <span class="layer-hint-arrow">→</span>
+        </div>
+
+        <div class="rate-info">残り 2/3 回（今日）<span class="change-tag">変更</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Loading -->
+  <div class="phone-wrap">
+    <p class="phone-label">② Loading</p>
+    <p class="phone-sublabel">FVテキスト＋CTAコンテキスト抽出が追加</p>
+    <div class="phone">
+      <div class="pg-header">
+        <div class="pg-header-left">
+          <div class="pg-logo">PG</div>
+          <span class="pg-title">Publish Gate</span>
+        </div>
+      </div>
+      <div class="loading-body">
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="loading-text">
+          📡 ページを読み取り中…<br>
+          <span style="font-size:11px;color:var(--text3)">FVテキスト＋CTA周辺を含む構造分析 <span class="change-tag">変更</span></span>
+        </div>
+        <div class="skeleton-group">
+          <div class="skeleton sk-80"></div>
+          <div class="skeleton sk-60"></div>
+          <div class="skeleton sk-70"></div>
+        </div>
+        <div class="cancel-link">キャンセル</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Analysis Results (replaces Estimation + Proposals) -->
+  <div class="phone-wrap">
+    <p class="phone-label">③ 分析結果 <span class="change-tag">統合</span></p>
+    <p class="phone-sublabel">推定確認＋提案を1画面に統合。PASS/FAILを廃止しインサイト型に。</p>
+    <div class="phone">
+      <div class="screen-header">
+        <span class="back">← 戻る</span>
+        <span>分析結果</span>
+      </div>
+      <div class="pg-body">
+
+        <!-- Page context (compact) -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;">
+          <div class="est-item" style="flex:1;margin-bottom:0">
+            <div class="est-label">ページの役割</div>
+            <div class="est-value">獲得LP</div>
+          </div>
+          <div class="est-item" style="flex:1;margin-bottom:0">
+            <div class="est-label">主要CV</div>
+            <div class="est-value">無料相談</div>
+          </div>
+          <div class="est-item" style="flex:1;margin-bottom:0">
+            <div class="est-label">ターゲット</div>
+            <div class="est-value">中小企業</div>
+          </div>
+        </div>
+
+        <!-- Insight banner (replaces PASS/FAIL) -->
+        <div class="insight-banner insight-improve">
+          <span class="icon">💡</span>
+          <div class="text">
+            FVの訴求が「サービス説明」に留まり、ターゲットの課題に接続していません。信頼要素の追加でCVR改善が見込めます。
+            <span class="change-tag">変更</span>
+          </div>
+        </div>
+
+        <!-- Proposal 1 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <span class="proposal-num">1</span>
+            <span class="proposal-title">FVに定量実績を追加し信頼性を強化</span>
+            <span class="proposal-category">trust</span>
+          </div>
+          <div class="proposal-reason">
+            <strong>根拠：</strong>FVテキストに「マーケティング支援」の説明はあるが、実績数値が一切ない。ターゲット（中小企業のマーケ担当）は予算決裁に具体数字が必要。
+            <span class="change-tag">FVテキスト参照</span>
+          </div>
+          <div class="diff-row">
+            <div class="diff-block diff-before">
+              <div class="diff-label">Before</div>
+              「マーケティングの課題を解決するパートナー」
+            </div>
+            <div class="diff-block diff-after">
+              <div class="diff-label">After</div>
+              「導入企業300社・平均CVR 1.8倍のマーケティング支援」
+            </div>
+          </div>
+          <div class="proposal-actions">
+            <button class="btn-sm btn-primary-sm">📋 依頼パックを作る <span class="change-tag" style="background:#fff3;border-color:#fff3;color:#fff">主役</span></button>
+            <button class="btn-sm btn-outline-sm">👁 プレビュー</button>
+          </div>
+        </div>
+
+        <!-- Proposal 2 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <span class="proposal-num">2</span>
+            <span class="proposal-title">CTA周辺にマイクロコピーを追加</span>
+            <span class="proposal-category">cta</span>
+          </div>
+          <div class="proposal-reason">
+            <strong>根拠：</strong>CTAボタン「無料で相談する」の周辺に、所要時間や次のステップの説明がない。「何が起きるかわからない」心理的障壁がCVを阻害。
+            <span class="change-tag">CTA周辺コピー参照</span>
+          </div>
+          <div class="diff-row">
+            <div class="diff-block diff-before">
+              <div class="diff-label">Before</div>
+              [無料で相談する]
+            </div>
+            <div class="diff-block diff-after">
+              <div class="diff-label">After</div>
+              最短30秒で入力完了・翌営業日にご連絡<br>[無料で相談する]
+            </div>
+          </div>
+          <div class="proposal-actions">
+            <button class="btn-sm btn-primary-sm">📋 依頼パックを作る</button>
+            <button class="btn-sm btn-outline-sm">👁 プレビュー</button>
+          </div>
+        </div>
+
+        <!-- Proposal 3 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <span class="proposal-num">3</span>
+            <span class="proposal-title">FV直下にペインポイント→解決の流れを追加</span>
+            <span class="proposal-category">structure</span>
+          </div>
+          <div class="proposal-reason">
+            <strong>根拠：</strong>FVの次がサービス機能の羅列。ターゲットの課題（「施策が回らない」「数字の原因がわからない」）に先に触れることで、共感→理解→行動の流れを作る。
+          </div>
+          <div class="diff-row">
+            <div class="diff-block diff-before">
+              <div class="diff-label">Before</div>
+              FV → 機能紹介 → 料金 → CTA
+            </div>
+            <div class="diff-block diff-after">
+              <div class="diff-label">After</div>
+              FV → 課題共感 → 解決の仕組み → 実績 → CTA
+            </div>
+          </div>
+          <div class="proposal-actions">
+            <button class="btn-sm btn-primary-sm">📋 依頼パックを作る</button>
+            <button class="btn-sm btn-outline-sm">👁 プレビュー</button>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost" style="margin-top:4px">📝 メモを残す</button>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: HANDOFF PACK -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>📋 依頼パック（コア機能） <span class="change-tag">変更</span></h2>
+  <p>v2.0では脇役だった依頼パックを主役に昇格。デザイナー/開発者がそのまま実装に入れる品質。Layer 0ではプレビューのみ表示。</p>
+</div>
+
+<div class="screen-grid">
+
+  <!-- Handoff Pack: Full (Layer 1+) -->
+  <div class="phone-wrap">
+    <p class="phone-label">④ 依頼パック詳細（Layer 1+）</p>
+    <p class="phone-sublabel">アカウント作成後：コピー＆共有が可能</p>
+    <div class="phone">
+      <div class="screen-header">
+        <span class="back">← 戻る</span>
+        <span>依頼パック</span>
+      </div>
+      <div class="pg-body" style="padding:12px">
+        <div class="handoff-pack">
+          <div class="handoff-header">
+            <span class="handoff-header-title">📋 実装依頼書</span>
+            <span class="badge badge-high">優先度: 高</span>
+          </div>
+          <div class="handoff-body">
+            <div class="handoff-section">
+              <div class="handoff-section-title">変更内容</div>
+              <div class="handoff-content">FVのキャッチコピーに定量実績（導入企業数・CVR改善率）を追加する</div>
+            </div>
+            <div class="handoff-section">
+              <div class="handoff-section-title">対象箇所</div>
+              <div class="handoff-code">.hero-section > h1 + p:first-of-type</div>
+            </div>
+            <div class="handoff-section">
+              <div class="handoff-section-title">Before → After</div>
+              <div style="display:flex;gap:6px">
+                <div class="diff-block diff-before" style="flex:1;margin:0">
+                  <div class="diff-label">Before</div>
+                  マーケティングの課題を解決するパートナー
+                </div>
+                <div class="diff-block diff-after" style="flex:1;margin:0">
+                  <div class="diff-label">After</div>
+                  導入企業300社・平均CVR 1.8倍のマーケティング支援
+                </div>
+              </div>
+            </div>
+            <div class="handoff-section">
+              <div class="handoff-section-title">受入条件（DoD）</div>
+              <ul class="handoff-checklist">
+                <li>FV内にh1直下の補足テキストとして表示される</li>
+                <li>モバイル表示で2行以内に収まる</li>
+                <li>数値は実際の実績に差し替え可</li>
+              </ul>
+            </div>
+            <div class="handoff-section">
+              <div class="handoff-section-title">計測方法</div>
+              <div class="handoff-content">GA4イベント「hero_cta_click」のCTR変化を2週間計測。ベースライン：現状CTR</div>
+            </div>
+          </div>
+          <div class="handoff-actions">
+            <button class="btn-sm btn-primary-sm">📄 コピー</button>
+            <button class="btn-sm btn-outline-sm">🔗 共有リンク</button>
+            <button class="btn-sm btn-outline-sm">💾 PDF</button>
+          </div>
+        </div>
+
+        <button class="btn btn-accent-outline" style="margin-top:4px;font-size:13px">
+          次の提案の依頼パックを見る →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Handoff Pack: Gate (Layer 0) -->
+  <div class="phone-wrap">
+    <p class="phone-label">⑤ 依頼パック（Layer 0：ゲート）</p>
+    <p class="phone-sublabel">分析結果は全て見える。依頼パックの「コピー」だけがゲート</p>
+    <div class="phone">
+      <div class="screen-header">
+        <span class="back">← 戻る</span>
+        <span>依頼パック</span>
+      </div>
+      <div class="pg-body" style="padding:12px">
+        <div class="handoff-pack">
+          <div class="handoff-header">
+            <span class="handoff-header-title">📋 実装依頼書</span>
+            <span class="badge badge-high">優先度: 高</span>
+          </div>
+          <div class="handoff-body handoff-gate">
+            <div class="handoff-section">
+              <div class="handoff-section-title">変更内容</div>
+              <div class="handoff-content">FVのキャッチコピーに定量実績（導入企業数・CVR改善率）を追加する</div>
+            </div>
+            <div class="handoff-section">
+              <div class="handoff-section-title">対象箇所</div>
+              <div class="handoff-code">.hero-section > h1 + p:first-of-type</div>
+            </div>
+            <div class="handoff-section" style="opacity:.5">
+              <div class="handoff-section-title">Before → After</div>
+              <div style="display:flex;gap:6px">
+                <div class="diff-block diff-before" style="flex:1;margin:0">
+                  <div class="diff-label">Before</div>
+                  マーケティングの課題を…
+                </div>
+                <div class="diff-block diff-after" style="flex:1;margin:0">
+                  <div class="diff-label">After</div>
+                  導入企業300社・平均…
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="gate-cta">
+            <strong>📋 この品質の指示書をワンクリックで作成</strong>
+            アカウント作成（無料）でコピー＆共有が可能に
+            <br>
+            <button class="btn btn-accent btn-sm" style="margin-top:8px;width:auto;display:inline-flex;padding:8px 20px;">無料アカウントを作成</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Experiment Note (Result Recording) -->
+  <div class="phone-wrap">
+    <p class="phone-label">⑥ 実験ノート <span class="change-tag">新規</span></p>
+    <p class="phone-sublabel">「日記」→「実験ノート」。Before/Afterが自動付与。因果関係をAIが学習。</p>
+    <div class="phone">
+      <div class="screen-header">
+        <span class="back">← 戻る</span>
+        <span>結果を記録</span>
+      </div>
+      <div class="pg-body">
+
+        <div class="exp-note">
+          <div class="exp-note-header">
+            <span class="exp-note-icon">🧪</span>
+            <div>
+              <div class="exp-note-title">FVに定量実績を追加し信頼性を強化</div>
+              <div class="exp-note-subtitle">client-a.com/lp · 3/4実行 · trust</div>
+            </div>
+          </div>
+
+          <!-- Status selection -->
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">この提案を実行しましたか？</div>
+          <div class="exp-status-row">
+            <div class="exp-status-btn active">
+              <span class="exp-status-emoji">✅</span>
+              <span class="exp-status-label">実行した</span>
+            </div>
+            <div class="exp-status-btn">
+              <span class="exp-status-emoji">⏸️</span>
+              <span class="exp-status-label">保留中</span>
+            </div>
+            <div class="exp-status-btn">
+              <span class="exp-status-emoji">❌</span>
+              <span class="exp-status-label">見送った</span>
+            </div>
+          </div>
+
+          <!-- Auto-populated fields -->
+          <div class="exp-auto-fields">
+            <div class="exp-auto-title">自動記録 <span class="change-tag">変更</span></div>
+            <div class="exp-auto-row">
+              <span class="exp-auto-key">カテゴリ</span>
+              <span class="exp-auto-val">trust</span>
+            </div>
+            <div class="exp-auto-row">
+              <span class="exp-auto-key">Before</span>
+              <span class="exp-auto-val">「マーケティングの課題を解決する…」</span>
+            </div>
+            <div class="exp-auto-row">
+              <span class="exp-auto-key">After</span>
+              <span class="exp-auto-val">「導入企業300社・平均CVR 1.8倍…」</span>
+            </div>
+            <div class="exp-auto-row">
+              <span class="exp-auto-key">セレクタ</span>
+              <span class="exp-auto-val" style="font-family:var(--mono);font-size:11px">.hero-section &gt; p</span>
+            </div>
+          </div>
+
+          <!-- Result (2 weeks later) -->
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">結果は？（2週間後に記録を推奨）</div>
+          <div class="exp-status-row">
+            <div class="exp-status-btn active">
+              <span class="exp-status-emoji">📈</span>
+              <span class="exp-status-label">効果あり</span>
+            </div>
+            <div class="exp-status-btn">
+              <span class="exp-status-emoji">➡️</span>
+              <span class="exp-status-label">変化なし</span>
+            </div>
+            <div class="exp-status-btn">
+              <span class="exp-status-emoji">📉</span>
+              <span class="exp-status-label">悪化</span>
+            </div>
+          </div>
+
+          <!-- Metrics (optional) -->
+          <div class="exp-metric-row">
+            <div class="exp-metric-input">
+              <span class="exp-metric-label">CVR</span>
+              <div class="exp-metric-field">
+                <span>1.2%</span>
+                <span class="exp-metric-arrow">→</span>
+                <span style="color:var(--success);font-weight:600">1.8%</span>
+              </div>
+            </div>
+            <div class="exp-metric-input">
+              <span class="exp-metric-label">CTR</span>
+              <div class="exp-metric-field">
+                <span>—</span>
+                <span class="exp-metric-arrow">→</span>
+                <span>—</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="btn btn-success" style="font-size:13px">📝 記録を保存</button>
+
+        <div style="margin-top:12px;padding:10px 12px;background:#F8F9FA;border-radius:8px;font-size:11px;color:var(--text2);line-height:1.6;">
+          💡 この結果はAIの学習に使われます。<br>
+          10件溜まると「効きやすいパターン」が次の提案に反映されます。
+          <span class="change-tag">変更</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: LAYER STRUCTURE -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>💰 再設計した価格・Layer構成</h2>
+  <p>¥0→¥9,800の崖を解消。¥4,980 Basicを新設し、衝動買いラインを確保。</p>
+</div>
+
+<div class="comparison-table">
+  <table>
+    <tr>
+      <th>Layer</th>
+      <th>条件</th>
+      <th>機能</th>
+      <th>転換動機</th>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--text)">Layer 0<br><span style="font-size:11px;font-weight:400;color:var(--text2)">Free</span></td>
+      <td>アカウント不要</td>
+      <td>3回/日 · 分析＋提案＋プレビュー<br>依頼パックは<strong>プレビューのみ</strong>（コピー不可）</td>
+      <td style="font-size:12px;color:var(--text2)">—</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--text)">Layer 1<br><span style="font-size:11px;font-weight:400;color:var(--text2)">Free</span></td>
+      <td>メールで登録</td>
+      <td>10回/日 · <strong>依頼パックのコピー＆共有</strong><br>ログ永続保存 · AI精度向上</td>
+      <td style="font-size:12px;color:var(--accent);font-weight:500">依頼パックが使い放題</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">Basic<br><span style="font-size:11px;font-weight:400;color:var(--text2)">¥4,980/月 <span class="change-tag">新設</span></span></td>
+      <td>決済</td>
+      <td>無制限スキャン · GSC連携<br>レポート生成 · 承認メモ</td>
+      <td style="font-size:12px;color:var(--accent);font-weight:500">検索データでの深い分析</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">Pro<br><span style="font-size:11px;font-weight:400;color:var(--text2)">¥14,800/月 <span class="change-tag">変更</span></span></td>
+      <td>決済</td>
+      <td>Basic全機能 · GA4連携 · 自動追跡<br>テンプレート管理 · 優先サポート</td>
+      <td style="font-size:12px;color:var(--accent);font-weight:500">結果の自動追跡と学習ループ</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--text)">Team<br><span style="font-size:11px;font-weight:400;color:var(--text2)">¥49,800/月</span></td>
+      <td>5名含む</td>
+      <td>Pro全機能 · 共有ログ · 権限管理</td>
+      <td style="font-size:12px;color:var(--accent);font-weight:500">チームの標準化</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: WHAT CHANGES IN AI INPUT -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>🧠 AI入力の変更（矛盾1の解消）</h2>
+  <p>「本を読まずに書評を書く」状態を解消。FVテキスト＋CTA周辺コピーで「訴求の質」に踏み込める。</p>
+</div>
+
+<div class="comparison-table">
+  <table>
+    <tr>
+      <th>入力データ</th>
+      <th>v2.0</th>
+      <th>v4.0</th>
+      <th>なぜ必要か</th>
+    </tr>
+    <tr>
+      <td style="font-weight:500">meta情報</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="font-size:12px;color:var(--text2)">基本的なページ目的の推定</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">見出し構造</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="font-size:12px;color:var(--text2)">情報構造の把握</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">CTA要素</td>
+      <td style="font-size:12px">テキストのみ</td>
+      <td class="new">テキスト＋周辺200文字</td>
+      <td style="font-size:12px;color:var(--text2)">CTA周辺の説得構造を評価</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">FVテキスト <span class="change-tag">新規</span></td>
+      <td class="old">なし</td>
+      <td class="new">上位1000pxの主要テキスト30要素</td>
+      <td style="font-size:12px;color:var(--text2)">訴求の質・ターゲット適合性の評価</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">見出し下段落 <span class="change-tag">新規</span></td>
+      <td class="old">なし</td>
+      <td class="new">各h2直下の1段落（最大200文字）</td>
+      <td style="font-size:12px;color:var(--text2)">セクション内容の理解</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">フォーム/画像/構造化データ</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="color:var(--success)">✓</td>
+      <td style="font-size:12px;color:var(--text2)">技術的な構造評価</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--text)">トークン増加量</td>
+      <td>—</td>
+      <td style="font-weight:500">約500-1000トークン（¥2-5/リクエスト）</td>
+      <td style="font-size:12px;color:var(--text2)">Layer 0品質が劇的に向上</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: LEARNING LOOP -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>🔄 学習ループの再設計（矛盾5の解消）</h2>
+  <p>「日記」→「実験ノート」。Before/After＋カテゴリ＋数値が因果関係としてAIに伝わる。</p>
+</div>
+
+<div class="comparison-table">
+  <table>
+    <tr>
+      <th>項目</th>
+      <th>v2.0 ログ（日記）</th>
+      <th>v4.0 ログ（実験ノート）</th>
+    </tr>
+    <tr>
+      <td style="font-weight:500">記録される内容</td>
+      <td class="old">判断種別（PASS/FAIL）＋理由＋結果</td>
+      <td class="new">Before/After＋カテゴリ＋セレクタ＋数値変化＋結果</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">ユーザーの入力</td>
+      <td>3タップ（😊😐😞）＋任意コメント</td>
+      <td>2タップ（実行した/保留/見送り ＋ 効果あり/なし/悪化）＋任意数値</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">自動付与</td>
+      <td class="old">なし</td>
+      <td class="new">提案タイトル・カテゴリ・Before/After・セレクタ（AI生成済み）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">AIへの学習効果</td>
+      <td class="old">「この人は過去にPASSを3回出した」程度</td>
+      <td class="new">「trustカテゴリのFV数値追加が2回成功」→パターン推論可能</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">MOAT効果</td>
+      <td style="font-size:12px;color:var(--text2)">弱い（因果関係がない）</td>
+      <td style="font-weight:500;color:var(--success)">強い（使うほど精度が上がる複利構造）</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: PHASE 0 VALIDATION -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>🧪 Phase 0 検証（開発着手前の1日）</h2>
+  <p>この1日をやるかやらないかで、3週間後に手元にあるものの価値がまるで違う。</p>
+</div>
+
+<div class="design-notes" style="background:#FFF9DB;border-color:#FFE066;color:#E67700;">
+  <div class="note-title" style="color:#E67700">⚠️ 開発前に必ず実施</div>
+  <strong>Step 1</strong>：5サイトのDOM＋FVテキスト＋CTA周辺コピーを手動収集（2時間）<br>
+  <strong>Step 2</strong>：再設計プロンプトでClaude APIに投げる（1時間）<br>
+  <strong>Step 3</strong>：出力をマーケ担当に見せて「この提案、やりたいですか？」と聞く（1時間）<br>
+  <strong>Step 4</strong>：3/5が「やりたい」→ 開発GO。2/5以下 → プロンプト修正して再テスト<br>
+  <br>
+  <span style="opacity:.8">判定基準：「おっ」が出るか。「こんなのAIに聞かなくてもわかる」と言われたらNG。</span>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: INITIAL TARGET -->
+<!-- ============================================================ -->
+<div class="section-divider">
+  <h2>🎯 最初のβターゲット <span class="change-tag">変更</span></h2>
+  <p>SEVENDEX社内ではなく、代理業/フリーランス（藤野型）から始める。</p>
+</div>
+
+<div class="comparison-table">
+  <table>
+    <tr>
+      <th>観点</th>
+      <th>七條型（責任者）</th>
+      <th>浦田型（担当者）</th>
+      <th style="background:#EDF2FF">藤野型（代理業）← 最初</th>
+    </tr>
+    <tr>
+      <td style="font-weight:500">Layer 0で完結？</td>
+      <td style="color:var(--danger)">✗（GSC/GA4が必要）</td>
+      <td style="color:var(--warning)">△</td>
+      <td style="color:var(--success);font-weight:600;background:#EDF2FF">◎ 完結する</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">課金判断</td>
+      <td>部門予算（1-2週間）</td>
+      <td>上申必要</td>
+      <td style="font-weight:500;background:#EDF2FF">即決（個人経費）</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">口コミ効果</td>
+      <td>社内展開</td>
+      <td>限定的</td>
+      <td style="font-weight:500;background:#EDF2FF">Xで発信→次の藤野型を連れてくる</td>
+    </tr>
+    <tr>
+      <td style="font-weight:500">「おっ」の瞬間</td>
+      <td>チーム標準化</td>
+      <td>依頼パック</td>
+      <td style="font-weight:500;background:#EDF2FF">クライアントLP分析→即座にSlack共有</td>
+    </tr>
+  </table>
+</div>
+
+<div style="max-width:1600px;margin:24px auto 0;padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;line-height:1.8;color:var(--text);">
+  <strong style="font-size:14px">Next Step</strong><br>
+  このデモの方向性でOKであれば、次フェーズで全ドキュメント（01〜14 + 実装コード）をv4.0仕様にアップデートします。<br>
+  優先度：<strong>Phase 0 テスト実行ガイド</strong> → <strong>要件定義書v4.0</strong> → <strong>プロンプト設計書v4.0</strong> → 残り順次
+</div>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "publish-gate",
+  "version": "2.0.0",
+  "description": "ページを開くだけで、改善の判断が前に進む",
+  "private": true,
+  "scripts": {
+    "deploy:proxy": "cd src/proxy && npx wrangler deploy",
+    "dev:proxy": "cd src/proxy && npx wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

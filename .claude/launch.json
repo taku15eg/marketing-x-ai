@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "/Users/takuyahashigaya/.local/state/fnm_multishells/45905_1773121482332/bin/npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "src/dashboard"],
+      "port": 3000
+    }
+  ]
+}

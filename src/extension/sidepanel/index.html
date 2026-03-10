@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publish Gate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <span class="header-logo">PG</span>
+        <span class="header-title">Publish Gate</span>
+      </div>
+      <span class="header-version">v0.5</span>
+    </header>
+
+    <!-- Screen: Input (default) -->
+    <section id="screen-input" class="screen active">
+      <div class="screen-body">
+        <div class="input-section">
+          <label class="input-label" for="urlInput">分析するページのURL</label>
+          <input
+            type="url"
+            id="urlInput"
+            class="url-input"
+            placeholder="https://example.com"
+            readonly
+          >
+          <p class="input-hint">現在開いているタブのURLが自動で入力されます</p>
+        </div>
+
+        <button class="btn btn-primary btn-lg w-full" id="analyzeBtn">
+          分析開始
+        </button>
+      </div>
+    </section>
+
+    <!-- Screen: Loading -->
+    <section id="screen-loading" class="screen">
+      <div class="screen-body center-content">
+        <div class="progress-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="loading-steps" id="loadingSteps">
+          <div class="loading-step" data-step="1">
+            <span class="step-icon">&#9675;</span>
+            <span class="step-text">ページのスクリーンショットを取得中...</span>
+          </div>
+          <div class="loading-step" data-step="2">
+            <span class="step-icon">&#9675;</span>
+            <span class="step-text">ページ構造を抽出中...</span>
+          </div>
+          <div class="loading-step" data-step="3">
+            <span class="step-icon">&#9675;</span>
+            <span class="step-text">AIが分析中...</span>
+          </div>
+          <div class="loading-step" data-step="4">
+            <span class="step-icon">&#9675;</span>
+            <span class="step-text">結果を整理中...</span>
+          </div>
+        </div>
+
+        <button class="btn-text" id="cancelBtn">キャンセル</button>
+      </div>
+    </section>
+
+    <!-- Screen: Results -->
+    <section id="screen-results" class="screen">
+      <div class="screen-body">
+        <div id="resultsContent"></div>
+      </div>
+    </section>
+
+    <!-- Screen: Error -->
+    <section id="screen-error" class="screen">
+      <div class="screen-body center-content">
+        <div class="error-icon">!</div>
+        <p class="error-message" id="errorMessage">エラーが発生しました</p>
+        <button class="btn btn-outline" id="retryBtn">もう一度試す</button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="powered-by">
+        <span class="powered-logo">PG</span>
+        Powered by Publish Gate
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

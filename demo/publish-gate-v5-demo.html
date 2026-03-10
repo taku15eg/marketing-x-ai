@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Gate v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#2D5BE3;--brand-dk:#1E3FA0;--brand-lt:#EBF0FF;--brand-50:#F0F5FF;
+  --ok:#059669;--ok-bg:#ECFDF5;
+  --warn:#B45309;--warn-bg:#FFF8ED;
+  --err:#DC2626;--err-bg:#FEF2F2;
+  --lv5:#059669;--lv5-bg:#ECFDF5;--lv4:#10B981;--lv4-bg:#D1FAE5;
+  --lv3:#6B7280;--lv3-bg:#F3F4F6;--lv2:#D97706;--lv2-bg:#FEF3C7;--lv1:#EF4444;--lv1-bg:#FEE2E2;
+  --bg:#FAFBFD;--s:#FFF;--s2:#F5F6F8;--s3:#E5E7EB;
+  --b:#E2E5EA;--b-lt:#F0F1F3;
+  --t1:#111827;--t2:#4B5563;--t3:#9CA3AF;
+  --purple:#7C3AED;--purple-bg:#EDE9FE;--pink:#DB2777;--pink-bg:#FCE7F3;
+  --f:'Noto Sans JP',sans-serif;--fe:'Outfit',sans-serif;--fm:'JetBrains Mono',monospace;
+  --rs:6px;--r:10px;--rl:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);color:var(--t1);background:#1E293B;-webkit-font-smoothing:antialiased;line-height:1.7;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+button{font-family:var(--f);cursor:pointer}
+.ic{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic svg{display:block}
+
+/* === LAYOUT === */
+.demo{display:flex;width:100%;max-width:1360px;height:92vh;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+
+/* Browser */
+.browser{flex:1;background:var(--s);display:flex;flex-direction:column;overflow:hidden}
+.br-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--b)}
+.br-dots{display:flex;gap:5px}.br-dot{width:10px;height:10px;border-radius:50%}
+.br-dot.r{background:#FF5F57}.br-dot.y{background:#FEBC2E}.br-dot.g{background:#28C840}
+.br-url{flex:1;background:var(--s);border:1px solid var(--b);border-radius:5px;padding:5px 10px;font-size:11px;font-family:var(--fe);color:var(--t2)}
+.br-body{flex:1;overflow-y:auto;padding:32px;background:var(--bg)}
+.fp h2{font-size:24px;font-weight:700;margin-bottom:8px}
+.fp .sub{font-size:13px;color:var(--t2);max-width:460px;margin-bottom:20px;line-height:1.7}
+.fp-cta{display:inline-block;background:var(--brand);color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:28px}
+.fp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.fp-stat{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;text-align:center}
+.fp-stat b{font-family:var(--fe);font-size:20px;font-weight:700;color:var(--brand);display:block}
+.fp-stat span{font-size:10px;color:var(--t3)}
+.fp-sec{margin-bottom:20px}.fp-sec h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.fp-sec p{font-size:12px;color:var(--t2);line-height:1.7}
+
+/* Side Panel */
+.sp{width:400px;flex-shrink:0;background:var(--s);display:flex;flex-direction:column;overflow:hidden;border-left:1px solid var(--b)}
+.sp-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b)}
+.sp-brand{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;letter-spacing:-.01em}
+.sp-mark{width:22px;height:22px;border-radius:5px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;font-family:var(--fe)}
+.sp-ver{font-size:9px;color:var(--t3);font-family:var(--fm);font-weight:400}
+.sp-tabs{display:flex;border-bottom:1px solid var(--b)}
+.sp-tab{flex:1;padding:9px 2px;text-align:center;font-size:10.5px;font-weight:500;color:var(--t3);border:none;background:none;border-bottom:2px solid transparent;transition:all .15s}
+.sp-tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+.sp-tab:hover:not(.on){color:var(--t2)}
+.sp-body{flex:1;overflow-y:auto;padding:14px 14px 20px}
+.scr{display:none}.scr.on{display:block}
+
+/* Scan button */
+.scan{width:100%;padding:12px;background:var(--brand);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.scan:hover{background:var(--brand-dk)}
+
+/* Loading */
+.ld{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center}
+.ld-spin{width:32px;height:32px;border:3px solid var(--s2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px}
+.ld-msg{font-size:12px;color:var(--t2)}.ld-step{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--fm)}
+.ld-hint{font-size:10px;color:var(--t3);margin-top:12px;padding:8px 12px;background:var(--s2);border-radius:var(--rs);line-height:1.6;max-width:260px}
+.ld-bar{width:160px;height:3px;background:var(--s2);border-radius:2px;margin-top:12px;overflow:hidden}
+.ld-fill{height:100%;background:var(--brand);border-radius:2px;width:0;animation:prog 2.8s ease-in-out forwards}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes prog{0%{width:0}30%{width:25%}60%{width:58%}85%{width:82%}100%{width:100%}}
+
+/* Insight banner */
+.insight{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--rs);margin-top:10px;background:var(--warn-bg);border:1px solid rgba(180,83,9,.12)}
+.insight-txt{font-size:11.5px;font-weight:500;line-height:1.65;color:#7C4A00}
+.insight-src{display:inline-block;font-size:8px;font-weight:600;padding:1px 5px;border-radius:2px;background:var(--warn-bg);color:var(--warn);border:1px solid rgba(180,83,9,.15);margin-left:2px;vertical-align:middle}
+
+/* Reading card */
+.reading{background:var(--s2);border:1px solid var(--b);border-radius:var(--rs);padding:13px 14px;margin-top:10px}
+.reading-title{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.02em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.reading-row{display:flex;justify-content:space-between;padding:5px 0;font-size:11px}
+.reading-k{color:var(--t3)}.reading-v{font-weight:600;color:var(--t1)}
+
+/* Diagnosis */
+.diag{margin-top:12px}
+.diag-header{font-size:11px;font-weight:700;color:var(--t1);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.diag-card{background:var(--s);border:1px solid var(--b);border-radius:var(--rs);padding:12px 12px 12px 14px;margin-bottom:10px;cursor:pointer;transition:all .2s;border-left:3px solid transparent}
+.diag-card:hover{border-color:var(--brand);box-shadow:0 0 0 3px rgba(45,91,227,.04)}
+.diag-card.sev-h{border-left-color:var(--err)}
+.diag-card.sev-m{border-left-color:var(--warn)}
+.diag-meta{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.d-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px}
+.d-tag.copy{background:var(--purple-bg);color:var(--purple)}
+.d-tag.cta{background:var(--pink-bg);color:var(--pink)}
+.d-tag.trust{background:#FEF3C7;color:#92400E}
+.d-tag.structure{background:#DBEAFE;color:#1D4ED8}
+.d-tag.copy{background:var(--purple-bg);color:var(--purple)}
+.d-layer{font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px}
+.d-layer.l1{background:var(--err-bg);color:var(--err)}
+.d-layer.l2{background:var(--warn-bg);color:var(--warn)}
+.d-layer.l3{background:var(--brand-lt);color:var(--brand)}
+.d-layer.l4{background:var(--purple-bg);color:var(--purple)}
+.d-sev{font-size:9px;font-weight:600;margin-left:auto}
+.d-sev.h{color:var(--err)}.d-sev.m{color:var(--warn)}
+.d-issue{font-size:12px;font-weight:600;line-height:1.6;margin-bottom:6px;color:var(--t1)}
+.d-proposal{font-size:10.5px;color:var(--brand);font-weight:500;line-height:1.6;display:flex;align-items:flex-start;gap:4px}
+.d-arr{color:var(--t3);margin-left:auto;font-size:13px;flex-shrink:0;margin-top:2px}
+.remain{font-size:10px;color:var(--t3);text-align:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--b-lt)}
+.layer0-hint{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--brand-lt);border:1px solid rgba(45,91,227,.1);border-radius:var(--rs);margin-top:8px;font-size:10px;color:var(--brand);font-weight:500;line-height:1.5}
+
+/* === DETAIL === */
+.det-back{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--t3);border:none;background:none;padding:0;margin-bottom:10px}
+.det-back:hover{color:var(--t1)}
+.det-h{margin-bottom:16px}
+.det-meta{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.det-pri{font-family:var(--fe);font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px}
+.det-pri.p1{background:#FEE2E2;color:#DC2626}.det-pri.p2{background:#FEF3C7;color:#92400E}
+.det-title{font-size:16px;font-weight:700;line-height:1.5}
+.chain{margin-bottom:14px}
+.chain-step{display:flex;gap:10px;margin-bottom:10px;position:relative}
+.chain-step::before{content:'';position:absolute;left:11px;top:24px;bottom:-6px;width:1px;background:var(--b)}
+.chain-step:last-child::before{display:none}
+.chain-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.chain-dot.c-obs{background:#F0F5FF;color:var(--brand)}
+.chain-dot.c-bench{background:#ECFDF5;color:var(--ok)}
+.chain-dot.c-gap{background:#FEF2F2;color:var(--err)}
+.chain-dot.c-hypo{background:#FEF3C7;color:var(--warn)}
+.chain-bd{flex:1}
+.chain-lbl{font-size:9px;font-weight:700;letter-spacing:.03em;margin-bottom:2px}
+.chain-lbl.l-obs{color:var(--brand)}.chain-lbl.l-bench{color:var(--ok)}
+.chain-lbl.l-gap{color:var(--err)}.chain-lbl.l-hypo{color:var(--warn)}
+.chain-txt{font-size:11px;color:var(--t2);line-height:1.75}
+.chain-txt strong{color:var(--t1);font-weight:600}
+.chain-src{display:inline-block;font-size:8px;font-weight:600;padding:1px 5px;border-radius:2px;margin-left:3px;vertical-align:middle}
+.chain-src.s-page{background:var(--purple-bg);color:var(--purple)}
+.chain-src.s-fv{background:#DBEAFE;color:#1D4ED8}
+.chain-src.s-est{background:#FEF3C7;color:#92400E}
+.chain-src.s-mkt{background:#DBEAFE;color:#1D4ED8}
+.ba{margin-bottom:10px}
+.ba-lbl{font-size:9px;font-weight:700;letter-spacing:.03em;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.ba-lbl.bef{color:var(--t3)}.ba-lbl.aft{color:var(--ok)}
+.ba-box{background:var(--s2);border-radius:var(--rs);padding:10px 12px;font-size:11px;line-height:1.8;color:var(--t2);border-left:3px solid transparent}
+.ba-box.bef-c{border-left-color:var(--s3)}.ba-box.aft-c{border-left-color:var(--ok)}
+.impact{background:var(--ok-bg);border:1px solid rgba(5,150,105,.08);border-radius:var(--rs);padding:12px;margin-bottom:10px}
+.impact-t{font-size:9px;font-weight:700;color:var(--ok);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.impact-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:11px}
+.impact-k{color:var(--t3)}.impact-v{font-weight:600}
+.risk{background:var(--warn-bg);border:1px solid rgba(180,83,9,.08);border-radius:var(--rs);padding:12px;margin-bottom:14px}
+.risk-t{font-size:9px;font-weight:700;color:var(--warn);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.risk-txt{font-size:10px;color:var(--t2);line-height:1.8}
+.det-acts{display:flex;flex-direction:column;gap:6px}
+.act-p{width:100%;padding:10px;background:var(--brand);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.act-p:hover{background:var(--brand-dk)}
+.act-row{display:flex;gap:6px}
+.act-s{flex:1;padding:9px;background:var(--s);color:var(--t2);border:1px solid var(--b);border-radius:var(--rs);font-size:12px;font-weight:500;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.act-s:hover{background:var(--s2)}
+
+/* === HANDOFF === */
+.ho-tabs{display:flex;border:1px solid var(--b);border-radius:var(--rs);overflow:hidden;margin-bottom:12px}
+.ho-tab{flex:1;padding:9px;text-align:center;font-size:11px;font-weight:500;border:none;background:var(--s);color:var(--t3);transition:all .15s}
+.ho-tab.on{background:var(--brand);color:#fff;font-weight:600}
+.brief{border:1px solid var(--b);border-radius:var(--rs);overflow:hidden;margin-bottom:10px}
+.brief-head{background:var(--s2);padding:10px 12px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:6px}
+.brief-label{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.02em}
+.brief-body{padding:12px}
+.bf-section{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--b-lt)}
+.bf-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.bf-title{font-size:10px;font-weight:700;color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.bf-title .bf-num{width:16px;height:16px;border-radius:3px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--t3);font-family:var(--fe)}
+.bf-c{font-size:10.5px;color:var(--t2);line-height:1.85}
+.bf-c strong{color:var(--t1);font-weight:600}
+.bf-c .tag{display:inline-block;background:var(--brand-50);color:var(--brand);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:500}
+.bf-c .caution{display:inline-block;background:var(--warn-bg);color:var(--warn);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600}
+.bf-c .selector{font-family:var(--fm);font-size:9.5px;background:var(--s2);padding:1px 4px;border-radius:2px}
+.bf-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px}
+.bf-table th{text-align:left;font-weight:600;color:var(--t3);padding:4px 6px;border-bottom:1px solid var(--b);font-size:9px}
+.bf-table td{padding:5px 6px;border-bottom:1px solid var(--b-lt);color:var(--t2);vertical-align:top}
+.bf-table td:first-child{font-weight:500;color:var(--t1);white-space:nowrap}
+.bf-check{list-style:none}
+.bf-check li{font-size:10px;color:var(--t2);padding:3px 0;display:flex;align-items:flex-start;gap:5px}
+.bf-check li::before{content:'';display:block;width:12px;height:12px;border:1.5px solid var(--b);border-radius:2px;flex-shrink:0;margin-top:2px}
+.ho-copy{width:100%;padding:10px;background:var(--brand);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.ho-copy:hover{background:var(--brand-dk)}
+.ho-copy.done{background:var(--ok)}
+/* Gate overlay */
+.gate{position:relative}.gate-blur{filter:blur(3px);opacity:.5;pointer-events:none}
+.gate-cta{background:var(--brand-lt);border:1.5px dashed var(--brand);border-radius:var(--r);padding:14px;text-align:center;margin-top:-20px;position:relative;z-index:2}
+.gate-cta strong{display:block;font-size:12px;font-weight:700;color:var(--brand);margin-bottom:4px}
+.gate-cta span{font-size:10px;color:var(--t2);display:block;margin-bottom:8px;line-height:1.5}
+.gate-btn{display:inline-block;background:var(--brand);color:#fff;border:none;border-radius:var(--rs);padding:8px 20px;font-size:12px;font-weight:600}
+
+/* Nudge */
+.nudge{background:var(--s2);border:1px solid var(--b);border-radius:var(--rs);padding:12px;margin-top:12px;text-align:center}
+.nudge-t{font-size:11px;font-weight:600;margin-bottom:2px}
+.nudge-s{font-size:10px;color:var(--t3);margin-bottom:8px;line-height:1.5}
+.nudge-btn{background:var(--s);color:var(--brand);border:1px solid var(--brand);padding:6px 16px;border-radius:var(--rs);font-size:11px;font-weight:600;transition:all .2s}
+.nudge-btn:hover{background:var(--brand);color:#fff}
+
+/* === EXPERIMENT NOTE === */
+.log-intro{background:var(--s2);border:1px solid var(--b);border-radius:var(--rs);padding:14px;margin-bottom:12px}
+.log-intro-t{font-size:12px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.log-intro-desc{font-size:10.5px;color:var(--t2);line-height:1.7}
+.log-intro-steps{margin-top:8px;display:flex;gap:6px}
+.log-intro-step{flex:1;background:var(--s);border:1px solid var(--b);border-radius:4px;padding:8px 6px;text-align:center}
+.log-intro-step b{display:block;font-size:10px;font-weight:600;margin-bottom:1px}
+.log-intro-step span{font-size:9px;color:var(--t3)}
+.log-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.log-title{font-size:13px;font-weight:700}.log-cnt{font-size:10px;color:var(--t3)}
+.log-e{background:var(--s);border:1px solid var(--b);border-radius:var(--rs);padding:12px;margin-bottom:9px}
+.log-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.log-pg{font-weight:600}.log-dt{color:var(--t3);font-family:var(--fe);font-size:10px}
+.log-desc{font-size:10px;color:var(--t2);margin-bottom:5px}
+.log-auto{background:var(--s2);border-radius:4px;padding:8px 10px;margin-bottom:8px;font-size:10px}
+.log-auto-r{display:flex;justify-content:space-between;padding:2px 0;color:var(--t2)}
+.log-auto-k{color:var(--t3)}.log-auto-v{font-weight:500;color:var(--t1)}
+.log-auto-h{font-size:8px;font-weight:700;color:var(--t3);letter-spacing:.03em;text-transform:uppercase;margin-bottom:2px}
+.log-res{display:flex;align-items:center;gap:6px;padding-top:5px;border-top:1px solid var(--b-lt)}
+.log-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px}
+.log-badge.lv5{background:var(--lv5-bg);color:var(--lv5)}
+.log-badge.lv4{background:var(--lv4-bg);color:var(--lv4)}
+.log-met{font-size:9px;color:var(--t3);font-family:var(--fm)}
+.res-btns{display:flex;gap:3px}
+.res-btn{flex:1;padding:5px 1px;border:1px solid var(--b);border-radius:3px;background:var(--s);font-size:8.5px;text-align:center;color:var(--t3);transition:all .12s;line-height:1.2}
+.res-btn:hover{border-color:var(--t3)}
+.res-btn.sel{color:#fff;border-color:transparent}
+.res-btn.sel.l5{background:var(--lv5)}.res-btn.sel.l4{background:var(--lv4)}
+.res-btn.sel.l3{background:var(--lv3)}.res-btn.sel.l2{background:var(--lv2)}.res-btn.sel.l1{background:var(--lv1)}
+.local-hint{display:flex;align-items:flex-start;gap:6px;padding:8px 10px;background:var(--warn-bg);border:1px solid rgba(180,83,9,.08);border-radius:var(--rs);font-size:9px;color:var(--warn);margin-top:8px;line-height:1.5}
+.moat-hint{padding:8px 10px;background:var(--brand-lt);border:1px solid rgba(45,91,227,.08);border-radius:var(--rs);margin-top:8px;font-size:9px;color:var(--brand);line-height:1.6}
+
+
+/* Empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center}
+.empty-icon{width:48px;height:48px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--t3)}
+.empty-t{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:4px}
+.empty-s{font-size:11px;color:var(--t3);line-height:1.6;max-width:240px}
+/* Metrics input */
+.met-row{display:flex;gap:6px;margin-bottom:8px}
+.met-in{flex:1}
+.met-lbl{font-size:9px;font-weight:600;color:var(--t3);margin-bottom:3px}
+.met-field{display:flex;align-items:center;gap:4px;padding:5px 8px;border:1px solid var(--b);border-radius:4px;background:var(--s);font-size:10px;font-family:var(--fm)}
+.met-field input{border:none;outline:none;width:44px;font-family:var(--fm);font-size:10px;text-align:center;background:none;color:var(--t1)}
+.met-field input::placeholder{color:var(--t3)}
+.met-arrow{color:var(--t3);font-size:10px}
+/* Save button */
+.log-save{width:100%;padding:9px;background:var(--ok);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s}
+.log-save:hover{background:#047857}
+.log-save.saved{background:var(--t3)}
+@media(max-width:900px){.demo{flex-direction:column;height:auto}.browser{display:none}.sp{width:100%}}
+</style>
+</head>
+<body>
+<div class="demo">
+
+<!-- Browser -->
+<div class="browser">
+  <div class="br-bar">
+    <div class="br-dots"><div class="br-dot r"></div><div class="br-dot y"></div><div class="br-dot g"></div></div>
+    <div class="br-url">https://client-a.example.com/lp</div>
+  </div>
+  <div class="br-body">
+    <div class="fp">
+      <h2>TimeTrack — チームの時間を見える化</h2>
+      <p class="sub">プロジェクト管理とタイムトラッキングを一つに。チームの稼働状況をリアルタイムで把握し、生産性を最大化します。</p>
+      <div class="fp-cta">無料で始める</div>
+      <div class="fp-stats">
+        <div class="fp-stat"><b>500+</b><span>導入企業</span></div>
+        <div class="fp-stat"><b>98%</b><span>継続率</span></div>
+        <div class="fp-stat"><b>4.8</b><span>満足度</span></div>
+      </div>
+      <div class="fp-sec"><h3>主な機能</h3><p>リアルタイム稼働ダッシュボード、プロジェクト別レポート、Slack/Teams連携、カスタムアラート設定。チームの生産性向上に必要な機能を網羅。</p></div>
+      <div class="fp-sec"><h3>導入事例</h3><p>A社では導入後3ヶ月で残業時間を30%削減。プロジェクトの見積精度が向上し、利益率が12%改善しました。</p></div>
+      <div class="fp-sec"><h3>料金プラン</h3><p>Starter: ¥980/月/人、Professional: ¥2,480/月/人、Enterprise: お問い合わせ。14日間無料トライアル付き。</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Side Panel -->
+<div class="sp">
+  <div class="sp-head">
+    <div class="sp-brand"><div class="sp-mark">PG</div>Publish Gate <span class="sp-ver">v5.0</span></div>
+  </div>
+  <div class="sp-tabs">
+    <button class="sp-tab on" onclick="go('home',this)">ホーム</button>
+    <button class="sp-tab" onclick="go('det',this)">詳細</button>
+    <button class="sp-tab" onclick="go('ho',this)">依頼パック</button>
+    <button class="sp-tab" onclick="go('log',this)">実験ノート</button>
+  </div>
+  <div class="sp-body">
+
+    <!-- Loading -->
+    <div class="scr" id="s-ld">
+      <div class="ld">
+        <div class="ld-spin"></div>
+        <div class="ld-msg">ページを読み取っています...</div>
+        <div class="ld-step" id="ldStep">構造を解析中</div>
+        <div class="ld-bar"><div class="ld-fill"></div></div>
+        <div class="ld-hint"><span class="ic"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></span> FVテキスト・CTA周辺・見出し構成を丁寧に読み取り、根拠のある提案を生成しています。</div>
+      </div>
+    </div>
+
+    <!-- ═══ HOME ═══ -->
+    <div class="scr on" id="s-home">
+      <button class="scan" id="scanBtn" onclick="doScan()">
+        <span class="ic"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/></svg></span>
+        改善ポイントを見つける
+      </button>
+
+      <div id="results" style="display:none">
+
+        <!-- Reading -->
+        <div class="reading">
+          <div class="reading-title">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span>
+            このページの読み取り
+          </div>
+          <div class="reading-row"><span class="reading-k">ページの役割</span><span class="reading-v">BtoB SaaS 新規獲得LP</span></div>
+          <div class="reading-row"><span class="reading-k">主要CV</span><span class="reading-v">無料トライアル申込</span></div>
+          <div class="reading-row"><span class="reading-k">想定する読み手</span><span class="reading-v">中小企業のPM・チームリーダー</span></div>
+        </div>
+
+        <!-- Insight banner -->
+        <div class="insight">
+          <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></span>
+          <div class="insight-txt">FVの訴求が「サービス説明」に留まり、ターゲットの課題に接続していません。信頼要素と課題共感の追加でCVR改善が見込めます。<span class="insight-src">FVテキスト参照</span></div>
+        </div>
+
+        <!-- Proposals -->
+        <div class="diag">
+          <div class="diag-header">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg></span>
+            3件の改善提案
+          </div>
+
+          <div class="diag-card sev-h" onclick="detail(1)">
+            <div class="diag-meta">
+              <span class="d-layer l1">第1層</span>
+              <span class="d-tag trust">信頼性</span>
+              <span class="d-sev h">影響 大</span>
+            </div>
+            <div class="d-issue">FVのキャッチコピーに導入実績の数値を入れる</div>
+            <div class="d-proposal">
+              <span class="ic"><svg width="10" height="10" fill="none" stroke="var(--brand)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7v14"/></svg></span>
+              導入事例の実績数値をFVコピーに引き上げ、成果訴求型に切り替える
+              <span class="d-arr">›</span>
+            </div>
+          </div>
+
+          <div class="diag-card sev-h" onclick="detail(2)">
+            <div class="diag-meta">
+              <span class="d-layer l2">第2層</span>
+              <span class="d-tag cta">CTA</span>
+              <span class="d-sev h">影響 大</span>
+            </div>
+            <div class="d-issue">CTAボタンのテキストに「14日間無料」と期間を明記する</div>
+            <div class="d-proposal">
+              <span class="ic"><svg width="10" height="10" fill="none" stroke="var(--brand)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7v14"/></svg></span>
+              「14日間、チームで無料トライアル」に変更してリスク軽減を明示する
+              <span class="d-arr">›</span>
+            </div>
+          </div>
+
+          <div class="diag-card sev-m" onclick="detail(3)">
+            <div class="diag-meta">
+              <span class="d-layer l1">第1層</span>
+              <span class="d-tag structure">構成</span>
+              <span class="d-sev m">影響 中</span>
+            </div>
+            <div class="d-issue">導入実績の数値をFV直下にバッジとして配置する</div>
+            <div class="d-proposal">
+              <span class="ic"><svg width="10" height="10" fill="none" stroke="var(--brand)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7v14"/></svg></span>
+              成果数値をFV直下にバッジとして配置し、スクロール前に見せる
+              <span class="d-arr">›</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer0-hint">
+          <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>
+          アカウント作成で依頼パックのコピー＆共有が可能に →
+        </div>
+        <div class="remain">今日の残り: あと2回 / 3回</div>
+      </div>
+    </div>
+
+
+    <!-- ═══ DETAIL ═══ -->
+    <div class="scr" id="s-det">
+      <!-- Empty state (before scan) -->
+      <div id="det-empty" class="empty">
+        <div class="empty-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M11 8v3m0 3h.01"/></svg>
+        </div>
+        <div class="empty-t">まだ分析されていません</div>
+        <div class="empty-s">ホームタブから「改善ポイントを見つける」を実行し、提案カードをクリックすると詳細が表示されます。</div>
+      </div>
+      <!-- Detail content (hidden until proposal clicked) -->
+      <div id="det-content" style="display:none">
+      <button class="det-back" onclick="go('home')">
+        <span class="ic"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5m7-7l-7 7 7 7"/></svg></span>
+        分析結果にもどる
+      </button>
+
+      <div class="det-h">
+        <div class="det-meta">
+          <span class="det-pri p1" id="dPri">P1</span>
+          <span class="d-layer l1" id="dLayer">第1層</span>
+          <span class="d-tag trust" id="dTag">信頼性</span>
+        </div>
+        <div class="det-title" id="dTitle">FVのキャッチコピーに導入実績の数値を入れる</div>
+      </div>
+
+      <!-- Page Role & Business Context -->
+      <div class="reading" style="margin-top:0;margin-bottom:12px" id="dContext">
+        <div class="reading-title">
+          <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></span>
+          このページのあるべき姿
+        </div>
+        <div id="dContextBody">
+          <div class="reading-row"><span class="reading-k">事業における役割</span><span class="reading-v" id="dRole">新規見込み客の獲得入口</span></div>
+          <div class="reading-row"><span class="reading-k">独自の強み</span><span class="reading-v" id="dStrength">導入500社・残業30%削減の実績</span></div>
+          <div class="reading-row"><span class="reading-k">改善対象の本来の役割</span><span class="reading-v" id="dIdeal">FVで「使うとどうなるか」を伝え、スクロールを促す</span></div>
+        </div>
+      </div>
+
+      <div class="chain" id="dChain"></div>
+
+      <div class="ba"><div class="ba-lbl bef"><span class="ic"><svg width="10" height="10" fill="none" stroke="var(--t3)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span>Before</div><div class="ba-box bef-c" id="dBef"></div></div>
+      <div class="ba"><div class="ba-lbl aft"><span class="ic"><svg width="10" height="10" fill="none" stroke="var(--ok)" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>After</div><div class="ba-box aft-c" id="dAft"></div></div>
+
+      <div class="impact" id="dImpact"></div>
+      <div class="risk" id="dRisk"></div>
+
+      <div class="det-acts">
+        <button class="act-p" onclick="go('ho')">
+          <span class="ic"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8m8 4H8m2-8H8"/></svg></span>
+          依頼パックを作る
+        </button>
+        <div class="act-row">
+          <button class="act-s" onclick="alert('プレビュー（デモでは省略）')">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            プレビュー
+          </button>
+          <button class="act-s" onclick="go('log')">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></span>
+            結果を記録
+          </button>
+        </div>
+      </div>
+      </div><!-- /det-content -->
+    </div>
+
+    <!-- ═══ HANDOFF PACK ═══ -->
+    <div class="scr" id="s-ho">
+      <button class="det-back" onclick="go('det')">
+        <span class="ic"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5m7-7l-7 7 7 7"/></svg></span>
+        提案にもどる
+      </button>
+      <div style="font-size:14px;font-weight:700;margin-bottom:2px">依頼パック</div>
+      <div style="font-size:10px;color:var(--t3);margin-bottom:12px" id="hoT">FVの訴求を成果訴求型に切り替える</div>
+
+      <div class="ho-tabs">
+        <button class="ho-tab on" onclick="hoTab('d',this)">デザイナー向け</button>
+        <button class="ho-tab" onclick="hoTab('e',this)">エンジニア向け</button>
+      </div>
+
+      <!-- Designer Brief -->
+      <div id="ho-d">
+        <div class="brief">
+          <div class="brief-head">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="var(--t2)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+            <span class="brief-label">デザイナー向け依頼書</span>
+          </div>
+          <div class="brief-body">
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">1</span> 変更の目的</div>
+              <div class="bf-c">FVのキャッチコピーを<strong>機能説明型から成果訴求型に変更</strong>します。読み手（中小企業のPM層）が「自分のチームにどんな効果があるか」をFVだけで理解できるようにします。</div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">2</span> コピーの変更内容</div>
+              <div class="bf-c">
+                <table class="bf-table">
+                  <tr><th>対象</th><th>Before</th><th>After</th></tr>
+                  <tr><td>メインコピー</td><td>チームの時間を見える化</td><td>チームの残業を30%減らす方法、見つかります</td></tr>
+                  <tr><td>サブコピー</td><td>プロジェクト管理とタイムトラッキングを一つに</td><td>導入3ヶ月で利益率12%改善 — まずは14日間、無料で</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">3</span> トーンと表現の方針</div>
+              <div class="bf-c">
+                <span class="tag">トーン</span> 信頼感と具体性を重視。数字を文頭に置いて視線を引く。<br>
+                <span class="tag">フォント</span> 既存のウェイトを維持。数字部分のみ太字を推奨。<br>
+                <span class="tag">レイアウト</span> SP 375pxで1行に収まるよう調整。改行位置にも配慮をお願いします。
+              </div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">4</span> 確認事項</div>
+              <div class="bf-c">
+                <span class="caution">要確認</span> 数値「30%」「12%」は導入事例からの引用。最新実績をマーケ担当に確認。<br>
+                <span class="caution">禁止</span> 「業界No.1」等、根拠のない最上級表現は使用不可。
+              </div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">5</span> 納品前チェックリスト</div>
+              <ul class="bf-check">
+                <li>メインコピーがSP 375px表示で1行に収まっている</li>
+                <li>数値の強調がページ全体のデザインと調和している</li>
+                <li>OGP画像のテキストに更新が必要か確認した</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div id="gateArea">
+          <div class="gate-cta">
+            <strong><span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span> この品質の指示書をワンクリックで生成</strong>
+            <span>無料アカウント作成でコピー＆共有が可能に</span>
+            <button class="gate-btn" onclick="unlockGate()">無料アカウントを作成</button>
+          </div>
+        </div>
+        <div id="copyArea" style="display:none">
+          <button class="ho-copy" onclick="copyH(this)">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span>
+            この依頼書をコピー
+          </button>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button class="act-s" style="flex:1" onclick="alert('共有リンク生成（デモ）')"><span class="ic"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span> 共有リンク</button>
+            <button class="act-s" style="flex:1" onclick="alert('PDF出力（デモ）')"><span class="ic"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3"/></svg></span> PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engineer Brief -->
+      <div id="ho-e" style="display:none">
+        <div class="brief">
+          <div class="brief-head">
+            <span class="ic"><svg width="13" height="13" fill="none" stroke="var(--t2)" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+            <span class="brief-label">エンジニア向け依頼書</span>
+          </div>
+          <div class="brief-body">
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">1</span> 変更の概要</div>
+              <div class="bf-c">FVセクションのテキスト2箇所を差し替えます。DOM構造やレイアウトの変更はありません。</div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">2</span> 変更箇所</div>
+              <div class="bf-c">
+                <table class="bf-table">
+                  <tr><th>セレクタ</th><th>Before</th><th>After</th></tr>
+                  <tr><td><span class="selector">.hero h2</span></td><td>チームの時間を見える化</td><td>チームの残業を30%減らす方法、見つかります</td></tr>
+                  <tr><td><span class="selector">.hero .subtitle</span></td><td>プロジェクト管理とタイムトラッキングを一つに</td><td>導入3ヶ月で利益率12%改善 — まずは14日間、無料で</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">3</span> テスト要件</div>
+              <ul class="bf-check">
+                <li>変更後のテキストが正しく表示される（PC / SP）</li>
+                <li>既存のCSS・JSに影響がないこと</li>
+                <li>GA4 イベント hero_cta_click が引き続き発火すること</li>
+              </ul>
+            </div>
+            <div class="bf-section">
+              <div class="bf-title"><span class="bf-num">4</span> 計測設定</div>
+              <div class="bf-c">GA4イベント <span class="selector">hero_cta_click</span> のCTR変化を<strong>2週間計測</strong>。計測開始日をデプロイ日とする。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nudge">
+        <div class="nudge-t"><span class="ic"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span> 施策を実行したら結果を記録</div>
+        <div class="nudge-s">結果を残すと、次の提案精度が向上します</div>
+        <button class="nudge-btn" onclick="go('log')">実験ノートへ</button>
+      </div>
+    </div>
+
+    <!-- ═══ EXPERIMENT NOTE ═══ -->
+    <div class="scr" id="s-log">
+      <div class="log-intro">
+        <div class="log-intro-t">
+          <span class="ic"><svg width="14" height="14" fill="none" stroke="var(--t1)" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+          実験ノートとは
+        </div>
+        <div class="log-intro-desc">施策のBefore/After・カテゴリ・結果を自動記録するノート。10件溜まると「信頼性カテゴリのFV改善が2回成功」等のパターンが次の提案に反映されます。</div>
+        <div class="log-intro-steps">
+          <div class="log-intro-step"><b>施策を実行</b><span>依頼パックで渡す</span></div>
+          <div class="log-intro-step"><b>結果を記録</b><span>2タップで完了</span></div>
+          <div class="log-intro-step"><b>AIが学習</b><span>次の提案に反映</span></div>
+        </div>
+      </div>
+
+      <div class="log-h"><div class="log-title">記録一覧</div><div class="log-cnt">3件</div></div>
+
+      <div class="log-e" style="border-style:dashed">
+        <div class="log-top"><span class="log-pg">client-a.com/lp</span><span class="log-dt">2026-03-04</span></div>
+        <div class="log-desc">FVのコピーを成果数値型に変更した</div>
+        <div class="log-auto">
+          <div class="log-auto-h">自動記録（AI生成済み）</div>
+          <div class="log-auto-r"><span class="log-auto-k">カテゴリ</span><span class="log-auto-v">信頼性</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">Before</span><span class="log-auto-v">「チームの時間を見える化」</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">After</span><span class="log-auto-v">「残業30%削減・利益率12%改善」</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">セレクタ</span><span class="log-auto-v" style="font-family:var(--fm);font-size:9px">.hero h2</span></div>
+        </div>
+        <div style="margin-top:6px;font-size:9px;color:var(--t3);margin-bottom:4px">この施策の結果はどうでしたか？</div>
+        <div style="display:flex;gap:4px;margin-bottom:6px">
+          <button class="res-btn" onclick="selR(this,'l5')" style="flex:1;padding:6px 2px"><span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></span><br><span style="font-size:8px">実行した</span></button>
+          <button class="res-btn" onclick="selR(this,'l3')" style="flex:1;padding:6px 2px"><span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span><br><span style="font-size:8px">保留中</span></button>
+          <button class="res-btn" onclick="selR(this,'l1')" style="flex:1;padding:6px 2px"><span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span><br><span style="font-size:8px">見送り</span></button>
+        </div>
+        <div class="res-btns">
+          <button class="res-btn" onclick="selR(this,'l5')">大きく<br>改善</button>
+          <button class="res-btn" onclick="selR(this,'l4')">やや<br>改善</button>
+          <button class="res-btn" onclick="selR(this,'l3')">変化<br>なし</button>
+          <button class="res-btn" onclick="selR(this,'l2')">やや<br>悪化</button>
+          <button class="res-btn" onclick="selR(this,'l1')">大きく<br>悪化</button>
+        </div>
+      </div>
+
+      <div class="log-e">
+        <div class="log-top"><span class="log-pg">client-a.com/lp</span><span class="log-dt">2026-02-28</span></div>
+        <div class="log-desc">CTAのテキストを「14日間無料で試す」に変更した</div>
+        <div class="log-auto">
+          <div class="log-auto-h">自動記録（AI生成済み）</div>
+          <div class="log-auto-r"><span class="log-auto-k">カテゴリ</span><span class="log-auto-v">CTA</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">Before</span><span class="log-auto-v">「無料で始める」</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">After</span><span class="log-auto-v">「14日間、チームで無料トライアル」</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">セレクタ</span><span class="log-auto-v" style="font-family:var(--fm);font-size:9px">.hero .cta-btn</span></div>
+        </div>
+        <div class="log-res">
+          <span class="log-badge lv5">効果あり</span>
+          <span class="log-met">CTR 1.2% → 2.8%</span>
+          <span style="font-size:8px;color:var(--t3);font-style:italic;margin-left:auto">手入力</span>
+        </div>
+      </div>
+
+      <div class="log-e">
+        <div class="log-top"><span class="log-pg">service.example.com</span><span class="log-dt">2026-02-25</span></div>
+        <div class="log-desc">導入事例セクションをFV直下に移動した</div>
+        <div class="log-auto">
+          <div class="log-auto-h">自動記録（AI生成済み）</div>
+          <div class="log-auto-r"><span class="log-auto-k">カテゴリ</span><span class="log-auto-v">構成</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">Before</span><span class="log-auto-v">FV→機能→事例→CTA</span></div>
+          <div class="log-auto-r"><span class="log-auto-k">After</span><span class="log-auto-v">FV→事例→機能→CTA</span></div>
+        </div>
+        <div class="log-res">
+          <span class="log-badge lv4">やや改善</span>
+          <span class="log-met">直帰率 68% → 61%</span>
+          <span style="font-size:8px;color:var(--t3);font-style:italic;margin-left:auto">手入力</span>
+        </div>
+      </div>
+
+      <div class="moat-hint"><span class="ic"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></span> この結果はAIの学習に使われます。10件溜まると「信頼性カテゴリのFV数値追加が2回成功」等のパターンが次の提案に反映されます。これがPublish Gateの複利構造です。</div>
+
+      <div class="local-hint">
+        <span class="ic" style="margin-top:1px"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>
+        この端末に保存中です。アカウントをつくるとサーバーに保存され、AIの学習精度がさらに向上します。
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const D={
+  1:{pri:'P1',priClass:'p1',layer:'第1層',layerClass:'l1',tag:'trust',tagLabel:'信頼性',
+    title:'FVのキャッチコピーに導入実績の数値を入れる',
+    role:'新規見込み客の獲得入口（認知→試用の転換点）',
+    strength:'導入500社・残業30%削減・利益率12%改善の定量実績',
+    ideal:'FVで「使うとどうなるか」を伝え、スクロール・CTA到達を促す',
+    chain:[
+      {dot:'c-obs',lbl:'現状の観測',lblC:'l-obs',
+        text:'FVのメインコピーは<strong>「チームの時間を見える化」</strong>、サブコピーは<strong>「プロジェクト管理とタイムトラッキングを一つに」</strong>。いずれも機能の名前を述べているだけで、導入後の成果への言及がありません。',
+        src:'s-fv',srcL:'FVテキスト'},
+      {dot:'c-bench',lbl:'業界の傾向',lblC:'l-bench',
+        text:'BtoB SaaS LPのCVR上位群では、<strong>83%がFVに導入後の成果数値を掲載</strong>しています。機能名だけのFVを持つLPのCVR中央値は1.2%、成果訴求型は2.8%です。',
+        src:'s-mkt',srcL:'業界データ'},
+      {dot:'c-gap',lbl:'ギャップ',lblC:'l-gap',
+        text:'このページは上位群の83%が取り入れている「FVでの成果訴求」を<strong>満たしていません</strong>。導入事例に「残業30%削減」「利益率12%改善」があるにも関わらず、FVに活用されていません。',
+        src:'s-page',srcL:'ページ構造'},
+      {dot:'c-hypo',lbl:'推定される要因',lblC:'l-hypo',
+        text:'「何ができるか」は伝わっていますが「使うとどうなるか」が伝わっていないため、ターゲットが自分ごとに感じられず、CTAに到達する前に離脱している可能性があります。',
+        src:'s-est',srcL:'推定'}
+    ],
+    bef:'「チームの時間を見える化」「プロジェクト管理とタイムトラッキングを一つに」 — 機能説明のみで成果が不在。',
+    aft:'「チームの残業を30%減らす方法、見つかります」「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」 — 導入事例の実績をFVに引き上げ。',
+    impact:{kpi:'FVからCTAへの到達率',est:'+30〜80%（上位群の実績レンジ）',period:'14日間',conf:'高い — 上位群の再現パターン'},
+    risk:'数値「30%」「12%」は導入事例セクションからの引用です。最新の実績をマーケ担当に確認してください。\n「業界No.1」等の根拠のない最上級表現は使わないでください。'
+  },
+  2:{pri:'P1',priClass:'p1',layer:'第2層',layerClass:'l2',tag:'cta',tagLabel:'CTA',
+    title:'CTAボタンのテキストに「14日間無料」と期間を明記する',
+    role:'新規見込み客の獲得入口（認知→試用の転換点）',
+    strength:'14日間の無料トライアルとチーム単位での導入体験',
+    ideal:'CTAで「何が起きるか」を具体的に伝え、心理的ハードルを下げる',
+    chain:[
+      {dot:'c-obs',lbl:'現状の観測',lblC:'l-obs',
+        text:'CTAのテキストは<strong>「無料で始める」</strong>。ボタン周辺200文字を確認したところ、所要時間の説明やリスク軽減の表現が一切ありません。',
+        src:'s-fv',srcL:'CTA周辺テキスト'},
+      {dot:'c-bench',lbl:'業界の傾向',lblC:'l-bench',
+        text:'「期間＋無料」型のCTA（例：14日間無料で試す）は、汎用型CTAと比べてクリック率の中央値が<strong>2.1倍</strong>。行動の具体性がクリック率に直結しています。',
+        src:'s-mkt',srcL:'業界データ'},
+      {dot:'c-gap',lbl:'ギャップ',lblC:'l-gap',
+        text:'クリック後の体験（14日間の無料トライアル）がCTAの文言に反映されておらず、読み手は<strong>何にコミットするのかがわからない状態</strong>です。',
+        src:'',srcL:''},
+      {dot:'c-hypo',lbl:'推定される要因',lblC:'l-hypo',
+        text:'「始める」という曖昧な表現が心理的ハードルを上げている。期間と対象（チーム）を明示することで、リスクの低さと利用イメージを同時に伝えられます。',
+        src:'s-est',srcL:'推定'}
+    ],
+    bef:'「無料で始める」 — 何が起きるかわからない汎用的な表現。周辺にリスク軽減の情報なし。',
+    aft:'「14日間、チームで無料トライアル」 — 期間を明示してリスクを下げ、「チームで」で組織利用のイメージを喚起。',
+    impact:{kpi:'CTAクリック率',est:'+80〜120%（業界調査の中央値ベース）',period:'14日間',conf:'高い — A/Bテストの事例が多い'},
+    risk:'「14日間」が料金セクションに記載されたトライアル期間と一致しているか確認してください。\nボタンの文字数が増えるため、ボタンサイズの調整が必要になる可能性があります。'
+  },
+  3:{pri:'P2',priClass:'p2',layer:'第1層',layerClass:'l1',tag:'structure',tagLabel:'構成',
+    title:'導入実績の数値をFV直下にバッジとして配置する',
+    role:'新規見込み客の獲得入口（認知→試用の転換点）',
+    strength:'具体的な成果数値（残業30%削減・利益率12%改善）が既に存在する',
+    ideal:'FV直下で信頼性を証明し、機能詳細へのスクロールを動機づける',
+    chain:[
+      {dot:'c-obs',lbl:'現状の観測',lblC:'l-obs',
+        text:'FVの次が<strong>「主な機能」セクション</strong>で機能の羅列。h2直下の段落も「リアルタイム稼働ダッシュボード、プロジェクト別レポート…」と機能名が続きます。ターゲットの課題に先に触れる構成になっていません。',
+        src:'s-page',srcL:'ページ構造'},
+      {dot:'c-bench',lbl:'業界の傾向',lblC:'l-bench',
+        text:'訪問者の<strong>50%以上がFV内で離脱</strong>します。FV直下が課題共感セクションのLPは、機能羅列型と比べてスクロール継続率が約1.4倍高い傾向があります。',
+        src:'s-mkt',srcL:'業界データ'},
+      {dot:'c-gap',lbl:'ギャップ',lblC:'l-gap',
+        text:'「残業30%削減」「利益率12%改善」という強力な実績数値がページ中盤に埋もれており、<strong>素材はあるが配置が最適でない</strong>状態です。',
+        src:'s-page',srcL:'ページ構造'},
+      {dot:'c-hypo',lbl:'推定される要因',lblC:'l-hypo',
+        text:'成果数値をFV直下にバッジとして配置すれば、スクロール前に信頼性を訴求でき、CTA到達率の改善が見込めます。',
+        src:'s-est',srcL:'推定'}
+    ],
+    bef:'FV→機能紹介→導入事例→料金→CTA。実績数値がページ中盤に埋没。',
+    aft:'FV直下に「残業30%削減」「利益率12%改善」「3ヶ月で効果実感」をバッジ配置。スクロール前に信頼性を見せる。',
+    impact:{kpi:'FVのスクロール継続率',est:'+15〜30%',period:'14日間',conf:'中程度 — 前後コンテンツに依存'},
+    risk:'既存の導入事例セクションとの内容重複に注意してください。\nバッジのデザインがFVのコピーと競合しないよう、視覚的な優先度を調整する必要があります。'
+  }
+};
+
+// SVG icons for chain dots
+const chainIcons={
+  'c-obs':'<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  'c-bench':'<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10m-6 10V4M6 20v-6"/></svg>',
+  'c-gap':'<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  'c-hypo':'<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>'
+};
+
+function go(id,btn){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  const t=document.getElementById('s-'+id);if(t)t.classList.add('on');
+  document.querySelectorAll('.sp-tab').forEach(t=>t.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  else{const map={home:'ホーム',det:'詳細',ho:'依頼パック',log:'実験ノート'};
+    document.querySelectorAll('.sp-tab').forEach(t=>{if(t.textContent===map[id])t.classList.add('on')})}
+}
+
+function doScan(){
+  document.getElementById('results').style.display='none';go('ld');
+  const steps=['構造を解析中','FVテキストを抽出中','CTA周辺コピーを読み取り中','見出し下の段落を解析中','業界傾向と比較中','改善案を生成中...'];
+  let i=0;const el=document.getElementById('ldStep');
+  const iv=setInterval(()=>{i++;if(i<steps.length){el.textContent=steps[i]}
+    else{clearInterval(iv);go('home');document.getElementById('results').style.display='block';document.getElementById('scanBtn').style.display='none'}},460);
+}
+
+function detail(id){
+  const d=D[id];
+  document.getElementById('det-empty').style.display='none';
+  document.getElementById('det-content').style.display='block';
+  document.getElementById('dPri').textContent=d.pri;
+  document.getElementById('dPri').className='det-pri '+d.priClass;
+  document.getElementById('dLayer').textContent=d.layer;
+  document.getElementById('dLayer').className='d-layer '+d.layerClass;
+  document.getElementById('dTag').textContent=d.tagLabel;
+  document.getElementById('dTag').className='d-tag '+d.tag;
+  document.getElementById('dTitle').textContent=d.title;
+
+  // Context
+  document.getElementById('dRole').textContent=d.role;
+  document.getElementById('dStrength').textContent=d.strength;
+  document.getElementById('dIdeal').textContent=d.ideal;
+
+  const ch=document.getElementById('dChain');
+  ch.innerHTML=d.chain.map(c=>`
+    <div class="chain-step">
+      <div class="chain-dot ${c.dot}">${chainIcons[c.dot]}</div>
+      <div class="chain-bd">
+        <div class="chain-lbl ${c.lblC}">${c.lbl}</div>
+        <div class="chain-txt">${c.text}${c.src?` <span class="chain-src ${c.src}">${c.srcL}</span>`:''}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dBef').textContent=d.bef;
+  document.getElementById('dAft').textContent=d.aft;
+
+  document.getElementById('dImpact').innerHTML=`
+    <div class="impact-t"><span class="ic"><svg width="10" height="10" fill="none" stroke="var(--ok)" stroke-width="2" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/></svg></span>期待できる効果</div>
+    <div class="impact-grid">
+      <span class="impact-k">主なKPI</span><span class="impact-v">${d.impact.kpi}</span>
+      <span class="impact-k">期待される改善幅</span><span class="impact-v">${d.impact.est}</span>
+      <span class="impact-k">観測期間</span><span class="impact-v">${d.impact.period}</span>
+      <span class="impact-k">確からしさ</span><span class="impact-v" style="color:var(--ok)">${d.impact.conf}</span>
+    </div>`;
+
+  document.getElementById('dRisk').innerHTML=`
+    <div class="risk-t"><span class="ic"><svg width="10" height="10" fill="none" stroke="var(--warn)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>注意すべきこと</div>
+    <div class="risk-txt">${d.risk.replace(/\n/g,'<br>')}</div>`;
+
+  document.getElementById('hoT').textContent=d.title;
+  go('det');
+}
+
+function hoTab(t,btn){
+  document.querySelectorAll('.ho-tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  document.getElementById('ho-d').style.display=t==='d'?'block':'none';
+  document.getElementById('ho-e').style.display=t==='e'?'block':'none';
+}
+
+function unlockGate(){
+  document.getElementById('gateArea').style.display='none';
+  document.getElementById('copyArea').style.display='block';
+}
+
+function copyH(btn){
+  const orig=btn.innerHTML;
+  btn.innerHTML='<span class="ic"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>コピーしました';
+  btn.classList.add('done');
+  setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('done')},1500);
+}
+
+function selR(btn,lv){btn.parentElement.querySelectorAll('.res-btn').forEach(b=>{b.classList.remove('sel');b.className=b.className.replace(/l[1-5]/g,'')});btn.classList.add('sel',lv)}
+
+function saveLog(btn){
+  const orig=btn.innerHTML;
+  btn.innerHTML='<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 保存しました';
+  btn.classList.add('saved');
+  btn.disabled=true;
+  setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('saved');btn.disabled=false},2000);
+}
+</script>
+</body>
+</html>

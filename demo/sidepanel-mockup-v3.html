@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Gate v3.0 — Side Panel Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 32px 16px;
+  gap: 24px;
+}
+
+/* Phone frame */
+.device-frame {
+  width: 380px;
+  min-height: 700px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.device-label {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.device-sublabel {
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 12px;
+}
+
+/* --- Variables --- */
+:root {
+  --bg: #fafafa;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f5f5;
+  --bg-subtle: #f0f0f0;
+  --text1: #1a1a1a;
+  --text2: #666;
+  --text3: #999;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --accent-trust: #059669;
+  --accent-cta: #d97706;
+  --accent-copy: #7c3aed;
+  --accent-structure: #0891b2;
+  --success: #059669;
+  --success-light: #ecfdf5;
+  --warning: #d97706;
+  --warning-light: #fffbeb;
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --neutral: #6b7280;
+  --neutral-light: #f9fafb;
+  --border: #e5e5e5;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.header-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.header-right {
+  display: flex;
+  gap: 4px;
+}
+
+.header-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.header-btn:hover { background: var(--bg-hover); }
+
+/* Screen body */
+.screen-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  font-family: inherit;
+}
+
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-outline { background: #fff; color: var(--text1); border-color: var(--border); }
+.btn-outline:hover { border-color: #ccc; background: var(--bg-hover); }
+.btn-lg { padding: 12px 24px; font-size: 15px; border-radius: var(--radius-lg); }
+.btn-sm { padding: 4px 12px; font-size: 12px; width: auto; }
+.btn-icon { font-size: 16px; }
+
+/* Rate info */
+.rate-info {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Estimation card */
+.estimation-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.estimation-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.estimation-icon { font-size: 24px; flex-shrink: 0; }
+
+.estimation-meta { flex: 1; min-width: 0; }
+
+.estimation-role {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.estimation-company {
+  font-size: 12px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.confidence-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.confidence-high { background: var(--success-light); color: var(--success); }
+.confidence-medium { background: var(--warning-light); color: var(--warning); }
+
+.estimation-cv {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--bg-subtle);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.estimation-cv-label { font-weight: 600; }
+
+/* Proposal cards */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+
+.proposal-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.proposal-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.proposal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.proposal-priority {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.proposal-category {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.category-trust { background: #ecfdf5; color: var(--accent-trust); }
+.category-cta { background: #fffbeb; color: var(--accent-cta); }
+.category-copy { background: #f5f3ff; color: var(--accent-copy); }
+.category-structure { background: #ecfeff; color: var(--accent-structure); }
+
+.impact-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.impact-large { background: var(--success-light); color: var(--success); }
+.impact-medium { background: var(--warning-light); color: var(--warning); }
+
+.proposal-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.proposal-issue {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.proposal-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 16px;
+}
+
+/* Detail */
+.detail-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.diff-block {
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.diff-before { background: var(--danger-light); border-left: 3px solid var(--danger); }
+.diff-after { background: var(--success-light); border-left: 3px solid var(--success); }
+
+.evidence-block {
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.handoff-blocked {
+  text-align: center;
+  padding: 12px;
+  background: var(--warning-light);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--warning);
+  margin-top: 8px;
+}
+
+.handoff-blocked a { color: var(--primary); font-weight: 600; text-decoration: none; }
+
+/* Handoff preview */
+.handoff-preview {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.handoff-preview-header {
+  padding: 10px 16px;
+  background: var(--bg-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.handoff-preview-body {
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--text2);
+  white-space: pre-wrap;
+}
+
+/* Log */
+.log-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.log-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.log-card-domain { font-size: 13px; font-weight: 600; }
+.log-card-date { font-size: 11px; color: var(--text3); }
+
+.log-card-proposals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.log-card-proposal {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--text2);
+}
+
+.log-card-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.result-effective { background: var(--success-light); color: var(--success); }
+.result-no_effect { background: var(--neutral-light); color: var(--neutral); }
+
+.result-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.result-btn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.result-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Layer hint */
+.layer-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--primary-light);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.layer-hint-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Compare labels */
+.compare-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.compare-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text1);
+}
+
+.compare-header p {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.compare-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  body { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="compare-header">
+    <h1>Publish Gate v3.0 — Side Panel UI</h1>
+    <p>再設計: 7画面 → 3画面 / PASS/FAIL廃止 / 依頼パック主機能 / ラボノート型ログ</p>
+  </div>
+
+  <div class="compare-row">
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- SCREEN 1: HOME (after scan) -->
+    <!-- ════════════════════════════════════════ -->
+    <div>
+      <div class="device-label">① HOME</div>
+      <div class="device-sublabel">分析結果 + 提案カード×3</div>
+      <div class="device-frame">
+        <header class="header">
+          <div class="header-left">
+            <span class="header-logo">PG</span>
+            <span class="header-title">Publish Gate</span>
+          </div>
+          <div class="header-right">
+            <button class="header-btn">📋</button>
+            <button class="header-btn">⚙</button>
+          </div>
+        </header>
+
+        <div class="screen-body">
+          <button class="btn btn-primary btn-lg">
+            <span class="btn-icon">📈</span>
+            <span>改善ポイントを見つける</span>
+          </button>
+          <div class="rate-info">残り 2/3 回（今日）</div>
+
+          <!-- Estimation card -->
+          <div class="estimation-card">
+            <div class="estimation-header">
+              <span class="estimation-icon">🎯</span>
+              <div class="estimation-meta">
+                <div class="estimation-role">獲得LP</div>
+                <div class="estimation-company">クラウド勤怠管理システム TimeTrack</div>
+              </div>
+              <span class="confidence-badge confidence-high">high</span>
+            </div>
+            <div class="estimation-cv">
+              <span class="estimation-cv-label">主要CV:</span>
+              無料トライアル申し込み
+            </div>
+          </div>
+
+          <!-- Proposals -->
+          <div class="section-label">改善提案 3件</div>
+
+          <div class="proposal-card">
+            <div class="proposal-card-header">
+              <span class="proposal-priority">#1</span>
+              <span class="proposal-category category-copy">コピー</span>
+              <span class="impact-badge impact-large">効果大</span>
+            </div>
+            <div class="proposal-title">FVの訴求を「ラクになる」から具体的数値に変更</div>
+            <div class="proposal-issue">「ラクになります」は抽象的で差別化できない。導入企業の具体的成果を訴求すべき。</div>
+            <span class="proposal-arrow">›</span>
+          </div>
+
+          <div class="proposal-card">
+            <div class="proposal-card-header">
+              <span class="proposal-priority">#2</span>
+              <span class="proposal-category category-cta">CTA</span>
+              <span class="impact-badge impact-medium">効果中</span>
+            </div>
+            <div class="proposal-title">CTAボタンの文言を行動ハードルの低い表現に</div>
+            <div class="proposal-issue">「無料で試してみる」は良いが、横の「資料ダウンロード」と競合しCTA焦点がぼやけている。</div>
+            <span class="proposal-arrow">›</span>
+          </div>
+
+          <div class="proposal-card">
+            <div class="proposal-card-header">
+              <span class="proposal-priority">#3</span>
+              <span class="proposal-category category-trust">信頼性</span>
+              <span class="impact-badge impact-medium">効果中</span>
+            </div>
+            <div class="proposal-title">「1,000社以上」の実績をFV上部に移動＋ロゴ追加</div>
+            <div class="proposal-issue">社会的証明がFV下部で視認性が低い。3秒以内に目に入る位置への配置が必要。</div>
+            <span class="proposal-arrow">›</span>
+          </div>
+
+          <div class="layer-hint">
+            <span>💡 アカウント作成で依頼パックのコピーが可能に</span>
+            <a href="#" class="layer-hint-link">→</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- SCREEN 2: DETAIL -->
+    <!-- ════════════════════════════════════════ -->
+    <div>
+      <div class="device-label">② DETAIL</div>
+      <div class="device-sublabel">Before/After + 根拠 + 依頼パック</div>
+      <div class="device-frame">
+        <header class="header">
+          <div class="header-left">
+            <span class="header-logo">PG</span>
+            <span class="header-title">Publish Gate</span>
+          </div>
+          <div class="header-right">
+            <button class="header-btn">📋</button>
+            <button class="header-btn">⚙</button>
+          </div>
+        </header>
+
+        <div class="screen-header">
+          <button class="back-btn">← 戻る</button>
+          <span>提案詳細</span>
+        </div>
+
+        <div class="screen-body">
+          <div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+              <span class="proposal-category category-copy">コピー</span>
+              <span class="confidence-badge confidence-high">確度: high</span>
+            </div>
+            <h3 style="font-size:16px;font-weight:700;line-height:1.4;margin-bottom:4px;">FVの訴求を「ラクになる」から具体的数値に変更</h3>
+            <p style="font-size:13px;color:var(--text2);line-height:1.5;">「ラクになります」は抽象的で差別化できない。導入企業の具体的成果を訴求すべき。</p>
+          </div>
+
+          <div>
+            <div class="detail-label">Before</div>
+            <div class="diff-block diff-before">TimeTrackなら面倒な勤怠管理がラクになります。中小企業に選ばれています。</div>
+          </div>
+
+          <div>
+            <div class="detail-label">After</div>
+            <div class="diff-block diff-after">導入企業の87%が勤怠管理の工数を50%削減。1,200社が選んだクラウド勤怠管理。</div>
+          </div>
+
+          <div>
+            <div class="detail-label">根拠</div>
+            <div class="evidence-block">BtoBのLP訴求では、具体的な数値（%削減、導入社数）が抽象的な表現より2-3倍のCTR改善につながる調査結果がある。FVで最も目立つテキストに具体的成果を配置することで、3秒以内に「自分に関係ある」と判断させる。</div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-primary">📋 依頼パックを作る</button>
+            <button class="btn btn-outline">👁 プレビューで確認</button>
+          </div>
+
+          <!-- L0 gate -->
+          <div class="handoff-blocked">
+            依頼パックは表示できますが、コピーには<a href="#">アカウント作成</a>が必要です
+          </div>
+
+          <!-- Handoff preview -->
+          <div class="handoff-preview">
+            <div class="handoff-preview-header">
+              <span>📋 依頼パック</span>
+              <button class="btn btn-sm btn-outline" style="opacity:0.5;cursor:not-allowed;">🔒 コピー</button>
+            </div>
+            <div class="handoff-preview-body"># 実装依頼パック
+
+## 目的
+FVの主訴求を抽象的な表現から具体的数値に変更し、CVR改善を図る
+
+## 変更一覧
+
+### 変更1: #hero > p
+- タイプ: text
+- Before: TimeTrackなら面倒な勤怠管理がラクになります。
+- After: 導入企業の87%が勤怠管理の工数を50%削減。
+- QA: レスポンシブ表示確認、文字数によるはみ出し確認</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- SCREEN 3: LOG (Lab Notebook) -->
+    <!-- ════════════════════════════════════════ -->
+    <div>
+      <div class="device-label">③ LOG</div>
+      <div class="device-sublabel">ラボノート（結果記録 = MOAT）</div>
+      <div class="device-frame">
+        <header class="header">
+          <div class="header-left">
+            <span class="header-logo">PG</span>
+            <span class="header-title">Publish Gate</span>
+          </div>
+          <div class="header-right">
+            <button class="header-btn" style="background:var(--primary-light);">📋</button>
+            <button class="header-btn">⚙</button>
+          </div>
+        </header>
+
+        <div class="screen-header">
+          <button class="back-btn">← 戻る</button>
+          <span>改善ログ</span>
+        </div>
+
+        <div class="screen-body">
+          <!-- Log entry 1: with result -->
+          <div class="log-card">
+            <div class="log-card-header">
+              <span class="log-card-domain">timetrack.example.com</span>
+              <span class="log-card-date">3/1 14:30</span>
+            </div>
+            <div class="log-card-proposals">
+              <span class="log-card-proposal">FV訴求を数値化</span>
+              <span class="log-card-proposal">CTA文言変更</span>
+              <span class="log-card-result result-effective">✓ 効果あり</span>
+            </div>
+          </div>
+
+          <!-- Log entry 2: with no effect -->
+          <div class="log-card">
+            <div class="log-card-header">
+              <span class="log-card-domain">creative-works.co.jp</span>
+              <span class="log-card-date">2/28 16:15</span>
+            </div>
+            <div class="log-card-proposals">
+              <span class="log-card-proposal">実績セクション上移動</span>
+              <span class="log-card-proposal">CTA色変更</span>
+              <span class="log-card-result result-no_effect">— なし</span>
+            </div>
+          </div>
+
+          <!-- Log entry 3: pending result -->
+          <div class="log-card">
+            <div class="log-card-header">
+              <span class="log-card-domain">saas-tool.io</span>
+              <span class="log-card-date">2/27 10:00</span>
+            </div>
+            <div class="log-card-proposals">
+              <span class="log-card-proposal">料金ページ見出し変更</span>
+              <span class="log-card-proposal">FAQ追加</span>
+            </div>
+            <div class="result-actions">
+              <button class="result-btn">😊 効果あり</button>
+              <button class="result-btn">😐 なし</button>
+              <button class="result-btn">😞 悪化</button>
+            </div>
+          </div>
+
+          <!-- Log entry 4: pending -->
+          <div class="log-card">
+            <div class="log-card-header">
+              <span class="log-card-domain">client-lp.jp</span>
+              <span class="log-card-date">2/25 09:20</span>
+            </div>
+            <div class="log-card-proposals">
+              <span class="log-card-proposal">信頼性バッジ追加</span>
+              <span class="log-card-proposal">FVコピー改善</span>
+              <span class="log-card-proposal">問い合わせフォーム短縮</span>
+            </div>
+            <div class="result-actions">
+              <button class="result-btn">😊 効果あり</button>
+              <button class="result-btn">😐 なし</button>
+              <button class="result-btn">😞 悪化</button>
+            </div>
+          </div>
+
+          <!-- Log entry 5 -->
+          <div class="log-card">
+            <div class="log-card-header">
+              <span class="log-card-domain">ec-shop.example.com</span>
+              <span class="log-card-date">2/22 11:45</span>
+            </div>
+            <div class="log-card-proposals">
+              <span class="log-card-proposal">商品LPの訴求改善</span>
+              <span class="log-card-result result-effective">✓ 効果あり</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

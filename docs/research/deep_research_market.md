@@ -1,0 +1,360 @@
+# Page Decision Ops OS ブラウザ拡張機能の市場・競合・設計 Deep Research レポート
+
+## エグゼクティブサマリ
+
+本件（ブラウザ上で“今見ているページ”を起点に、目的起点の提案→根拠→優先度→タスク化→承認・ログ・再診断まで回す「Page Decision Ops OS」）の成立可能性は高い。背景として、Google 検索における AI Overviews は月間 15億ユーザー超に到達したと Alphabet の決算説明で言及され、提供地域・言語も拡大しているため、従来の「順位・流入」中心のSEOだけでなく、AI検索・LLM回答内での可視性（AIO/GEO/LLMO）を含む新しい最適化ニーズが顕在化している。 citeturn4search3turn4search2 さらに、AIサマリーが表示されるとユーザーが外部サイトリンクをクリックしにくくなる傾向が、Pew Research Center の分析で示されており、「表示される／引用される」こと自体の価値が上がりやすい。 citeturn4search0
+
+一方で「提案AI」単体はコモディティ化が早い。勝ち筋は、（a）ページ単位の“意思決定オペレーション”を標準化し、（b）提案の根拠（ページ構造・速度・アクセシビリティ・検索需要・AI可視性など）を統合し、（c）実装タスクに落として承認・ログ・再診断まで回す“運用OS”を作ることにある。Chrome Web Store の決済機能は既に非推奨・停止方向であるため、拡張機能内課金は外部決済（例：Stripe）・アカウント制で設計する必要がある。 citeturn1search2
+
+市場規模は「SEOソフトウェア」だけでも 2024年推計 746億USD → 2030年 1,546億USD 見込み（Grand View Research）と大きく、加えて「Content Intelligence」「DXP」「CXM」など隣接カテゴリも高成長である。 citeturn2search0turn2search1turn23search0turn23search2 本プロダクトは“SEO/CROツール市場”の単純な一角ではなく、「AI Discovery（AI検索＋LLM回答）× Decision Ops（意思決定〜実装・検証の運用）」という横断カテゴリを新設し得る。
+
+競合は「SEO拡張」「SEOスイート」「CRO/解析」「AI可視性計測」「PR/ソーシャルリスニング」に分散して多いが、ブラウザ起点で“目的→提案→根拠→タスク→承認→ログ→再診断”までの一気通貫を主戦場にしているツールは限定的である（下掲の 50 ツール比較を参照）。そのため、狙うべきポジションは「AI Discovery 統合度× Decision Ops 度」の両方を高め、かつ“ページコンテキスト（DOM/表示/構造）をその場で掴む”というインターフェース優位（ブラウザ常駐）を入口支配に使う戦略になる。
+
+本レポートでは、無料API中心のデータ統合（GSC/PSI/CrUX/Wayback/CommonCrawl/Wappalyzer等）と、GA4/Ahrefs等の有料連携（BYOキー前提）を整理し、MVP要件（Must/Should/Could）、アーキテクチャ、課金設計（1日1ページ無料→従量/クレジット）と、覇権戦略および検証すべき仮説を提示する。
+
+不足情報として、本スレッド内で「添付資料」が参照されているが、当該ファイル/リンクは本会話に提供されておらず、統合分析はこの会話文脈と公開情報に基づく。未指定部分は明示的に「未指定」として扱う。
+
+## 目的とゴール状態
+
+本件の本質は「分析作業そのものの自動化」ではなく、**“今見ているページ”の文脈（HTML/表示/構造/UI/コピー/技術）と、想定される目的（集客・CV・ブランド・AI可視性）を接続し、意思決定〜実装〜検証までのループを高速化する**ことにある。AI Overviews の普及・拡大により、従来のSEO評価軸（順位/CTR）だけでは不十分になりやすく、AI回答内の引用・言及・トーンといった“AI Discovery”側の新KPIが増えるため、この「ページ起点の意思決定OS」の価値は増しやすい。 citeturn4search3turn4search2turn4search0
+
+ユーザー像別の「目的→ゴール状態」を、実務的に最小単位へ落とすと次表になる。
+
+| ユーザー像 | 主要目的 | ゴール状態（ユーザーが“達成したい状態”） | OSが提供すべき成果物 |
+|---|---|---|---|
+| インハウスSEO/コンテンツ責任者 | 収益に効く検索需要を取り込みつつ、AI検索でも引用・可視化される | 対象ページごとに「流入クエリ/意図」「優先課題」「修正方針」「実装タスク」「再計測」が揃い、他部門へ渡せる | 目的選択→根拠（GSC/PSI/構造）→優先度→Git/Jira級のタスク化→再診断 |
+| CRO/LPO担当（EC/リード獲得） | ページのCVR改善（フォーム/CTA/構成/速度/信頼） | ページに対して「摩擦ポイント」「改善案」「想定インパクト」「A/B実験設計」「計測プラン」がその場で得られる | UX/コピー/情報設計の改善提案、実験タスク、成功条件、ログ |
+| 起業家/PM（少人数） | 意思決定コスト削減（外注/社内レビューの代替） | “何を直すべきか”が迷わず決まり、最短の実装で検証できる状態 | 優先度付きToDo、テンプレ、実装例（HTML/CSS/文言案） |
+| 代理店/コンサル | 高速な監査→提案→WBS化→共有 | 提案書作成と根拠集めの時間を圧縮し、再現性ある改善プログラムへ | 監査ログ、根拠スナップショット、提案テンプレ、レポート |
+| PR/ブランド担当 | 検索・AI回答・メディアでのブランド表現の整合 | ブランドが「どう説明され、どこが引用されるか」を把握し、是正できる | AI可視性の観測→要修正箇所→一次情報源（公式ページ）整備タスク |
+| エンジニア/制作会社 | 仕様が明確な改善チケットが欲しい | 曖昧な“改善して”ではなく、要件/受け入れ基準のあるタスクで渡される | 変更点、受け入れ基準、リスク（性能/アクセシビリティ/SEO） |
+
+## 課題体系
+
+課題は「SEO/CRO/PR/AI可視性」など領域で分けると抜け漏れが出るため、本件の価値仮説に合わせ、ユーザージャーニー（認知→判断→実装→検証→運用→導入信頼）で分解する。特に “AIサマリー表示時に外部リンククリックが減る”傾向がある以上、意思決定の速度と精度（どのページに何を直すか）が、従来以上に重要になる。 citeturn4search0
+
+| 段階 | ユーザーの典型行動 | 代表Issue（網羅） | OSの解消アプローチ（要件化） |
+|---|---|---|---|
+| 認知 | 「このページ、何か悪い気がする」から始まる | 何が問題か分からない / 問題が多すぎて優先順位がつかない / “結局どこから手を付けるか”で停止 | 目的選択（売上/CV/流入/AI引用/信頼）→ページ解析→課題の自動クラスタリング |
+| 判断 | 施策案を出すが確信がない | 根拠薄い提案になりやすい / 反対される / “やる価値”が説明できない | 根拠（HTML構造・速度・検索需要・AI可視性等）を自動で紐付け、インパクト仮説を提示 |
+| 実装 | 制作/開発へ依頼、または自分で修正 | 指示が曖昧 / タスクがチケット化できない / 変更がSEO/速度/アクセシビリティを壊す不安 | 変更案を「差分」「受け入れ基準」「リスクチェック」まで落とし、実装者向け仕様に変換 |
+| 検証 | GA/ヒートマップ/順位/CTRを見る | 計測設計がバラバラ / イベント定義が不明 / 検証が遅い | “最低限共通で取れる指標”に基づく検証テンプレ（後述）。再診断の自動実行 |
+| 運用 | 定例で改善を回す | ログが残らない / 引継ぎ不能 / 同じ議論の反復 | 監査ログ・意思決定ログ・変更履歴・結果をページ単位で蓄積し、再利用可能にする |
+| 導入信頼 | ツール導入の稟議/セキュリティ審査 | 拡張機能は権限が怖い / 機密ページを読まれる不安 / “AIが嘘を言う”懸念 | 権限最小化、ローカル処理・マスキング、BYOキー/オンプレ推論オプション、監査証跡 |
+
+上表のうち、既存ツールが強いのは「分析」「計測」「実験」だが、**“意思決定の運用（優先度→タスク→承認→ログ→再診断）”**は分断されがちである。この“分断”が本件の中心課題であり、プロダクト機会でもある。
+
+## 市場定義と市場規模レンジ
+
+### 市場定義
+
+本件は既存の「SEOツール」「CROツール」「解析ツール」「PRツール」を単に足し算する発想ではなく、次の新しい市場定義が適合する。
+
+**市場（提案）: AI Discovery × Page Decision Ops 市場**  
+AI Discoveryとは、従来検索（SERP）に加え、AI Overviews、AI Mode、LLM（ChatGPT/Perplexity/Gemini等）回答内での表示・引用・言及に最適化する領域。AI Overviews は Q1 2025 時点で月間 15億ユーザー超とされ、提供地域も 200以上へ拡大している。 citeturn4search3turn4search2  
+また、AI Overviews に広告が表示される条件が案内されており、検索面の“AI化＋商用化”は進んでいる。 citeturn4search1  
+この変化は、従来の「SEO順位」だけでなく「AI回答にどう表現・引用されるか」を競争軸に追加する。実際、AIサマリー表示時に外部リンククリックが減る傾向が示されており、流入獲得・ブランド想起の設計が変わる。 citeturn4search0
+
+Decision Opsとは、ページ改善を意思決定（目的→仮説）から実装タスク、承認、ログ、再診断まで一連のオペレーションとして回すこと。既存は「分析ツール」と「チケット管理」「ドキュメント」「A/Bテスト」が分離しているため、ここを統合する価値が生まれる。
+
+### 市場規模レンジ
+
+本件は厳密な単一カテゴリが未成熟のため、**TAM（総市場）を「隣接カテゴリのレンジ」として提示**し、SAM/SOMは実測で絞り込む前提が妥当である（本項ではレンジ提示に留める）。
+
+* SEOソフトウェア市場は 2024年推計 746億USD、2030年 1,546億USD 見込み（Grand View Research）。 citeturn2search0  
+* Content Intelligence 市場は 2022年 11.5億USD、2030年 100.9億USD 見込み（Grand View Research）。 citeturn2search1  
+* Digital Experience Platform（DXP）市場は 2023年 123.9億USD、2030年 304.1億USD 見込み（Grand View Research）。 citeturn23search0  
+* Customer Experience Management（CXM）市場は 2025年 155.5億USD、2033年 477.2億USD 見込み（Grand View Research）。 citeturn23search2  
+* CROソフトウェア市場は推計や定義差が大きいが、例として Verified Market Research 系レポートの日本語要約では 2023年 104億USD → 2030年 236.4億USD 見込みが示されている。 citeturn2search6
+
+以上より、本件の「AI Discovery × Decision Ops」という新市場は、現時点では **少なくとも（SEOソフトウェア市場の一部）〜（DXP/CXM/Content Intelligenceの一部を含む横断領域）という広いレンジ**で捉えるのが合理的である。初期の現実的なSAMは「SEO/CRO担当がいる中小〜ミッドマーケット＋代理店」から入り、エンタープライズへ拡張する戦略が整合しやすい。
+
+## 競合ベンチマークとポジショニング
+
+### スコアリング定義
+
+X軸（AI Discovery統合度）とY軸（Decision Ops度）を 0〜5 で定義し、比較可能な“地図”を作る。
+
+AI Discovery統合度（X）  
+0: AI検索/LLM回答を明示的に扱わない  
+3: AI Overviews/AI検索/GEOなどを明示し、計測または最適化機能がある  
+5: LLMプロンプト・引用・トーン等を継続観測し、改善アクションへ接続する（AI可視性を中核に据える）
+
+Decision Ops度（Y）  
+0: 指標表示中心  
+2: 優先度付きヒント/アラート/タスクリスト（軽量な運用支援）  
+4: 承認・ログ・再診断・実験プログラムなど運用機構が厚い  
+5: 目的起点で“意思決定→タスク→承認→ログ→再診断”がOSとして統合
+
+### 競合 50ツール比較
+
+表は「主要機能・強み・弱み」を短文で要約し、X/Yスコアを付与した（弱みは“本件OS”観点のギャップとして記述）。  
+**注**: スコアは公開情報に基づく相対評価（定量ベンチではない）。
+
+| ツール | 主カテゴリ | 主要機能（要約） | 強み | 弱み（本件OS観点） | X | Y |
+|---|---|---|---|---|---:|---:|
+| OnPageSEO.ai | ブラウザ拡張 | GSC連携含むAIオンページ示唆 citeturn20search4 | “ページ上で即”示唆 | 承認・ログ・再診断は薄い | 2 | 1 |
+| Digispot AI – SEO Insights | ブラウザ拡張 | SEO/AEO監査をページ上で表示 citeturn24search0 | その場の可視化 | 継続運用の仕組みが弱い | 2 | 1 |
+| AIO Copilot | ブラウザ拡張 | AI Overviews前提の監査/スコア citeturn24search5 | AIO文脈が明示 | タスク化・承認・検証が弱い | 3 | 1 |
+| Ahrefs SEO Toolbar | ブラウザ拡張 | ページ/リンク等の即時分析 citeturn20search5 | 普及・信頼 | AI Discovery/運用OSは薄い | 1 | 0 |
+| Detailed SEO Extension | ブラウザ拡張 | メタ/構造化/リンク等の即時表示 citeturn20search6 | “確認”に強い | 提案・運用は外部頼み | 0 | 0 |
+| SEOquake | ブラウザ拡張 | SEO指標/監査 citeturn24search6 | 無料で広く使われる | 意思決定・タスク化が弱い | 0 | 0 |
+| Keywords Everywhere | ブラウザ拡張 | 検索ボリューム等を表示 citeturn24search3 | 収集が速い | ページ改善OSではない | 1 | 0 |
+| Wappalyzer | ブラウザ拡張 | 技術スタック検出 citeturn29search3 | 実装方針に直結 | 改善提案/運用は別途必要 | 0 | 0 |
+| WooRank拡張 | ブラウザ拡張 | ドメインの即時レビュー/助言 citeturn31search0 | “即レポ” | 承認・ログ・再診断は薄い | 0 | 1 |
+| Semrush | SEOスイート | SEO＋AI可視性の統合（AI Visibility等） citeturn25search2turn28search2 | データ豊富・統合志向 | “ページ起点の運用OS”は外部運用 | 4 | 2 |
+| Ahrefs | SEOスイート | 検索/AI可視性を含む総合プラットフォーム citeturn25search4turn25search0 | 競合・リンクに強い | ワークフローは限定的 | 3 | 2 |
+| BrightEdge | エンタープライズSEO | 企業向けSEO/統合レポート citeturn10search0 | 大規模運用/Gov | ブラウザ起点の即時性は弱い | 3 | 2 |
+| Conductor | エンタープライズSEO/AEO | AEO/GEO/SEOを統合し“insight→action→impact”志向 citeturn10search1 | ワークフロー統合に近い | “ページ上で即”のUXは別 | 3 | 3 |
+| SISTRIX | SEOスイート | 可視性指数などSEO分析 citeturn21search3 | 指標の強さ | AI Discovery/意思決定OSは薄い | 1 | 1 |
+| Similarweb | 競合データ | 市場/競合/トラフィック知見 citeturn10search3 | 競合・市場観測 | ページ改善タスク化は別 | 1 | 1 |
+| Ubersuggest | SEOツール | キーワード/監査など citeturn21search0 | 使いやすい一体感 | AIO/運用OSは限定的 | 2 | 1 |
+| SpyFu | 競合SEO/PPC | 競合キーワード/広告分析 citeturn11search0 | 競合把握が速い | ページ実装修正へは距離 | 0 | 1 |
+| Serpstat | SEOスイート | キーワード/追跡等 citeturn11search1 | 総合ツール | Ops統合は弱い | 0 | 1 |
+| Majestic | 被リンク/外部SEO | リンクインテリジェンス citeturn21search1 | 被リンク特化 | 改善実装OSは外 | 0 | 0 |
+| Screaming Frog SEO Spider | クローラ | 技術/オンページ監査 citeturn26search1 | デファクト・深い監査 | ブラウザ文脈/運用OSなし | 0 | 1 |
+| Sitebulb | クローラ | 監査＋優先度付きHints citeturn32search0turn26search2 | 優先度と説明が強い | 承認・ログ・再診断は別 | 0 | 2 |
+| Oncrawl | エンタープライズSEO | 大規模サイトの技術SEOデータ分析 citeturn32search1 | 大規模に強い | ページ上のUX/運用OSは別 | 0 | 2 |
+| Botify | エンタープライズSEO/AEO | AI検索最適化・自動化/エージェント citeturn32search3 | AEO/GEO明示＋自動化 | ブラウザ起点の個人UXは弱い | 3 | 3 |
+| Lumar | Web最適化 | GEO/SEO/速度/アクセシビリティ統合 citeturn32search2turn29search12 | “AIに理解される”を明示 | タスク運用はプロダクト次第 | 3 | 2 |
+| JetOctopus | クローラ/ログ | クローラ+ログ+GSC統合の示唆 citeturn9search3turn29search2 | 技術SEOの優先度付け | 承認・ログ・再診断は薄い | 0 | 2 |
+| Conductor Website Monitoring | 監視/アラート | 24/7監視・リアルタイムアラート citeturn28search0 | 変化検知の運用 | “目的起点の提案”は限定 | 0 | 2 |
+| SurferSEO | コンテンツ最適化 | エンティティ/トピック最適化、AI文脈 citeturn13search0 | コンテンツ改善に強い | ページ運用OSは別 | 2 | 1 |
+| Clearscope | コンテンツ最適化 | データに基づく最適化/モニタリング citeturn13search1 | 品質・一貫性 | AI可視性/運用OSは限定 | 1 | 1 |
+| MarketMuse | Content Intelligence | “何を書くか”の意思決定支援 citeturn13search2 | 計画〜最適化に強い | ブラウザ起点の実装OSではない | 1 | 1 |
+| Frase | SEO+GEO | リサーチ〜生成〜最適化、AI引用も明示 citeturn13search3turn13search11 | GEO文脈が明確 | 実装/承認運用は別 | 3 | 1 |
+| Jasper | AIライティング | マーケ向けAIエージェント citeturn14search0 | 作成速度 | ページ改善の根拠統合は弱い | 1 | 1 |
+| Optimizely | 実験/CRO | 実験+パーソナライズ等 citeturn6search0 | 実験運用が強い | AI Discovery統合は限定 | 1 | 3 |
+| VWO | 実験/CRO | A/B等のテストプラットフォーム citeturn28search3 | 実験の回しやすさ | AI Discovery統合は限定 | 1 | 3 |
+| AB Tasty | 実験/CRO | A/B・多変量等 citeturn33search0 | 体験最適化 | AI Discovery統合は限定 | 1 | 3 |
+| Convert.com | 実験/CRO | A/B/パーソナライズ等 citeturn33search3 | プライバシー志向 | Discovery統合が薄い | 0 | 3 |
+| Kameleoon | 実験/CRO | AIがページを見て実験提案（Agent） citeturn7search2 | “提案→実験”が近い | SEO/AIO統合は限定 | 2 | 3 |
+| Adobe Target | 実験/CRO | A/B + AI活用パーソナライズ citeturn7search3 | 大規模に強い | ブラウザ起点の軽量OSではない | 1 | 3 |
+| Hotjar | 行動分析 | ヒートマップ/録画/フィードバック citeturn6search2 | 定性把握が速い | 提案・タスク化は別 | 0 | 1 |
+| Microsoft Clarity | 行動分析 | 無料の録画/ヒートマップ citeturn6search3 | 無料/導入しやすい | 改善の意思決定OSではない | 0 | 1 |
+| FullStory | 行動分析 | 行動データ分析/再生 citeturn17search0 | 深い診断 | SEO/AIO統合は限定 | 0 | 1 |
+| Contentsquare | 体験知能 | Experience/Product/VoC統合 citeturn33search1 | 体験分析が強い | ブラウザ起点のOSは別 | 1 | 2 |
+| Mouseflow | 行動分析 | 録画/ヒートマップ等 citeturn33search2 | “なぜ詰まるか”把握 | 改善の優先・承認は別 | 0 | 1 |
+| Unbounce | LPO | LP作成/最適化、AI示唆 citeturn16search1 | LP改善に直結 | SEO/AIO統合は限定 | 1 | 2 |
+| Instapage | LPO | LP作成/AIコンテンツ/A/B citeturn16search2 | LP制作〜実験が近い | Discovery統合は薄い | 1 | 2 |
+| Profound | AI可視性 | AI検索での可視性最大化、テンプレ/エージェント citeturn22search1 | AI Discovery特化 | Decision Opsはまだ部分的 | 5 | 2 |
+| Scrunch | AI可視性 | AI向け“並行サイト”生成（AXP） citeturn22search0 | 技術層の差別化 | 意思決定OSは限定 | 5 | 2 |
+| OtterlyAI | AI可視性 | AI検索での言及/引用を追跡 citeturn30search0 | 監視が明確 | 実装タスク/承認が薄い | 4 | 1 |
+| Peec AI | AI可視性 | LLM横断の可視性/競合比較 citeturn30search2 | 横断比較に強い | “ページ単位の実装OS”は薄い | 4 | 1 |
+| Meltwater | PR/メディア | メディア/ソーシャル/消費者インテリジェンス citeturn15search0 | 対外評価の観測 | ページ改善OSではない | 0 | 2 |
+| Brandwatch | ソーシャルリスニング | 消費者データの分析/意思決定支援 citeturn15search13 | 世論・トレンド把握 | ページ改善OSではない | 0 | 2 |
+
+### 2×2競合マップ
+
+以下は、上表のX/Yスコアを 0〜1 に正規化（÷5）して配置した概念図。  
+右上（高X×高Y）が「AI Discovery統合×Decision Ops」の覇権ポジションで、本件はここを狙う設計が最も差別化される。
+
+```mermaid
+quadrantChart
+  title AI Discovery統合度 × Decision Ops度（50ツール概念配置）
+  x-axis Low AI Discovery --> High AI Discovery
+  y-axis Low Decision Ops --> High Decision Ops
+
+  quadrant-1 "覇権帯（AI×Ops）"
+  quadrant-2 "AI可視性（計測中心）"
+  quadrant-3 "計測/監査ユーティリティ"
+  quadrant-4 "実験Ops（CRO中心）"
+
+  OnPageSEO: [0.40, 0.20]
+  Digispot: [0.40, 0.20]
+  AIOCopilot: [0.60, 0.20]
+  AhrefsToolbar: [0.20, 0.00]
+  DetailedSEO: [0.00, 0.00]
+  SEOquake: [0.00, 0.00]
+  KeywordsEverywhere: [0.20, 0.00]
+  Wappalyzer: [0.00, 0.00]
+  WooRankExt: [0.00, 0.20]
+
+  Semrush: [0.80, 0.40]
+  Ahrefs: [0.60, 0.40]
+  BrightEdge: [0.60, 0.40]
+  Conductor: [0.60, 0.60]
+  SISTRIX: [0.20, 0.20]
+  Similarweb: [0.20, 0.20]
+  Ubersuggest: [0.40, 0.20]
+  SpyFu: [0.00, 0.20]
+  Serpstat: [0.00, 0.20]
+  Majestic: [0.00, 0.00]
+
+  ScreamingFrog: [0.00, 0.20]
+  Sitebulb: [0.00, 0.40]
+  Oncrawl: [0.00, 0.40]
+  Botify: [0.60, 0.60]
+  Lumar: [0.60, 0.40]
+  JetOctopus: [0.00, 0.40]
+  ContentKing: [0.00, 0.40]
+
+  Surfer: [0.40, 0.20]
+  Clearscope: [0.20, 0.20]
+  MarketMuse: [0.20, 0.20]
+  Frase: [0.60, 0.20]
+  Jasper: [0.20, 0.20]
+
+  Optimizely: [0.20, 0.60]
+  VWO: [0.20, 0.60]
+  ABTasty: [0.20, 0.60]
+  Convert: [0.00, 0.60]
+  Kameleoon: [0.40, 0.60]
+  AdobeTarget: [0.20, 0.60]
+
+  Hotjar: [0.00, 0.20]
+  Clarity: [0.00, 0.20]
+  FullStory: [0.00, 0.20]
+  Contentsquare: [0.20, 0.40]
+  Mouseflow: [0.00, 0.20]
+
+  Unbounce: [0.20, 0.40]
+  Instapage: [0.20, 0.40]
+
+  Profound: [1.00, 0.40]
+  Scrunch: [1.00, 0.40]
+  Otterly: [0.80, 0.20]
+  Peec: [0.80, 0.20]
+
+  Meltwater: [0.00, 0.40]
+  Brandwatch: [0.00, 0.40]
+```
+
+### 取るべき市場ポジション
+
+競合の空白は次の3点に集約される。
+
+「ページ文脈の即時性」：多くのAI可視性ツールは“プロンプト/引用の計測”に強い一方、閲覧中ページのDOM/表示/フォーム摩擦をその場で“改善タスク”へ落とし込む体験が薄い（例：Profound/Scrunch/Otterly/Peecは計測・生成は強いが、ブラウザ起点の実装WBS/承認が中核ではない）。 citeturn22search0turn22search1turn30search0turn30search2
+
+「Decision Ops（運用OS）」：SEO/CROツールは“分析”や“実験”に強いが、改善案の承認・実装ログ・再診断をページ単位で統合する思想が弱い（Conductorは統合志向を明言するが、ブラウザ起点のOSではない）。 citeturn10search1
+
+「無料データの統合による精度」：GSC/PSI/CrUX等の無料APIを統合すれば“ページの需要（クエリ）×体験（速度/UX）×構造（HTML/Schema）”を同時に根拠化できる。既存ブラウザ拡張はここが弱いことが多い。GSCは検索パフォーマンスの分析に使えるAPIが提供され、PSIは性能測定と最適化案提示をAPIで行える。 citeturn0search0turn0search1
+
+したがって本件は、「AI Discovery統合度」と「Decision Ops度」を同時に引き上げ、“ページ起点の意思決定OS”として市場を再定義するのが最も突出しやすい。
+
+## データ統合とMVP設計
+
+### 無料API中心のデータ統合候補と提案精度への影響
+
+下表は、無料で使える（または無料枠が厚い）公開API/データを中心に、何を突合し、提案精度がどう上がるかを整理したもの。
+
+| データ/API | 取得できるもの | 提案精度が上がる理由 | 実装・制約ポイント |
+|---|---|---|---|
+| Google Search Console API（Search Analytics） | クエリ/ページ別のクリック・表示回数・CTR・平均掲載順位など citeturn0search0 | 「そのページが実際に何の意図で流入しているか」を根拠化でき、コピー/構成/CTA最適化の方向性が“需要起点”になる | OAuth必須。拡張機能はChrome Identity API等でOAuth実装が一般的 citeturn5search3 |
+| PageSpeed Insights API | Lighthouse系のスコアや改善案、（一部）フィールド/ラボデータ citeturn0search1 | パフォーマンス/アクセシビリティ/SEO改善の“技術的根拠”を自動抽出できる | PSI内のCrUX実測データ提供は停止予定と明記され、CrUX API/History推奨 citeturn0search1turn19search3 |
+| CrUX API / CrUX History API | 実ユーザー体験データ（28日ローリング等）/ 過去6か月推移 citeturn0search2turn19search3 | “速い/遅い”を主観ではなく実測で示せる。改善の優先順位をCV/SEO双方で合理化 | APIキーで利用。URL/オリジン粒度の設計に注意 citeturn0search2 |
+| Common Crawl Index（URL Index） | 過去クロールされたURLの存在、アーカイブ参照 citeturn5search0 | “外部クローラが見える形”でページが存在するかを補助確認し、AI/検索クローラ向けの技術的可視性仮説に使える | 直接の品質指標ではないため、補助根拠として扱う |
+| Wayback Machine APIs | 過去スナップショットの有無/取得 citeturn5search1 | LPO/CRO/SEOの“変更前後”の差分分析が可能（いつ何を変えたかの推測精度が上がる） | ページによってはスナップショットがない。保存ポリシー注意 citeturn5search1 |
+| Wappalyzer（API/拡張） | CMS/フレームワーク等の技術スタックの推定 citeturn5search2turn29search3 | “実装可能な対策”をCMS別に具体化できる（例：WordPress/Shopify等での手順差） | 正確性は100%ではない。検出不能サイトもあるため不確実性表示が必要 |
+| 拡張機能内 DOM/レンダリング解析（ローカル） | “見えている”HTML/テキスト/フォーム、構造化データ、UI配置 | サーバーフェッチでは取れない“実際の表示”を根拠にできる（JSレンダやA/B差分も含む） | 機密情報を送信しない設計（マスキング/ローカル要約）が鍵。拡張権限最小化が重要 citeturn1search3turn24news48 |
+
+上記だけでも、**「需要（GSC）×体験（PSI/CrUX）×実装制約（Wappalyzer/DOM）」**が揃うため、GA4を必須にせずとも、目的起点の提案精度は大きく上げられる。
+
+### GA4 / Ahrefs等の有料連携の利点・制約（BYOキー前提）
+
+GA4は「コンバージョン定義が導入者ごとに違う」問題があるため、MVPで“必須連携”にすると汎用性を損ねやすい。しかし、**標準化しやすい指標（例：ページ別のエンゲージメント、イベント量、流入チャネル分解）**は、提案の優先度（どのページから直すか）に寄与する。GA4 Data API は runReport 等でレポート取得が可能である。 citeturn1search1turn1search5turn22search3  
+ただし “コンバージョン”は旧 conversionEvents が非推奨となり、Key Events（keyEvents）を参照する方向が示されているため、API実装時は最新版に追随する必要がある。 citeturn0search3turn1search0
+
+Ahrefs API は Enterprise プラン限定と明記されており、API v3 が Enterprise付帯で、APIユニット消費モデル等の制約がある。 citeturn25search1turn25search5 したがって、Ahrefsは「プロダクト側でコストを抱える」のではなく、**BYOキー（ユーザーが自社のAhrefs契約でAPIキーを持ち込み）**を前提に “接続すると精度が上がるが必須ではない”位置づけが現実的である。
+
+### MVP要件と技術アーキテクチャ
+
+Must/Should/Could を“意思決定OS”として定義する。
+
+| レイヤ | Must | Should | Could |
+|---|---|---|---|
+| 解析 | DOM/HTML構造の取得と要約、フォーム/EFO要素抽出、構造化データ/メタ/見出しの抽出 | PSI/CrUX/GSCの統合（最低限GSC） | Wayback差分、CommonCrawl補助、Wappalyzer/APIでCMS特化示唆 |
+| 提案 | 目的選択→課題→根拠→対策案（文章＋具体差分案） | 優先度（Impact×Effort×Risk）スコア、代替案比較 | “AI可視性（引用/トーン）”起点の改善テンプレ自動選択 citeturn30search0turn22search0turn22search1 |
+| Ops | タスク化（チェックリスト/チケット形式）、監査ログ保持 | 承認フロー（レビュー→承認→実装） | Jira/Asana/GitHub等外部連携、チーム権限管理 |
+| 再診断 | 同ページの再解析（手動実行） | スケジュール再診断・アラート | “変更差分→原因推定→次の打ち手”の自動生成 |
+| セキュリティ | 権限最小化、機密マスキング、監査ログ | BYO LLMキー/ローカル推論オプション | 企業向け（IP制限/SSO/監査） |
+
+拡張機能は Manifest V3 前提で、リモートホストコード禁止などの制約があるため、ロジックは拡張パッケージに含めつつ、重い推論はリモートサービス呼び出し（API）で実現する設計が安全かつ現実的である。 citeturn1search3
+
+#### 技術アーキテクチャ（拡張＋サーバー＋LLM）
+
+```mermaid
+flowchart LR
+  A[Browser Extension\nContent Script] -->|DOM/HTML/UX signals\n(redacted)| B[Extraction Layer\n(Structured Snapshot)]
+  B --> C[Decision Engine API]
+  C --> D[Deterministic Analyzers\n(SEO/UX/Perf rules)]
+  C --> E[Connectors\n(GSC/PSI/CrUX/Wayback/Wappalyzer)]
+  D --> F[LLM Orchestrator\n(goal→proposal→evidence)]
+  E --> F
+  F --> G[Prioritizer\nImpact×Effort×Risk]
+  G --> H[Task Builder\nTickets/Checklist]
+  H --> I[Review & Approval UI\n(in extension/web)]
+  I --> J[Decision Log Store\n(page-level ledger)]
+  J --> K[Re-diagnosis Runner\n(compare snapshots)]
+  K --> A
+```
+
+### UXフロー（公開前レビュー等の節目）
+
+```mermaid
+flowchart TD
+  S[起点: 今見ているページで\n「Analyze」] --> G1[目的選択/推定\n(SEO/CRO/AIO/PRなど)]
+  G1 --> R1[根拠収集\nDOM + (任意)GSC/PSI/CrUX]
+  R1 --> P1[提案生成\n課題→対策→根拠→優先度]
+  P1 --> V1[公開前レビュー\n(差分/リスク/受入基準)]
+  V1 -->|承認| T1[タスク化\nToDo/チケット]
+  V1 -->|差戻し| P1
+  T1 --> I1[実装]
+  I1 --> M1[再診断/計測\n(同一テンプレで比較)]
+  M1 --> L1[ログ化\n意思決定/差分/結果]
+  L1 --> S
+```
+
+## 収益化・覇権戦略・検証計画
+
+### 課金モデル案
+
+Chrome Web Store の決済機構は非推奨となっており、拡張機能の収益化は外部決済や別手段へ移行が必要である。 citeturn1search2 これを前提に「1日1ページ無料→以降従量（クレジット）」「BYOキー」「チーム」へ分岐する案を整理する。
+
+| プラン | 価格設計（例） | 含める価値 | “1日1ページ無料”との整合 |
+|---|---|---|---|
+| Free | 1日1ページ（または1日1URL）まで提案 | 体験・習慣化。ログは短期のみ保持 | 無料枠は“提案生成”まで、タスク化/再診断は制限 |
+| Credit（従量） | 追加解析＝クレジット消費（例：1解析=1、GSC/PSI連携=追加） | 使った分だけ課金で導入障壁が低い | 無料枠で価値を体感→必要なときだけ追加購入 |
+| Subscription | 月額でクレジット同梱（余り繰越/追加購入可） | 代理店・インハウス向けの予算化 | “無料枠”を上位プランの体験導線にする |
+| BYO LLM Key | LLM推論費用をユーザー負担にし、月額を下げる | コストを抑えつつ高頻度利用 | 無料枠は“ローカルルール＋簡易提案”、BYOで深掘り可能に |
+| Team | シート＋監査ログ＋承認フロー＋共有テンプレ | Decision Ops の本丸 | 個人無料→チーム導入へ拡張 |
+
+BYOキーは、Digispot等でも“Bring your own API key”の設計が明示されており、ユーザー側がAI利用をコントロールしたい需要があることを示唆する。 citeturn24search0
+
+### 覇権戦略
+
+「入口支配」：ブラウザは“作業が行われる場所”であり、ページ起点でワンクリック解析できること自体が強い。競合の多くはダッシュボード中心（別タブ）で、ページ文脈が薄くなりがちである。この入口を押さえることで、既存のSEO/CRO/解析ツールを置き換えるのではなく“統合OS”として上に乗れる。
+
+「評価基準の標準化」：Pewの分析が示すように、AIサマリー環境では従来のクリック前提が崩れ得る。 citeturn4search0 よって、ページ改善の評価軸を「順位/流入」だけでなく「AI可視性」「体験品質（実測）」「実装可能性」へ拡張し、テンプレ化する。AI Overviewsの普及・拡大はGoogle公式でも示されているため、この標準化は時流に合う。 citeturn4search2turn4search3
+
+「テンプレ資産化」：業種×目的×ページタイプ（記事/LP/比較/価格/FAQ/申込）で、提案パターンと受け入れ基準（チェックリスト）を資産化し、ユーザーが社内標準として流用できるようにする。これによりネットワーク効果（テンプレ共有→改善速度→継続利用）を狙える。
+
+「リスク対策」：拡張機能は権限・情報漏えい懸念が最大の導入障壁。Chrome拡張のセキュリティ強化や安全な実装の重要性が繰り返し述べられており、権限最小化、リモートコード排除、データ取り扱いの透明化が必須である。 citeturn1search3turn24news48
+
+### 未解決の残論点と優先検証仮説
+
+| 仮説 | 検証方法 | 成功基準（例） |
+|---|---|---|
+| “目的推定”はユーザーに受け入れられる | 目的を「推定提示＋ユーザー選択」にし、選択率と修正率を計測 | 推定採用率>60%、修正理由のパターン化が可能 |
+| GSC連携は提案の説得力を上げる | 同一ページで「DOMのみ」vs「DOM+GSC」提案を比較し、採用率・実装率を測定 | 実装率 +15% 以上、レビュー通過率改善 |
+| 1日1ページ無料はCAC/活性を上げつつ収益を毀損しない | 無料枠の閾値（1/3/5）を分けて課金転換を比較 | 無料→有料転換率>3〜8%（B2B軽量SaaS初期目安） |
+| “提案AI”ではなく“Decision Ops”へ課金が発生する | 提案閲覧は無料寄り、タスク化/承認/ログ/再診断を課金機能にして比較 | ARPA増、継続率改善（月次継続>70%等） |
+| BYOキーは導入障壁を下げる | BYOあり/なしの導入・継続を比較 | 初回アクティブ率改善、サポート工数低下 |
+| 拡張機能の権限最小化が導入を左右する | 権限が少ない版/多い版でインストール→有効化率を比較 | 有効化率（初回設定完了）>50% かつ問い合わせ減 |
+
+### 参考ソース優先リスト
+
+公式・一次資料を優先して列挙する（本レポートで引用した主要資料）。
+
+| テーマ | 優先ソース |
+|---|---|
+| AI Overviewsの普及/提供拡大 | Alphabet投資家向け Q1 2025 Earnings Call（AI Overviews 月間15億ユーザー超） citeturn4search3 / Google公式ブログ（AI Overviewsの国・言語拡大） citeturn4search2 |
+| AIサマリーがクリックへ与える影響 | Pew Research Center（AIサマリー表示時のクリック低下） citeturn4search0 |
+| AI Overviewsにおける広告 | Google Ads Help（AI Overviews掲載時の広告条件） citeturn4search1 |
+| GSC/PSI/CrUX公式API | Search Console API Search Analytics citeturn0search0 / PSI API Get Started citeturn0search1 / CrUX API citeturn0search2 / CrUX History API citeturn19search3 |
+| 無料データ（CommonCrawl/Wayback） | Common Crawl Index citeturn5search0 / Wayback Machine APIs citeturn5search1 |
+| 拡張機能のOAuth/セキュリティ | Chrome Extensions OAuth統合 citeturn5search3 / MV3セキュリティ改善（リモートコード不可等） citeturn1search3 |
+| 拡張機能の課金 | Chrome Web Store payments deprecation citeturn1search2 |
+| 市場規模 | SEO software / Content intelligence / DXP / CXM（Grand View Research） citeturn2search0turn2search1turn23search0turn23search2 |
+| AI可視性ツール群の一次情報 | Profound citeturn22search1 / Scrunch AXP citeturn22search0 / OtterlyAI citeturn30search0 / Peec AI citeturn30search2 |
+

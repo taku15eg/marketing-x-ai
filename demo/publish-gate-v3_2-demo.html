@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Gate — ページを開くだけで、改善が前に進む</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  --brand: #1A56DB;
+  --brand-dark: #1243AF;
+  --brand-light: #E1EFFE;
+  --brand-50: #F0F5FF;
+  --accent: #F97316;
+  --accent-light: #FFF7ED;
+
+  --success: #059669;
+  --success-bg: #ECFDF5;
+  --warn: #D97706;
+  --warn-bg: #FFFBEB;
+  --danger: #DC2626;
+  --danger-bg: #FEF2F2;
+
+  /* 5-level scale */
+  --lv5: #059669; --lv5-bg: #ECFDF5;
+  --lv4: #10B981; --lv4-bg: #D1FAE5;
+  --lv3: #6B7280; --lv3-bg: #F3F4F6;
+  --lv2: #F59E0B; --lv2-bg: #FEF3C7;
+  --lv1: #EF4444; --lv1-bg: #FEE2E2;
+
+  --bg: #FAFBFD;
+  --surf: #FFFFFF;
+  --surf2: #F4F5F7;
+  --surf3: #E5E7EB;
+  --bdr: #E2E5EA;
+  --bdr-lt: #F0F1F3;
+  --t1: #0F172A;
+  --t2: #475569;
+  --t3: #94A3B8;
+
+  --font: 'Noto Sans JP', sans-serif;
+  --font-en: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --sh: 0 2px 8px rgba(0,0,0,0.05);
+  --sh-md: 0 4px 20px rgba(0,0,0,0.07);
+  --sh-lg: 0 12px 40px rgba(0,0,0,0.10);
+  --sh-xl: 0 20px 60px rgba(0,0,0,0.12);
+}
+
+/* ═══════════════════════════════════════════
+   RESET
+   ═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font);color:var(--t1);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.7;overflow-x:hidden}
+img{max-width:100%;display:block}
+button{font-family:var(--font);cursor:pointer}
+a{text-decoration:none;color:inherit}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:64px;
+  background:rgba(250,251,253,0.88);
+  backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--bdr-lt);
+  transition:all .3s;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-en);font-weight:700;font-size:18px;
+  letter-spacing:-0.02em;color:var(--t1);
+}
+.nav-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--brand);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:12px;font-weight:800;font-family:var(--font-en);
+}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{
+  font-size:13px;font-weight:500;color:var(--t2);
+  padding:8px 14px;border-radius:8px;transition:all .2s;
+}
+.nav-link:hover{color:var(--t1);background:var(--surf2)}
+.nav-cta{
+  background:var(--t1);color:#fff;border:none;
+  padding:9px 22px;border-radius:8px;font-size:13px;
+  font-weight:600;transition:all .2s;margin-left:8px;
+}
+.nav-cta:hover{background:#000;transform:translateY(-1px)}
+
+/* ═══════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════ */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:100px 24px 60px;position:relative;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -5%, rgba(26,86,219,0.07) 0%, transparent 65%),
+    var(--bg);
+}
+.hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--bdr),transparent);
+}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 14px 5px 6px;
+  background:var(--surf);border:1px solid var(--bdr);border-radius:999px;
+  font-size:12px;color:var(--t2);font-weight:500;
+  margin-bottom:28px;animation:fadeUp .5s ease both;
+}
+.hero-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--success);
+  animation:pulse 2s infinite;
+}
+
+.hero h1{
+  font-size:clamp(32px,4.5vw,56px);font-weight:800;
+  line-height:1.3;letter-spacing:-0.03em;
+  max-width:720px;margin-bottom:16px;
+  animation:fadeUp .5s .08s ease both;
+}
+.hero .hl{
+  background:linear-gradient(135deg,var(--brand),#3B82F6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:clamp(15px,1.6vw,18px);color:var(--t2);
+  max-width:520px;line-height:1.8;font-weight:400;
+  margin-bottom:40px;animation:fadeUp .5s .16s ease both;
+}
+
+/* URL Bar */
+.url-bar{
+  width:100%;max-width:600px;
+  animation:fadeUp .5s .24s ease both;
+}
+.url-box{
+  display:flex;align-items:center;
+  background:var(--surf);border:2px solid var(--bdr);
+  border-radius:14px;padding:5px 5px 5px 18px;
+  transition:all .3s;box-shadow:var(--sh-md);
+}
+.url-box:focus-within{
+  border-color:var(--brand);
+  box-shadow:0 0 0 4px rgba(26,86,219,0.08),var(--sh-md);
+}
+.url-icon{color:var(--t3);flex-shrink:0;margin-right:10px}
+.url-input{
+  flex:1;border:none;outline:none;
+  font-size:15px;font-family:var(--font-en);font-weight:400;
+  color:var(--t1);background:transparent;padding:11px 0;
+}
+.url-input::placeholder{color:var(--t3)}
+.url-go{
+  background:var(--brand);color:#fff;border:none;
+  padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;
+  white-space:nowrap;transition:all .2s;
+}
+.url-go:hover{background:var(--brand-dark);transform:translateY(-1px)}
+.url-hint{margin-top:10px;font-size:12px;color:var(--t3)}
+
+/* Trust */
+.trust{
+  display:flex;gap:48px;margin-top:56px;
+  animation:fadeUp .5s .32s ease both;
+}
+.trust-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.trust-n{font-family:var(--font-en);font-size:32px;font-weight:700;color:var(--t1);letter-spacing:-0.02em}
+.trust-l{font-size:12px;color:var(--t3);font-weight:400}
+
+/* ═══════════════════════════════════════════
+   SECTION UTILITIES
+   ═══════════════════════════════════════════ */
+.section{padding:100px 48px;max-width:1140px;margin:0 auto}
+.section-dark{background:var(--t1);color:#fff;max-width:none;padding:100px 48px}
+.section-dark .sec-inner{max-width:1140px;margin:0 auto}
+.sec-label{
+  font-size:12px;font-weight:700;color:var(--brand);
+  text-transform:uppercase;letter-spacing:0.08em;
+  margin-bottom:8px;font-family:var(--font-en);
+}
+.sec-title{font-size:clamp(24px,3vw,36px);font-weight:800;line-height:1.35;margin-bottom:12px;letter-spacing:-0.02em}
+.sec-sub{font-size:15px;color:var(--t2);max-width:520px;line-height:1.8}
+.section-dark .sec-sub{color:rgba(255,255,255,0.55)}
+.sec-head{margin-bottom:56px}
+
+/* ═══════════════════════════════════════════
+   FLOW SECTION — "How it works" with inline demo
+   ═══════════════════════════════════════════ */
+.flow-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;
+}
+.flow-card{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);
+  padding:28px 24px;position:relative;transition:all .3s;
+}
+.flow-card:hover{border-color:var(--brand);box-shadow:var(--sh-md);transform:translateY(-3px)}
+.flow-step{
+  font-family:var(--font-en);font-size:48px;font-weight:800;
+  color:var(--surf2);line-height:1;margin-bottom:16px;
+  letter-spacing:-0.04em;
+}
+.flow-card:hover .flow-step{color:var(--brand-light)}
+.flow-card h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.flow-card p{font-size:13px;color:var(--t2);line-height:1.7}
+.flow-tag{
+  display:inline-block;margin-top:12px;padding:3px 10px;
+  background:var(--brand-50);color:var(--brand);
+  border-radius:4px;font-size:11px;font-weight:600;
+}
+
+/* ═══════════════════════════════════════════
+   PAIN SECTION
+   ═══════════════════════════════════════════ */
+.pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pain-card{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--r);padding:24px;transition:all .3s;
+}
+.pain-card:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15)}
+.pain-num{
+  font-family:var(--font-en);font-size:11px;font-weight:700;
+  color:rgba(255,255,255,0.25);margin-bottom:6px;letter-spacing:0.05em;
+}
+.pain-card h4{font-size:15px;font-weight:700;margin-bottom:4px;color:#fff}
+.pain-card p{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7}
+.pain-quote{
+  font-size:12px;color:rgba(255,255,255,0.35);font-style:italic;
+  margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);
+}
+
+/* ═══════════════════════════════════════════
+   FEATURES DEEP DIVE
+   ═══════════════════════════════════════════ */
+.feat-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:48px;
+  align-items:center;margin-bottom:80px;
+}
+.feat-row.reverse{direction:rtl}
+.feat-row.reverse > *{direction:ltr}
+.feat-text h3{font-size:22px;font-weight:700;margin-bottom:8px}
+.feat-text p{font-size:14px;color:var(--t2);line-height:1.8;margin-bottom:16px}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.feat-list li{
+  font-size:13px;color:var(--t2);
+  display:flex;align-items:flex-start;gap:8px;line-height:1.6;
+}
+.feat-list .check{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  background:var(--success-bg);color:var(--success);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;margin-top:2px;
+}
+
+/* Feature Preview Box */
+.feat-preview{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--sh-md);
+}
+.feat-preview-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 14px;background:var(--surf2);border-bottom:1px solid var(--bdr);
+  font-size:11px;color:var(--t3);
+}
+.feat-preview-dot{width:8px;height:8px;border-radius:50%}
+.feat-preview-body{padding:16px;font-size:13px}
+
+/* Mini proposal card in feature */
+.mini-proposal{
+  background:var(--surf);border:1px solid var(--bdr);
+  border-radius:var(--r-sm);padding:12px;margin-bottom:8px;
+}
+.mini-proposal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.mini-p-tag{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;
+  font-family:var(--font-en);
+}
+.mini-p-tag.p1{background:#FEE2E2;color:#DC2626}
+.mini-p-tag.p2{background:#FEF3C7;color:#D97706}
+.mini-p-cat{font-size:10px;color:var(--t3);background:var(--surf2);padding:2px 7px;border-radius:3px}
+.mini-p-title{font-size:12px;font-weight:600;line-height:1.5}
+
+/* Mini handoff tabs */
+.mini-tabs{display:flex;gap:4px;margin-bottom:10px}
+.mini-tab{
+  flex:1;padding:6px 8px;border:1px solid var(--bdr);
+  border-radius:var(--r-sm);background:var(--surf);
+  font-size:11px;font-weight:500;text-align:center;
+  color:var(--t3);transition:all .2s;cursor:pointer;
+}
+.mini-tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.mini-spec{
+  background:var(--surf2);border-radius:var(--r-sm);
+  padding:10px;font-size:11px;color:var(--t2);line-height:1.7;
+}
+.mini-spec strong{color:var(--t1);font-weight:600}
+.mini-tag{
+  display:inline-block;background:var(--brand-50);color:var(--brand);
+  padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;
+  font-family:var(--font-mono);
+}
+.mini-warn{
+  display:inline-block;background:var(--warn-bg);color:var(--warn);
+  padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;
+}
+
+/* Mini log */
+.mini-log{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-sm);
+  padding:10px;margin-bottom:6px;
+}
+.mini-log-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.mini-log-page{font-weight:600;color:var(--t1)}
+.mini-log-date{color:var(--t3);font-family:var(--font-en)}
+.mini-log-desc{font-size:11px;color:var(--t2);margin-bottom:6px}
+.mini-result{display:flex;align-items:center;gap:6px}
+.mini-badge{
+  font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;
+}
+.mini-badge.lv5{background:var(--lv5-bg);color:var(--lv5)}
+.mini-badge.lv4{background:var(--lv4-bg);color:var(--lv4)}
+.mini-metric{font-size:10px;color:var(--t3);font-family:var(--font-mono)}
+
+/* 5-level buttons in feature preview */
+.lv-btns{display:flex;gap:3px;margin-top:6px}
+.lv-btn{
+  flex:1;padding:5px 2px;border:1px solid var(--bdr);border-radius:3px;
+  background:var(--surf);font-size:9px;text-align:center;
+  color:var(--t3);transition:all .15s;cursor:pointer;
+  font-family:var(--font);line-height:1.2;
+}
+.lv-btn:hover{border-color:var(--t3)}
+.lv-btn.sel{color:#fff;border-color:transparent}
+.lv-btn.sel.l5{background:var(--lv5)} .lv-btn.sel.l4{background:var(--lv4)}
+.lv-btn.sel.l3{background:var(--lv3)} .lv-btn.sel.l2{background:var(--lv2)}
+.lv-btn.sel.l1{background:var(--lv1)}
+
+/* ═══════════════════════════════════════════
+   BEFORE / AFTER WORKFLOW
+   ═══════════════════════════════════════════ */
+.ba-compare{
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+}
+.ba-col{
+  border:1px solid var(--bdr);border-radius:var(--r-lg);
+  overflow:hidden;background:var(--surf);
+}
+.ba-col-head{
+  padding:14px 20px;font-size:13px;font-weight:700;
+  display:flex;align-items:center;gap:8px;
+}
+.ba-col.old .ba-col-head{background:#FEF2F2;color:#DC2626}
+.ba-col.new .ba-col-head{background:#ECFDF5;color:#059669}
+.ba-col-body{padding:20px}
+.ba-step{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--bdr-lt);
+}
+.ba-step:last-child{border-bottom:none}
+.ba-step-n{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;font-family:var(--font-en);
+}
+.ba-col.old .ba-step-n{background:#FEE2E2;color:#DC2626}
+.ba-col.new .ba-step-n{background:#D1FAE5;color:#059669}
+.ba-step-text{font-size:13px;color:var(--t2);line-height:1.6}
+.ba-step-time{
+  font-size:11px;color:var(--t3);margin-top:2px;
+  font-family:var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════
+   PRICING
+   ═══════════════════════════════════════════ */
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+}
+.price-card{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-lg);
+  padding:28px 24px;transition:all .3s;position:relative;
+}
+.price-card.featured{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.price-card.featured::before{
+  content:'おすすめ';position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  background:var(--brand);color:#fff;font-size:11px;font-weight:600;
+  padding:2px 12px;border-radius:999px;
+}
+.price-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.price-tier{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:4px}
+.price-amount{
+  font-family:var(--font-en);font-size:32px;font-weight:700;color:var(--t1);
+  margin-bottom:4px;letter-spacing:-0.02em;
+}
+.price-amount .yen{font-size:16px;font-weight:500;color:var(--t3)}
+.price-amount .period{font-size:13px;font-weight:400;color:var(--t3)}
+.price-desc{font-size:12px;color:var(--t3);margin-bottom:16px;min-height:36px}
+.price-features{list-style:none;margin-bottom:20px}
+.price-features li{
+  font-size:12px;color:var(--t2);padding:5px 0;
+  display:flex;align-items:center;gap:6px;
+  border-bottom:1px solid var(--bdr-lt);
+}
+.price-features li:last-child{border-bottom:none}
+.price-features .pf-check{color:var(--success);font-weight:700;font-size:14px}
+.price-features .pf-dash{color:var(--t3);font-size:14px}
+.price-btn{
+  width:100%;padding:10px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:600;border:1px solid var(--bdr);
+  background:var(--surf);color:var(--t1);transition:all .2s;
+}
+.price-btn:hover{background:var(--surf2)}
+.price-card.featured .price-btn{
+  background:var(--brand);color:#fff;border-color:var(--brand);
+}
+.price-card.featured .price-btn:hover{background:var(--brand-dark)}
+
+/* ═══════════════════════════════════════════
+   CTA FOOTER
+   ═══════════════════════════════════════════ */
+.cta-final{
+  padding:100px 48px;text-align:center;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--brand-50) 100%);
+}
+.cta-final h2{font-size:28px;font-weight:800;margin-bottom:10px}
+.cta-final p{color:var(--t2);font-size:15px;margin-bottom:36px}
+.cta-final-btns{display:flex;gap:12px;justify-content:center}
+.btn-cta{
+  padding:13px 32px;border-radius:10px;font-size:15px;font-weight:600;
+  border:none;transition:all .2s;
+}
+.btn-cta.primary{background:var(--brand);color:#fff}
+.btn-cta.primary:hover{background:var(--brand-dark);transform:translateY(-1px)}
+.btn-cta.ghost{background:var(--surf);color:var(--t1);border:1px solid var(--bdr)}
+.btn-cta.ghost:hover{background:var(--surf2)}
+
+/* Footer */
+.footer{
+  padding:32px 48px;border-top:1px solid var(--bdr);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;color:var(--t3);
+}
+
+/* ═══════════════════════════════════════════
+     DEMO OVERLAY
+   ═══════════════════════════════════════════ */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(15,23,42,0.55);
+  backdrop-filter:blur(10px);
+}
+.overlay.on{display:flex;align-items:center;justify-content:center;animation:fadeIn .25s ease}
+.demo-wrap{
+  display:flex;width:94vw;max-width:1360px;height:88vh;
+  animation:slideUp .35s ease both;
+  box-shadow:var(--sh-xl);border-radius:var(--r-xl);overflow:hidden;
+}
+
+/* Browser mock */
+.mock-browser{
+  flex:1;background:var(--surf);
+  display:flex;flex-direction:column;
+  border:1px solid var(--bdr);border-right:none;
+  border-radius:var(--r-xl) 0 0 var(--r-xl);overflow:hidden;
+}
+.mb-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;background:var(--surf2);border-bottom:1px solid var(--bdr);
+}
+.mb-dots{display:flex;gap:5px}
+.mb-dot{width:10px;height:10px;border-radius:50%}
+.mb-dot.r{background:#FF5F57}.mb-dot.y{background:#FEBC2E}.mb-dot.g{background:#28C840}
+.mb-url{
+  flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:5px;
+  padding:5px 10px;font-size:11px;font-family:var(--font-en);color:var(--t2);
+}
+.mb-body{
+  flex:1;overflow-y:auto;padding:32px;background:var(--bg);
+}
+/* Fake page content */
+.fp h2{font-size:26px;font-weight:700;margin-bottom:6px}
+.fp .fp-sub{font-size:13px;color:var(--t2);max-width:460px;margin-bottom:20px}
+.fp-cta{
+  display:inline-block;background:var(--brand);color:#fff;
+  padding:9px 22px;border-radius:8px;font-size:13px;font-weight:600;
+  margin-bottom:28px;
+}
+.fp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.fp-stat{background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:14px;text-align:center}
+.fp-stat-n{font-family:var(--font-en);font-size:22px;font-weight:700;color:var(--brand)}
+.fp-stat-l{font-size:10px;color:var(--t3);margin-top:2px}
+.fp-sec{margin-bottom:20px}
+.fp-sec h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.fp-sec p{font-size:12px;color:var(--t2);line-height:1.7}
+
+/* ═══════════════════════════════════════════
+   SIDE PANEL
+   ═══════════════════════════════════════════ */
+.sp{
+  width:375px;flex-shrink:0;background:var(--surf);
+  border:1px solid var(--bdr);border-left:none;
+  border-radius:0 var(--r-xl) var(--r-xl) 0;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sp-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;border-bottom:1px solid var(--bdr);
+}
+.sp-brand{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+.sp-mark{
+  width:22px;height:22px;border-radius:5px;background:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:9px;font-weight:800;font-family:var(--font-en);
+}
+.sp-x{
+  width:26px;height:26px;border-radius:6px;border:none;background:none;
+  font-size:16px;color:var(--t3);display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.sp-x:hover{background:var(--surf2);color:var(--t1)}
+
+/* Tabs */
+.sp-tabs{
+  display:flex;border-bottom:1px solid var(--bdr);
+}
+.sp-tab{
+  flex:1;padding:9px 4px;text-align:center;
+  font-size:11px;font-weight:500;color:var(--t3);
+  border:none;background:none;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;
+  font-family:var(--font);
+}
+.sp-tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+.sp-tab:hover:not(.on){color:var(--t2)}
+
+.sp-body{flex:1;overflow-y:auto;padding:14px;scroll-behavior:smooth}
+
+/* Screens */
+.scr{display:none}.scr.on{display:block}
+
+/* Scan button */
+.scan{
+  width:100%;padding:13px;background:var(--brand);color:#fff;border:none;
+  border-radius:var(--r);font-size:14px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:all .2s;
+}
+.scan:hover{background:var(--brand-dark)}
+
+/* Loading */
+.ld{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:56px 20px;text-align:center;
+}
+.ld-spin{
+  width:40px;height:40px;border:3px solid var(--surf2);
+  border-top-color:var(--brand);border-radius:50%;
+  animation:spin .7s linear infinite;margin-bottom:14px;
+}
+.ld-msg{font-size:13px;color:var(--t2)}
+.ld-step{font-size:11px;color:var(--t3);margin-top:6px;font-family:var(--font-mono)}
+.ld-bar{
+  width:180px;height:3px;background:var(--surf2);border-radius:2px;
+  margin-top:14px;overflow:hidden;
+}
+.ld-fill{height:100%;background:var(--brand);border-radius:2px;width:0;animation:prog 2.2s ease-in-out forwards}
+
+/* Estimation card */
+.est{
+  background:var(--brand-50);border:1px solid rgba(26,86,219,0.12);
+  border-radius:var(--r);padding:14px;margin-top:14px;
+}
+.est-lbl{font-size:10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.est-r{display:flex;justify-content:space-between;padding:4px 0}
+.est-k{font-size:11px;color:var(--t3)}.est-v{font-size:12px;font-weight:600}
+.conf-bar{width:100%;height:3px;background:rgba(26,86,219,0.12);border-radius:2px;margin-top:8px;overflow:hidden}
+.conf-fill{height:100%;background:var(--brand);border-radius:2px;transition:width .8s ease}
+
+/* Proposal card */
+.prop{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:12px;margin-top:10px;cursor:pointer;transition:all .2s;
+}
+.prop:hover{border-color:var(--brand);box-shadow:0 0 0 3px rgba(26,86,219,0.05)}
+.prop-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.prop-pri{font-family:var(--font-en);font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px}
+.prop-pri.p1{background:#FEE2E2;color:#DC2626}
+.prop-pri.p2{background:#FEF3C7;color:#D97706}
+.prop-cat{font-size:10px;color:var(--t3);background:var(--surf2);padding:2px 7px;border-radius:3px}
+.prop-ttl{font-size:13px;font-weight:600;line-height:1.5;margin-bottom:6px}
+.prop-impact{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)}
+.prop-dots{display:flex;gap:2px}
+.prop-dot{width:5px;height:5px;border-radius:50%;background:var(--surf3)}
+.prop-dot.on{background:var(--brand)}
+.prop-arr{margin-left:auto;color:var(--t3);font-size:14px}
+
+/* Detail */
+.det-back{
+  display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t3);
+  border:none;background:none;cursor:pointer;padding:0;margin-bottom:14px;font-family:var(--font);
+}
+.det-back:hover{color:var(--t1)}
+.det-title{font-size:16px;font-weight:700;margin-bottom:3px;line-height:1.4}
+.det-cat{font-size:11px;color:var(--brand);font-weight:500;margin-bottom:14px}
+
+.ba-sec{margin-bottom:12px}
+.ba-lbl{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;margin-bottom:5px;display:flex;align-items:center;gap:5px;
+}
+.ba-lbl.bef{color:var(--t3)}.ba-lbl.aft{color:var(--success)}
+.ba-box{
+  background:var(--surf2);border-radius:var(--r-sm);
+  padding:10px;font-size:12px;line-height:1.7;color:var(--t2);
+  border-left:3px solid transparent;
+}
+.ba-box.bef-c{border-left-color:var(--surf3)}
+.ba-box.aft-c{border-left-color:var(--success)}
+
+.evi{
+  background:var(--brand-50);border:1px solid rgba(26,86,219,0.08);
+  border-radius:var(--r-sm);padding:10px;margin-bottom:14px;
+}
+.evi-t{font-size:10px;font-weight:700;color:var(--brand);margin-bottom:4px}
+.evi-p{font-size:11px;color:var(--t2);line-height:1.6}
+
+.det-acts{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.act-pri{
+  width:100%;padding:11px;background:var(--brand);color:#fff;border:none;
+  border-radius:var(--r-sm);font-size:13px;font-weight:600;transition:all .2s;
+}
+.act-pri:hover{background:var(--brand-dark)}
+.act-sec{
+  width:100%;padding:11px;background:var(--surf);color:var(--t2);
+  border:1px solid var(--bdr);border-radius:var(--r-sm);
+  font-size:13px;font-weight:500;transition:all .2s;
+}
+.act-sec:hover{background:var(--surf2)}
+
+/* Handoff */
+.ho-tabs{
+  display:flex;border:1px solid var(--bdr);border-radius:var(--r-sm);
+  overflow:hidden;margin-bottom:14px;
+}
+.ho-tab{
+  flex:1;padding:9px;text-align:center;font-size:12px;font-weight:500;
+  border:none;background:var(--surf);color:var(--t3);cursor:pointer;
+  transition:all .15s;font-family:var(--font);
+}
+.ho-tab.on{background:var(--brand);color:#fff;font-weight:600}
+
+.ho-sec{margin-bottom:14px}
+.ho-sec-t{
+  font-size:11px;font-weight:700;color:var(--t1);margin-bottom:6px;
+  display:flex;align-items:center;gap:5px;
+}
+.ho-sec-t .ico{
+  width:16px;height:16px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;font-size:9px;
+}
+.ho-c{
+  background:var(--surf2);border-radius:var(--r-sm);
+  padding:10px;font-size:11px;line-height:1.8;color:var(--t2);
+}
+.ho-c strong{color:var(--t1);font-weight:600}
+.ho-tag{
+  display:inline-block;background:var(--brand-50);color:var(--brand);
+  padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;
+}
+.ho-warn{
+  display:inline-block;background:var(--warn-bg);color:var(--warn);
+  padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;
+}
+.ho-copy{
+  width:100%;padding:10px;background:var(--brand);color:#fff;border:none;
+  border-radius:var(--r-sm);font-size:13px;font-weight:600;
+  margin-top:6px;transition:all .2s;
+}
+.ho-copy:hover{background:var(--brand-dark)}
+.ho-copy.copied{background:var(--success)}
+
+/* Account nudge (soft, not a gate) */
+.nudge{
+  background:var(--brand-50);border:1px solid rgba(26,86,219,0.1);
+  border-radius:var(--r);padding:14px;margin-top:14px;text-align:center;
+}
+.nudge-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.nudge-sub{font-size:11px;color:var(--t2);margin-bottom:10px;line-height:1.6}
+.nudge-btn{
+  background:var(--surf);color:var(--brand);border:1px solid var(--brand);
+  padding:7px 18px;border-radius:var(--r-sm);font-size:12px;font-weight:600;
+  transition:all .2s;
+}
+.nudge-btn:hover{background:var(--brand);color:#fff}
+
+/* Log */
+.log-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.log-t{font-size:15px;font-weight:700}
+.log-n{font-size:11px;color:var(--t3)}
+
+.log-e{
+  background:var(--surf);border:1px solid var(--bdr);
+  border-radius:var(--r-sm);padding:10px;margin-bottom:8px;
+}
+.log-e-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.log-e-page{font-size:12px;font-weight:600}
+.log-e-date{font-size:10px;color:var(--t3);font-family:var(--font-en)}
+.log-e-desc{font-size:11px;color:var(--t2);margin-bottom:6px}
+.log-e-res{
+  display:flex;align-items:center;gap:6px;
+  padding-top:6px;border-top:1px solid var(--bdr-lt);
+}
+.log-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px}
+.log-badge.lv5{background:var(--lv5-bg);color:var(--lv5)}
+.log-badge.lv4{background:var(--lv4-bg);color:var(--lv4)}
+.log-badge.lv3{background:var(--lv3-bg);color:var(--lv3)}
+.log-metric{font-size:10px;color:var(--t3);font-family:var(--font-mono)}
+
+/* 5-level result */
+.res-btns{display:flex;gap:3px}
+.res-btn{
+  flex:1;padding:5px 2px;border:1px solid var(--bdr);border-radius:3px;
+  background:var(--surf);font-size:9px;text-align:center;
+  color:var(--t3);transition:all .12s;cursor:pointer;
+  font-family:var(--font);line-height:1.2;
+}
+.res-btn:hover{border-color:var(--t3)}
+.res-btn.sel{color:#fff;border-color:transparent}
+.res-btn.sel.l5{background:var(--lv5)} .res-btn.sel.l4{background:var(--lv4)}
+.res-btn.sel.l3{background:var(--lv3)} .res-btn.sel.l2{background:var(--lv2)}
+.res-btn.sel.l1{background:var(--lv1)}
+
+/* Local log hint */
+.local-hint{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 10px;background:var(--warn-bg);border-radius:var(--r-sm);
+  font-size:10px;color:var(--warn);margin-top:10px;line-height:1.5;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes prog{0%{width:0}30%{width:28%}60%{width:62%}85%{width:84%}100%{width:100%}}
+
+/* Scroll reveal */
+.reveal{opacity:0;transform:translateY(20px);transition:all .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Responsive */
+@media(max-width:900px){
+  .nav{padding:0 20px}.nav-links .nav-link{display:none}
+  .hero{padding:90px 20px 50px}
+  .section{padding:60px 20px}
+  .section-dark{padding:60px 20px}
+  .flow-grid{grid-template-columns:1fr}
+  .pain-grid{grid-template-columns:1fr}
+  .feat-row,.feat-row.reverse{grid-template-columns:1fr;direction:ltr}
+  .ba-compare{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr 1fr}
+  .trust{gap:28px}
+  .demo-wrap{flex-direction:column;width:98vw;height:95vh}
+  .mock-browser{display:none}
+  .sp{width:100%;border-radius:var(--r-xl)}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════ -->
+<nav class="nav">
+  <a href="#" class="nav-brand"><div class="nav-mark">PG</div>Publish Gate</a>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">使い方</a>
+    <a href="#features" class="nav-link">機能</a>
+    <a href="#pricing" class="nav-link">料金</a>
+    <button class="nav-cta" onclick="openDemo()">デモを体験 →</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow"><span class="hero-dot"></span>Chrome拡張 · アカウント不要で今すぐ使える</div>
+  <h1>ページを開くだけで<br><span class="hl">改善が前に進む</span></h1>
+  <p class="hero-sub">URLを入れるだけ。AIが改善提案を生成し、デザイナー向け・エンジニア向けの依頼書まで自動で作る。</p>
+  <div class="url-bar">
+    <div class="url-box">
+      <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input class="url-input" type="url" id="heroUrl" placeholder="https://example.com" />
+      <button class="url-go" onclick="handleHero()">改善ポイントを見つける</button>
+    </div>
+    <p class="url-hint">アカウント不要 · 無料 · 依頼書のコピーもそのまま可能</p>
+  </div>
+  <div class="trust">
+    <div class="trust-item"><span class="trust-n">30</span><span class="trust-l">秒で分析完了</span></div>
+    <div class="trust-item"><span class="trust-n">3</span><span class="trust-l">件の改善提案</span></div>
+    <div class="trust-item"><span class="trust-n">2</span><span class="trust-l">種の依頼書を自動生成</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     HOW IT WORKS
+     ═══════════════════════════════════════════ -->
+<section class="section reveal" id="how">
+  <div class="sec-head">
+    <div class="sec-label">How it works</div>
+    <div class="sec-title">3ステップで「改善が前に進む」</div>
+    <p class="sec-sub">URLを入力してからデザイナー・エンジニアに依頼書が届くまで、わずか3分。</p>
+  </div>
+  <div class="flow-grid">
+    <div class="flow-card">
+      <div class="flow-step">01</div>
+      <h3>ページを分析</h3>
+      <p>URLを入力するだけ。AIがページの構造・コピー・CTAを読み取り、ページの役割とCVを推定する。</p>
+      <span class="flow-tag">30秒で完了</span>
+    </div>
+    <div class="flow-card">
+      <div class="flow-step">02</div>
+      <h3>改善提案を確認</h3>
+      <p>インパクト順に最大3件の提案。Before/Afterと根拠付き。プレビューで変更後の見た目を即確認。</p>
+      <span class="flow-tag">根拠 + Before/After</span>
+    </div>
+    <div class="flow-card">
+      <div class="flow-step">03</div>
+      <h3>依頼書をコピー</h3>
+      <p>デザイナー向けとエンジニア向けの依頼書をワンクリックで生成。Slackにそのまま貼るだけ。</p>
+      <span class="flow-tag">アカウント不要</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PAIN POINTS
+     ═══════════════════════════════════════════ -->
+<section class="section-dark reveal">
+  <div class="sec-inner">
+    <div class="sec-head">
+      <div class="sec-label" style="color:rgba(255,255,255,0.4)">The Problem</div>
+      <div class="sec-title" style="color:#fff">マーケターが毎日ぶつかる4つの壁</div>
+      <p class="sec-sub">3名のインタビューから抽出した、立場を超えて共通する痛み。</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-num">LAYER 01</div>
+        <h4>なぜ数字が悪いかわからない</h4>
+        <p>データはある。でも「なんでこの数字なのか」が見えない。分析だけに時間が消える。</p>
+        <div class="pain-quote">「数字が悪いのはわかっているが、なんでその数字になっているのかがわからない」</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">LAYER 02</div>
+        <h4>何をすればいいかわからない</h4>
+        <p>課題は感じている。でも確からしい仮説が立てられず、施策の優先度がつけられない。</p>
+        <div class="pain-quote">「確からしい課題仮説とかイシューの特定ができてない状態で迷う」</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">LAYER 03</div>
+        <h4>実装に渡すと壊れる</h4>
+        <p>指示書に2時間。渡しても意図が伝わらず手戻り。分業の摩擦でスピードが出ない。</p>
+        <div class="pain-quote">「マーケのこと詳しくない開発者に細かく指示書を書くのが面倒」</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">LAYER 04</div>
+        <h4>やったことが残らない</h4>
+        <p>施策を回す時間より、ログや報告書を作る時間のほうが長い。学びが属人化する。</p>
+        <div class="pain-quote">「施策を回してる時間より、ログを残す・報告書を作る時間の方が多い」</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FEATURES DEEP DIVE
+     ═══════════════════════════════════════════ -->
+<section class="section reveal" id="features">
+  <div class="sec-head">
+    <div class="sec-label">Features</div>
+    <div class="sec-title">4つの壁を、3つの機能で貫通する</div>
+    <p class="sec-sub">分析→判断→依頼→記録を、ページ上で一気通貫。</p>
+  </div>
+
+  <!-- Feature 1: AI Analysis -->
+  <div class="feat-row">
+    <div class="feat-text">
+      <h3>🔍 AI分析＋改善提案</h3>
+      <p>ページの構造・FVコピー・CTA周辺を読み取り、ターゲット・CV・改善ポイントを推定。インパクト順に最大3件の具体的提案をBefore/After付きで生成。</p>
+      <ul class="feat-list">
+        <li><span class="check">✓</span>FVテキスト・CTA周辺コピーまで読み取り（DOM構造情報だけではない）</li>
+        <li><span class="check">✓</span>ページの役割・CV・ターゲットを自動推定（確度表示付き）</li>
+        <li><span class="check">✓</span>提案は「具体的な変更」レベル。「CTAを目立たせましょう」では終わらない</li>
+      </ul>
+    </div>
+    <div class="feat-preview">
+      <div class="feat-preview-bar">
+        <div class="feat-preview-dot" style="background:var(--brand);width:6px;height:6px"></div>
+        Publish Gate — 分析結果
+      </div>
+      <div class="feat-preview-body">
+        <div style="background:var(--brand-50);border:1px solid rgba(26,86,219,0.1);border-radius:6px;padding:10px;margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--brand);margin-bottom:6px">ページ推定</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t3)">種別</span><span style="font-weight:600">BtoB SaaS 新規獲得LP</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t3)">主要CV</span><span style="font-weight:600">無料トライアル申込</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--t3)">確度</span><span style="font-weight:600;color:var(--brand)">78%</span></div>
+        </div>
+        <div class="mini-proposal">
+          <div class="mini-proposal-top"><span class="mini-p-tag p1">P1</span><span class="mini-p-cat">コピー改善</span></div>
+          <div class="mini-p-title">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+        </div>
+        <div class="mini-proposal">
+          <div class="mini-proposal-top"><span class="mini-p-tag p1">P1</span><span class="mini-p-cat">CTA最適化</span></div>
+          <div class="mini-p-title">CTAマイクロコピーを行動ベネフィット型に変更</div>
+        </div>
+        <div class="mini-proposal">
+          <div class="mini-proposal-top"><span class="mini-p-tag p2">P2</span><span class="mini-p-cat">信頼性強化</span></div>
+          <div class="mini-p-title">FV直下に具体的な成果数値を追加</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 2: Handoff Pack -->
+  <div class="feat-row reverse">
+    <div class="feat-text">
+      <h3>📋 役割別の依頼パック</h3>
+      <p>提案ごとにデザイナー向け・エンジニア向けの依頼書を自動生成。「渡すだけで伝わる」品質で、第3層の分業摩擦をゼロにする。</p>
+      <ul class="feat-list">
+        <li><span class="check">✓</span>デザイナー向け: コピー変更指示・トーン・チェックリスト・注意事項</li>
+        <li><span class="check">✓</span>エンジニア向け: セレクタ・影響範囲・テスト項目・計測設計</li>
+        <li><span class="check">✓</span>アカウント不要でコピー可能。Slackにそのまま貼れる</li>
+      </ul>
+    </div>
+    <div class="feat-preview">
+      <div class="feat-preview-bar">
+        <div class="feat-preview-dot" style="background:var(--success);width:6px;height:6px"></div>
+        依頼パック — デザイナー / エンジニア
+      </div>
+      <div class="feat-preview-body">
+        <div class="mini-tabs">
+          <div class="mini-tab active" onclick="switchMiniTab('d',this)">🎨 デザイナー向け</div>
+          <div class="mini-tab" onclick="switchMiniTab('e',this)">⚙️ エンジニア向け</div>
+        </div>
+        <div id="mini-d">
+          <div class="mini-spec">
+            <strong>変更の目的:</strong> FVキャッチコピーを成果訴求型に変更<br><br>
+            <strong>コピー変更:</strong><br>
+            現: 「チームの時間を見える化」<br>
+            → 新: 「チームの残業を30%減らす方法、見つかります」<br><br>
+            <span class="mini-tag">トーン</span> 信頼感＋具体性。数字を主語にする。<br>
+            <span class="mini-warn">要確認</span> 数値は事例セクションからの引用。最新確認のこと。
+          </div>
+        </div>
+        <div id="mini-e" style="display:none">
+          <div class="mini-spec" style="font-family:var(--font-mono);font-size:10px">
+            <strong>対象:</strong> <span class="mini-tag">.hero h2</span><br>
+            <strong>変更:</strong> テキスト差し替えのみ<br>
+            <strong>CSS/JS変更:</strong> なし<br>
+            <strong>テスト:</strong> PC/TB/SP表示崩れなし<br>
+            <strong>計測:</strong> FV→CTA到達率, CTA CTR（GA4既存イベントで計測可）<br>
+            <strong>観測期間:</strong> 14日間
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3: Experiment Notebook -->
+  <div class="feat-row">
+    <div class="feat-text">
+      <h3>📊 実験ノート</h3>
+      <p>施策のBefore/Afterと結果を5段階で記録。蓄積されたデータが次の提案精度を上げ、改善のナレッジが組織の資産として複利で積み上がる。</p>
+      <ul class="feat-list">
+        <li><span class="check">✓</span>5段階評価: 大幅改善 / やや改善 / 変化なし / やや悪化 / 大幅悪化</li>
+        <li><span class="check">✓</span>数値メモ欄: KPI変化を任意で記録（後からでもOK）</li>
+        <li><span class="check">✓</span>アカウント作成でサーバー保存。AI精度向上に自動活用</li>
+      </ul>
+    </div>
+    <div class="feat-preview">
+      <div class="feat-preview-bar">
+        <div class="feat-preview-dot" style="background:var(--warn);width:6px;height:6px"></div>
+        実験ノート — 施策の記録と学習
+      </div>
+      <div class="feat-preview-body">
+        <div class="mini-log">
+          <div class="mini-log-top"><span class="mini-log-page">TimeTrack LP</span><span class="mini-log-date">2026-02-28</span></div>
+          <div class="mini-log-desc">CTAを「14日間無料で試す」に変更</div>
+          <div class="mini-result"><span class="mini-badge lv5">大幅改善</span><span class="mini-metric">CTR 1.2% → 2.8% (+133%)</span></div>
+        </div>
+        <div class="mini-log">
+          <div class="mini-log-top"><span class="mini-log-page">サービスページ</span><span class="mini-log-date">2026-02-25</span></div>
+          <div class="mini-log-desc">事例セクションをFV直下に移動</div>
+          <div class="mini-result"><span class="mini-badge lv4">やや改善</span><span class="mini-metric">直帰率 68% → 61%</span></div>
+        </div>
+        <div class="mini-log" style="border:1px dashed var(--bdr)">
+          <div class="mini-log-top"><span class="mini-log-page">料金ページ</span><span class="mini-log-date">2026-03-01</span></div>
+          <div class="mini-log-desc">FV訴求を成果数値型に転換</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:4px;margin-bottom:4px">結果を記録:</div>
+          <div class="lv-btns">
+            <div class="lv-btn" onclick="this.classList.toggle('sel');this.classList.toggle('l5')">大幅<br>改善</div>
+            <div class="lv-btn" onclick="this.classList.toggle('sel');this.classList.toggle('l4')">やや<br>改善</div>
+            <div class="lv-btn" onclick="this.classList.toggle('sel');this.classList.toggle('l3')">変化<br>なし</div>
+            <div class="lv-btn" onclick="this.classList.toggle('sel');this.classList.toggle('l2')">やや<br>悪化</div>
+            <div class="lv-btn" onclick="this.classList.toggle('sel');this.classList.toggle('l1')">大幅<br>悪化</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     BEFORE / AFTER WORKFLOW
+     ═══════════════════════════════════════════ -->
+<section class="section reveal" style="background:var(--surf2);max-width:none;padding:100px 48px">
+  <div style="max-width:1140px;margin:0 auto">
+    <div class="sec-head" style="text-align:center">
+      <div class="sec-label">Workflow comparison</div>
+      <div class="sec-title">改善1件にかかる時間が、こう変わる</div>
+    </div>
+    <div class="ba-compare">
+      <div class="ba-col old">
+        <div class="ba-col-head">✕ Publish Gate なし</div>
+        <div class="ba-col-body">
+          <div class="ba-step"><div class="ba-step-n">1</div><div><div class="ba-step-text">GA4・ヒートマップで問題箇所を特定</div><div class="ba-step-time">45 min</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">2</div><div><div class="ba-step-text">改善案を自分で考え、根拠を調べる</div><div class="ba-step-time">60 min</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">3</div><div><div class="ba-step-text">デザイナー向けの指示書を作成</div><div class="ba-step-time">45 min</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">4</div><div><div class="ba-step-text">エンジニア向けの実装仕様書を作成</div><div class="ba-step-time">30 min</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">5</div><div><div class="ba-step-text">結果をスプレッドシートに記録</div><div class="ba-step-time">20 min</div></div></div>
+          <div style="text-align:right;padding-top:12px;font-family:var(--font-en);font-size:20px;font-weight:700;color:#DC2626">合計 3時間20分</div>
+        </div>
+      </div>
+      <div class="ba-col new">
+        <div class="ba-col-head">✓ Publish Gate あり</div>
+        <div class="ba-col-body">
+          <div class="ba-step"><div class="ba-step-n">1</div><div><div class="ba-step-text">URLを入力 → AI分析＋提案を確認</div><div class="ba-step-time">30 sec</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">2</div><div><div class="ba-step-text">Before/Afterと根拠を確認し、判断</div><div class="ba-step-time">2 min</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">3</div><div><div class="ba-step-text">デザイナー向け依頼書をコピー → Slack</div><div class="ba-step-time">10 sec</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">4</div><div><div class="ba-step-text">エンジニア向け依頼書をコピー → Slack</div><div class="ba-step-time">10 sec</div></div></div>
+          <div class="ba-step"><div class="ba-step-n">5</div><div><div class="ba-step-text">結果を5段階で記録（数値は後日追記可）</div><div class="ba-step-time">10 sec</div></div></div>
+          <div style="text-align:right;padding-top:12px;font-family:var(--font-en);font-size:20px;font-weight:700;color:#059669">合計 3分</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PRICING
+     ═══════════════════════════════════════════ -->
+<section class="section reveal" id="pricing">
+  <div class="sec-head" style="text-align:center">
+    <div class="sec-label">Pricing</div>
+    <div class="sec-title">使った分だけ、段階的に</div>
+    <p class="sec-sub" style="margin:0 auto">分析・提案・依頼書はアカウント不要で使える。ログの蓄積とAI精度向上から課金が始まる。</p>
+  </div>
+  <div class="pricing-grid">
+    <!-- Free L0 -->
+    <div class="price-card">
+      <div class="price-tier">Layer 0</div>
+      <div class="price-amount">¥0</div>
+      <div class="price-desc">アカウント不要。今すぐ使える。</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>3回/日のページ分析</li>
+        <li><span class="pf-check">✓</span>改善提案 3件/回</li>
+        <li><span class="pf-check">✓</span>依頼パック生成・コピー</li>
+        <li><span class="pf-check">✓</span>プレビュー表示</li>
+        <li><span class="pf-dash">—</span>ログはローカル20件まで</li>
+      </ul>
+      <button class="price-btn" onclick="openDemo()">デモを試す</button>
+    </div>
+    <!-- Free L1 -->
+    <div class="price-card featured">
+      <div class="price-tier">Layer 1（無料）</div>
+      <div class="price-amount">¥0</div>
+      <div class="price-desc">アカウント作成で、ログが永続化。</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>10回/日のページ分析</li>
+        <li><span class="pf-check">✓</span>サーバーログ無制限</li>
+        <li><span class="pf-check">✓</span>過去ログでAI精度向上</li>
+        <li><span class="pf-check">✓</span>承認メモ生成</li>
+        <li><span class="pf-check">✓</span>実験ノート（全履歴）</li>
+      </ul>
+      <button class="price-btn">無料で始める</button>
+    </div>
+    <!-- Basic -->
+    <div class="price-card">
+      <div class="price-tier">Basic</div>
+      <div class="price-amount">¥4,980<span class="period">/月</span></div>
+      <div class="price-desc">仕事にする。GSC連携で精度アップ。</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>無制限スキャン</li>
+        <li><span class="pf-check">✓</span>GSC連携（検索クエリ分析）</li>
+        <li><span class="pf-check">✓</span>レポート生成</li>
+        <li><span class="pf-check">✓</span>テンプレート管理</li>
+        <li><span class="pf-dash">—</span>GA4連携は Pro</li>
+      </ul>
+      <button class="price-btn">プランを選ぶ</button>
+    </div>
+    <!-- Pro -->
+    <div class="price-card">
+      <div class="price-tier">Pro</div>
+      <div class="price-amount">¥14,800<span class="period">/月</span></div>
+      <div class="price-desc">武器にする。GA4連携＋自動追跡。</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>Basic 全機能</li>
+        <li><span class="pf-check">✓</span>GA4連携（CVR・行動分析）</li>
+        <li><span class="pf-check">✓</span>結果自動追跡（2週後通知）</li>
+        <li><span class="pf-check">✓</span>優先サポート</li>
+        <li><span class="pf-dash">—</span>Team は別途</li>
+      </ul>
+      <button class="price-btn">プランを選ぶ</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FINAL CTA
+     ═══════════════════════════════════════════ -->
+<section class="cta-final reveal">
+  <h2>まずは30秒で試してみる</h2>
+  <p>アカウント不要。URLを入れるだけで改善提案から依頼書まで完成する。</p>
+  <div class="cta-final-btns">
+    <button class="btn-cta primary" onclick="openDemo()">デモを体験する</button>
+    <button class="btn-cta ghost" onclick="document.getElementById('heroUrl').focus();window.scrollTo({top:0,behavior:'smooth'})">URLを入力する ↑</button>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>© 2026 SEVENDEX Inc.</span>
+  <span>Publish Gate v3.2</span>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     DEMO OVERLAY
+     ═══════════════════════════════════════════ -->
+<div class="overlay" id="overlay">
+<div class="demo-wrap">
+
+<!-- Browser Mock -->
+<div class="mock-browser">
+  <div class="mb-bar">
+    <div class="mb-dots"><div class="mb-dot r"></div><div class="mb-dot y"></div><div class="mb-dot g"></div></div>
+    <div class="mb-url" id="mbUrl">https://timetrack.example.com/lp</div>
+  </div>
+  <div class="mb-body">
+    <div class="fp">
+      <h2>TimeTrack — チームの時間を見える化</h2>
+      <p class="fp-sub">プロジェクト管理とタイムトラッキングを一つに。チームの稼働状況をリアルタイムで把握し、生産性を最大化。</p>
+      <div class="fp-cta">無料で始める</div>
+      <div class="fp-stats">
+        <div class="fp-stat"><div class="fp-stat-n">500+</div><div class="fp-stat-l">導入企業</div></div>
+        <div class="fp-stat"><div class="fp-stat-n">98%</div><div class="fp-stat-l">継続率</div></div>
+        <div class="fp-stat"><div class="fp-stat-n">4.8</div><div class="fp-stat-l">満足度</div></div>
+      </div>
+      <div class="fp-sec"><h3>主な機能</h3><p>リアルタイム稼働ダッシュボード、プロジェクト別レポート、Slack/Teams連携、カスタムアラート設定。</p></div>
+      <div class="fp-sec"><h3>導入事例</h3><p>A社では導入後3ヶ月で残業時間を30%削減。利益率が12%改善。</p></div>
+      <div class="fp-sec"><h3>料金プラン</h3><p>Starter: ¥980/月/人、Professional: ¥2,480/月/人、Enterprise: お問い合わせ。</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Side Panel -->
+<div class="sp">
+  <div class="sp-head">
+    <div class="sp-brand"><div class="sp-mark">PG</div>Publish Gate</div>
+    <button class="sp-x" onclick="closeDemo()">✕</button>
+  </div>
+  <div class="sp-tabs">
+    <button class="sp-tab on" onclick="go('home',this)">ホーム</button>
+    <button class="sp-tab" onclick="go('det',this)">詳細</button>
+    <button class="sp-tab" onclick="go('ho',this)">依頼パック</button>
+    <button class="sp-tab" onclick="go('log',this)">実験ノート</button>
+  </div>
+  <div class="sp-body">
+
+    <!-- Loading -->
+    <div class="scr" id="s-ld">
+      <div class="ld">
+        <div class="ld-spin"></div>
+        <div class="ld-msg">ページを分析中...</div>
+        <div class="ld-step" id="ldStep">DOM構造を読み取り中</div>
+        <div class="ld-bar"><div class="ld-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- Home -->
+    <div class="scr on" id="s-home">
+      <button class="scan" onclick="doScan()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        改善ポイントを見つける
+      </button>
+      <div id="results" style="display:none">
+        <div class="est">
+          <div class="est-lbl">ページ推定</div>
+          <div class="est-r"><span class="est-k">種別</span><span class="est-v">BtoB SaaS 新規獲得LP</span></div>
+          <div class="est-r"><span class="est-k">主要CV</span><span class="est-v">無料トライアル申込</span></div>
+          <div class="est-r"><span class="est-k">ターゲット</span><span class="est-v">中小企業のPM / チームリーダー</span></div>
+          <div class="est-r"><span class="est-k">推定確度</span><span class="est-v" style="color:var(--brand)">78%</span></div>
+          <div class="conf-bar"><div class="conf-fill" style="width:78%"></div></div>
+        </div>
+        <div class="prop" onclick="detail(1)">
+          <div class="prop-top"><span class="prop-pri p1">P1</span><span class="prop-cat">コピー改善</span></div>
+          <div class="prop-ttl">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+          <div class="prop-impact"><span>インパクト</span><div class="prop-dots"><div class="prop-dot on"></div><div class="prop-dot on"></div><div class="prop-dot on"></div><div class="prop-dot"></div></div><span class="prop-arr">›</span></div>
+        </div>
+        <div class="prop" onclick="detail(2)">
+          <div class="prop-top"><span class="prop-pri p1">P1</span><span class="prop-cat">CTA最適化</span></div>
+          <div class="prop-ttl">CTAマイクロコピーを行動ベネフィット型に変更</div>
+          <div class="prop-impact"><span>インパクト</span><div class="prop-dots"><div class="prop-dot on"></div><div class="prop-dot on"></div><div class="prop-dot on"></div><div class="prop-dot"></div></div><span class="prop-arr">›</span></div>
+        </div>
+        <div class="prop" onclick="detail(3)">
+          <div class="prop-top"><span class="prop-pri p2">P2</span><span class="prop-cat">信頼性強化</span></div>
+          <div class="prop-ttl">FV直下に具体的な成果数値を追加</div>
+          <div class="prop-impact"><span>インパクト</span><div class="prop-dots"><div class="prop-dot on"></div><div class="prop-dot on"></div><div class="prop-dot"></div><div class="prop-dot"></div></div><span class="prop-arr">›</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail -->
+    <div class="scr" id="s-det">
+      <button class="det-back" onclick="go('home')">← 提案一覧</button>
+      <div class="det-title" id="dT"></div>
+      <div class="det-cat" id="dC"></div>
+      <div class="ba-sec"><div class="ba-lbl bef">● BEFORE</div><div class="ba-box bef-c" id="dB"></div></div>
+      <div class="ba-sec"><div class="ba-lbl aft">● AFTER</div><div class="ba-box aft-c" id="dA"></div></div>
+      <div class="evi"><div class="evi-t">📎 根拠</div><div class="evi-p" id="dE"></div></div>
+      <div class="det-acts">
+        <button class="act-pri" onclick="go('ho')">📋 依頼パックを作る</button>
+        <button class="act-sec" onclick="alert('プレビュー: ページ上にリアルタイム反映（デモでは省略）')">👁 プレビューで確認</button>
+      </div>
+    </div>
+
+    <!-- Handoff -->
+    <div class="scr" id="s-ho">
+      <button class="det-back" onclick="go('det')">← 提案詳細</button>
+      <div style="font-size:15px;font-weight:700;margin-bottom:2px">依頼パック</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px" id="hoTitle">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+
+      <div class="ho-tabs">
+        <button class="ho-tab on" onclick="hoTab('des',this)">🎨 デザイナー向け</button>
+        <button class="ho-tab" onclick="hoTab('eng',this)">⚙️ エンジニア向け</button>
+      </div>
+
+      <!-- Designer -->
+      <div id="ho-des">
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--brand-50);color:var(--brand)">🎯</span>変更の目的</div>
+          <div class="ho-c">FVのキャッチコピーを<strong>機能説明型</strong>から<strong>成果訴求型</strong>に変更し、CVR向上を狙う。</div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--success-bg);color:var(--success)">✏️</span>コピー変更指示</div>
+          <div class="ho-c">
+            <strong>メインコピー:</strong><br>
+            現: 「チームの時間を見える化」<br>
+            → 新: 「チームの残業を30%減らす方法、見つかります」<br><br>
+            <strong>サブコピー:</strong><br>
+            現: 「プロジェクト管理とタイムトラッキングを一つに」<br>
+            → 新: 「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」<br><br>
+            <span class="ho-tag">トーン</span> 信頼感＋具体性。数字を主語に。<br>
+            <span class="ho-tag">フォント</span> 既存ウェイト維持。数字のみ太字推奨。
+          </div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--warn-bg);color:var(--warn)">⚠️</span>注意事項</div>
+          <div class="ho-c">
+            <span class="ho-warn">要確認</span> 数値「30%」「12%」は既存事例からの引用。最新数値を確認。<br>
+            <span class="ho-warn">NG</span> 「業界No.1」等の根拠なき最上級表現。
+          </div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--surf2);color:var(--t3)">✅</span>チェックリスト</div>
+          <div class="ho-c">
+            □ メインコピーが1行に収まるか（SP 375px）<br>
+            □ 数値強調がデザインと調和するか<br>
+            □ OGP画像テキストの更新要否を確認
+          </div>
+        </div>
+        <button class="ho-copy" onclick="copyHandoff(this)">📋 デザイナー向け依頼書をコピー</button>
+      </div>
+
+      <!-- Engineer -->
+      <div id="ho-eng" style="display:none">
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--brand-50);color:var(--brand)">🎯</span>変更概要</div>
+          <div class="ho-c">FVセクションのテキスト2箇所を差し替え。DOM構造・レイアウト変更なし。</div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--success-bg);color:var(--success)">📝</span>変更対象</div>
+          <div class="ho-c" style="font-family:var(--font-mono);font-size:10px;line-height:2">
+            <strong>対象1:</strong> <span class="ho-tag">.hero h2</span><br>
+            現: "チームの時間を見える化"<br>
+            → "チームの残業を30%減らす方法、見つかります"<br><br>
+            <strong>対象2:</strong> <span class="ho-tag">.hero p.subtitle</span><br>
+            現: "プロジェクト管理と..."<br>
+            → "導入3ヶ月で利益率12%改善 — まずは14日間、無料で"
+          </div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--warn-bg);color:var(--warn)">📐</span>実装仕様</div>
+          <div class="ho-c" style="font-family:var(--font-mono);font-size:10px;line-height:2">
+            <strong>CSS変更:</strong> なし<br>
+            <strong>JS変更:</strong> なし<br>
+            <strong>影響範囲:</strong> FVセクションのみ<br>
+            <strong>i18n:</strong> 日本語のみ
+          </div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--danger-bg);color:var(--danger)">🧪</span>テスト項目</div>
+          <div class="ho-c">
+            □ PC / TB / SP で表示崩れなし<br>
+            □ 新テキストが1行に収まること（SP 375px）<br>
+            □ Lighthouse スコアに影響なし<br>
+            □ JSON-LD に影響なし
+          </div>
+        </div>
+        <div class="ho-sec">
+          <div class="ho-sec-t"><span class="ico" style="background:var(--surf2);color:var(--t3)">📊</span>計測設計</div>
+          <div class="ho-c" style="font-family:var(--font-mono);font-size:10px;line-height:2">
+            <strong>観測期間:</strong> 14日間<br>
+            <strong>主要KPI:</strong> FV→CTA到達率, CTA CTR<br>
+            <strong>比較基準:</strong> 変更前14日間<br>
+            <strong>GA4:</strong> scroll_depth, cta_click（既存で計測可）
+          </div>
+        </div>
+        <button class="ho-copy" onclick="copyHandoff(this)">📋 エンジニア向け依頼書をコピー</button>
+      </div>
+
+      <!-- Soft nudge (not a gate) -->
+      <div class="nudge">
+        <div class="nudge-title">💡 ログを永続的に残しませんか？</div>
+        <div class="nudge-sub">無料アカウントを作成すると、実験ノートがサーバーに保存され、過去の実績からAIの提案精度が向上します。</div>
+        <button class="nudge-btn">無料アカウントを作成</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="scr" id="s-log">
+      <div class="log-h"><div class="log-t">実験ノート</div><div class="log-n">3件の記録</div></div>
+
+      <div class="log-e">
+        <div class="log-e-top"><div class="log-e-page">TimeTrack LP</div><div class="log-e-date">2026-02-28</div></div>
+        <div class="log-e-desc">CTAを「14日間無料で試す」に変更</div>
+        <div class="log-e-res"><span class="log-badge lv5">大幅改善</span><span class="log-metric">CTR 1.2% → 2.8% (+133%)</span></div>
+      </div>
+      <div class="log-e">
+        <div class="log-e-top"><div class="log-e-page">サービスページ</div><div class="log-e-date">2026-02-25</div></div>
+        <div class="log-e-desc">事例セクションをFV直下に移動</div>
+        <div class="log-e-res"><span class="log-badge lv4">やや改善</span><span class="log-metric">直帰率 68% → 61% (-7pt)</span></div>
+      </div>
+      <div class="log-e">
+        <div class="log-e-top"><div class="log-e-page">料金ページ</div><div class="log-e-date">2026-03-01</div></div>
+        <div class="log-e-desc">FV訴求を成果数値型に転換</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr-lt)">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:4px">結果を記録:</div>
+          <div class="res-btns">
+            <button class="res-btn" onclick="selRes(this,'l5')">大幅<br>改善</button>
+            <button class="res-btn" onclick="selRes(this,'l4')">やや<br>改善</button>
+            <button class="res-btn" onclick="selRes(this,'l3')">変化<br>なし</button>
+            <button class="res-btn" onclick="selRes(this,'l2')">やや<br>悪化</button>
+            <button class="res-btn" onclick="selRes(this,'l1')">大幅<br>悪化</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="local-hint">
+        ⚠️ ローカル保存中（残り17件）。アカウント作成でサーバーに永続保存されます。
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+// ─── Data ───
+const P={
+  1:{t:'FVの訴求を「機能説明」から「成果訴求」に転換',c:'コピー改善 · P1',
+    b:'「チームの時間を見える化」「プロジェクト管理とタイムトラッキングを一つに」 — 機能の説明に終始し、ユーザーが得られる成果が伝わらない。',
+    a:'「チームの残業を30%減らす方法、見つかります」「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」 — 具体的な成果数値で訴求し、試用ハードルを下げる。',
+    e:'BtoB SaaS LP上位事例では、FVコピーが「機能名」ではなく「成果数値」で訴求するパターンが有効。導入事例セクションに実績数値があり、これをFVに引き上げることで説得力が向上する。'},
+  2:{t:'CTAマイクロコピーを行動ベネフィット型に変更',c:'CTA最適化 · P1',
+    b:'「無料で始める」 — 汎用的な表現で差別化なし。クリック後の体験がイメージできない。',
+    a:'「14日間、チームで無料トライアル」 — 期間を明示しリスク軽減を伝え、「チームで」で組織活用イメージを喚起。',
+    e:'CTA文言のA/Bテスト事例では「期間＋無料」の組み合わせが最もCTRが高い。「始める」より「試す」のほうが心理的ハードルが低い。'},
+  3:{t:'FV直下に具体的な成果数値を追加',c:'信頼性強化 · P2',
+    b:'実績数値（500+社、98%継続率）がページ中盤に配置。FVだけで離脱するユーザーには届かない。',
+    a:'「残業30%削減」「利益率12%改善」「3ヶ月で効果実感」をFV直下にバッジ配置。スクロール前に信頼性を訴求。',
+    e:'平均的なLPユーザーの50%以上がFV内で離脱するデータがある。最も説得力のある数値をFVに引き上げることで離脱前に信頼性を訴求。'}
+};
+
+// ─── Nav ───
+function go(id,btn){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  const t=document.getElementById('s-'+id);
+  if(t)t.classList.add('on');
+  document.querySelectorAll('.sp-tab').forEach(t=>t.classList.remove('on'));
+  if(btn){btn.classList.add('on')}
+  else{document.querySelectorAll('.sp-tab').forEach(t=>{
+    const map={home:'ホーム',det:'詳細',ho:'依頼パック',log:'実験ノート'};
+    if(t.textContent===map[id])t.classList.add('on');
+  })}
+}
+
+// ─── Demo ───
+function openDemo(){document.getElementById('overlay').classList.add('on');document.body.style.overflow='hidden'}
+function closeDemo(){document.getElementById('overlay').classList.remove('on');document.body.style.overflow=''}
+function handleHero(){
+  const u=document.getElementById('heroUrl').value;
+  if(u)document.getElementById('mbUrl').textContent=u;
+  openDemo();setTimeout(doScan,400);
+}
+
+// ─── Scan ───
+function doScan(){
+  document.getElementById('results').style.display='none';
+  go('ld');
+  const steps=['DOM構造を読み取り中','FVテキストを抽出中','CTA周辺コピーを分析中','AI分析を実行中...','改善提案を生成中...'];
+  let i=0;const el=document.getElementById('ldStep');
+  const iv=setInterval(()=>{i++;if(i<steps.length){el.textContent=steps[i]}else{clearInterval(iv);go('home');document.getElementById('results').style.display='block';document.querySelector('.scan').style.display='none'}},450);
+}
+
+// ─── Detail ───
+function detail(id){
+  const p=P[id];
+  document.getElementById('dT').textContent=p.t;
+  document.getElementById('dC').textContent=p.c;
+  document.getElementById('dB').textContent=p.b;
+  document.getElementById('dA').textContent=p.a;
+  document.getElementById('dE').textContent=p.e;
+  document.getElementById('hoTitle').textContent=p.t;
+  go('det');
+}
+
+// ─── Handoff tabs ───
+function hoTab(t,btn){
+  document.querySelectorAll('.ho-tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  document.getElementById('ho-des').style.display=t==='des'?'block':'none';
+  document.getElementById('ho-eng').style.display=t==='eng'?'block':'none';
+}
+function copyHandoff(btn){
+  btn.textContent='✓ コピーしました';btn.classList.add('copied');
+  setTimeout(()=>{btn.textContent=btn.closest('#ho-des')?'📋 デザイナー向け依頼書をコピー':'📋 エンジニア向け依頼書をコピー';btn.classList.remove('copied')},1500);
+}
+
+// ─── Mini tabs (LP feature preview) ───
+function switchMiniTab(t,el){
+  el.parentElement.querySelectorAll('.mini-tab').forEach(t=>{t.classList.remove('active')});el.classList.add('active');
+  document.getElementById('mini-d').style.display=t==='d'?'block':'none';
+  document.getElementById('mini-e').style.display=t==='e'?'block':'none';
+}
+
+// ─── Result selection ───
+function selRes(btn,lv){
+  btn.parentElement.querySelectorAll('.res-btn').forEach(b=>{b.classList.remove('sel');b.className=b.className.replace(/l[1-5]/g,'')});
+  btn.classList.add('sel',lv);
+}
+
+// ─── Keyboard ───
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDemo()});
+document.getElementById('heroUrl').addEventListener('keydown',e=>{if(e.key==='Enter')handleHero()});
+
+// ─── Scroll reveal ───
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

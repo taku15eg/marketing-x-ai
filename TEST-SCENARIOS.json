@@ -1,0 +1,475 @@
+{
+  "version": "1.0",
+  "description": "Publish Gate プロンプト品質テスト用シナリオ。各シナリオは実在する日本のLP構造パターンを模している。",
+  "scenarios": [
+    {
+      "id": "S01",
+      "name": "BtoB SaaS LP（典型）",
+      "url": "https://example-saas.co.jp/lp/marketing-automation",
+      "description": "マーケティングオートメーションツールのLP。FVが機能訴求に偏り、ベネフィットが不明確。",
+      "page_type": "サービスLP",
+      "mock_company_research": {
+        "company_overview": "株式会社ExampleSaaS。2018年設立。従業員120名。MAツール「AutoFlow」を開発・販売。導入企業500社超。",
+        "brand_tone": {
+          "sentence_endings": ["〜を実現します", "〜を支援します"],
+          "uses_questions": false,
+          "tone_keywords": ["信頼", "効率", "成長"],
+          "example_phrases": ["データドリブンなマーケティングを実現", "導入企業500社の実績"]
+        },
+        "key_vocabulary": ["マーケティングオートメーション", "リード獲得", "ナーチャリング", "ROI", "データドリブン"],
+        "credentials": ["ITreview LEADER 2025", "導入企業500社超"],
+        "case_studies": [
+          {"title": "リード獲得数200%増加", "summary": "製造業A社がAutoFlow導入後6ヶ月で達成"}
+        ]
+      },
+      "mock_page_features": {
+        "meta": {"title": "マーケティングオートメーション AutoFlow | 株式会社ExampleSaaS"},
+        "headings": {"h1": ["AutoFlowで実現する次世代MA"], "h2": ["機能一覧", "料金プラン", "導入事例", "FAQ"]},
+        "ctas": [
+          {"text": "無料トライアル", "href": "/trial", "position": "header"},
+          {"text": "資料ダウンロード", "href": "/download", "position": "fv"},
+          {"text": "お問い合わせ", "href": "/contact", "position": "footer"}
+        ],
+        "images": [{"alt": "AutoFlowダッシュボード画面", "width": 1200, "height": 600}],
+        "stats": {"word_count": 2800, "link_count": 45, "image_count": 18}
+      },
+      "mock_screenshot_description": "FVは青背景にAutoFlowのダッシュボード画面スクリーンショットが大きく配置。メインコピー「AutoFlowで実現する次世代MA」はh1タグ。サブコピーなし。右側に「無料トライアル」ボタン（白地に青文字）と「資料ダウンロード」ボタン（青地に白文字）が縦に並ぶ。ロゴ帯は見えない。",
+      "expected_issues": [
+        "FVのメインコピーが機能名の繰り返しで、ターゲットへのベネフィットが不明確",
+        "サブコピーがなく、3秒で価値が伝わらない",
+        "CTA「無料トライアル」と「資料ダウンロード」の優先順位が不明確（両方同サイズ）",
+        "社会的証明（ロゴ帯/導入社数）がFV圏外"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "クライアントのSaaS LPでこのパターンをよく見る。提案ネタが3つ以上出れば価値あり",
+        "urata": "自社ツールのLPがまさにこのパターン。「なぜCVRが低いのか」の答えが欲しい",
+        "shichijo": "部下に「このLPのFVを改善して」と指示したが、何をどうすべきか伝えられない"
+      }
+    },
+    {
+      "id": "S02",
+      "name": "健康食品EC LP（薬機法チェック必須）",
+      "url": "https://example-health.co.jp/lp/supplement-a",
+      "description": "機能性表示食品のサプリメントLP。薬機法リスクのある表現が含まれる。",
+      "page_type": "商品LP",
+      "mock_company_research": {
+        "company_overview": "株式会社HealthExample。健康食品の企画・販売。主力商品は機能性表示食品「ビタミンプラスα」。",
+        "brand_tone": {
+          "sentence_endings": ["〜をサポート", "〜を応援"],
+          "uses_questions": true,
+          "tone_keywords": ["自然", "安心", "科学的"],
+          "example_phrases": ["自然由来の成分で毎日の健康を", "研究に裏付けられた品質"]
+        },
+        "key_vocabulary": ["機能性表示食品", "届出番号", "エビデンス", "GMP認定工場"],
+        "credentials": ["機能性表示食品届出番号: H123", "GMP認定工場で製造"],
+        "case_studies": []
+      },
+      "mock_page_features": {
+        "meta": {"title": "ビタミンプラスα | 疲れが取れる新習慣"},
+        "headings": {"h1": ["もう疲れに悩まない！ビタミンプラスα"], "h2": ["こんな悩みありませんか？", "医師も推薦", "お客様の声"]},
+        "ctas": [
+          {"text": "今すぐ購入", "href": "/cart?item=supplement-a", "position": "fv"},
+          {"text": "定期購入でお得に", "href": "/cart?item=supplement-a&subscription=true", "position": "middle"}
+        ],
+        "images": [{"alt": "", "width": 800, "height": 1200}],
+        "stats": {"word_count": 4500, "link_count": 12, "image_count": 35}
+      },
+      "mock_screenshot_description": "FVは全面画像LP。背景に笑顔の女性。メインコピー「もう疲れに悩まない！」が大きく配置。サブコピー「医師が推薦する新成分配合」。その下に「初回50%OFF」のバッジ。画像内にテキストが多く、DOMからは読み取れない情報が多数。",
+      "expected_issues": [
+        "titleタグ「疲れが取れる」は機能性表示食品の届出範囲を超える可能性（薬機法リスク）",
+        "「医師も推薦」の表現は薬機法上リスクあり（具体的な医師名・所属が必要）",
+        "「もう疲れに悩まない」はbefore/after的な効果暗示で薬機法抵触の可能性",
+        "画像内テキストがalt属性に設定されておらず、SEO・アクセシビリティに問題",
+        "二重価格表示（定期購入の割引）の根拠表示が不明"
+      ],
+      "expected_regulatory": {
+        "yakujiho_risks": [
+          "FVコピー「疲れが取れる」→ 届出内容の範囲確認が必要",
+          "「医師も推薦」→ 推薦医師の実名・所属の記載要",
+          "「もう悩まない」→ 効能効果の断定表現に該当する可能性"
+        ],
+        "keihinhyoujiho_risks": [
+          "初回50%OFFの表示→ 通常価格の販売実績があるか確認要",
+          "「お客様の声」→ 体験談の取扱いに関するガイドライン準拠確認"
+        ]
+      },
+      "persona_relevance": {
+        "fujino": "EC案件でこのパターンを担当。薬機法は自分の専門外なので、自動チェックは価値大",
+        "urata": "自社が健康食品を扱っている場合に直結",
+        "shichijo": "法務部門との連携が必要なケースを事前に検知できる"
+      }
+    },
+    {
+      "id": "S03",
+      "name": "コンサル・制作会社サービスページ",
+      "url": "https://example-consulting.co.jp/service/branding",
+      "description": "ブランディング支援のサービスページ。差別化が弱く、汎用的なコピー。日本の制作会社LPの典型パターン。",
+      "page_type": "サービスLP",
+      "mock_company_research": {
+        "company_overview": "株式会社コンサルExample。ブランディング・UXデザインの支援会社。従業員30名。設立2015年。大手企業の支援実績多数。",
+        "brand_tone": {
+          "sentence_endings": ["〜を伴走します", "〜を共創します"],
+          "uses_questions": false,
+          "tone_keywords": ["伴走", "共創", "本質"],
+          "example_phrases": ["本質的な課題解決を伴走する", "ビジネスとデザインの力で成長を共創"]
+        },
+        "key_vocabulary": ["ブランディング", "UX", "デザイン思考", "伴走", "共創"],
+        "credentials": ["グッドデザイン賞受賞", "支援実績100社超"],
+        "case_studies": [
+          {"title": "老舗メーカーのリブランディング", "summary": "創業100年の企業のブランド刷新プロジェクト"},
+          {"title": "スタートアップのCI策定", "summary": "シリーズA調達後のブランドアイデンティティ構築"}
+        ]
+      },
+      "mock_page_features": {
+        "meta": {"title": "ブランディング支援 | 株式会社コンサルExample"},
+        "headings": {"h1": ["ビジネスとデザインの力で、ブランドを共創する"], "h2": ["私たちの強み", "支援プロセス", "事例", "お問い合わせ"]},
+        "ctas": [
+          {"text": "お問い合わせ", "href": "/contact", "position": "header"},
+          {"text": "資料ダウンロード", "href": "/download/branding-guide", "position": "middle"},
+          {"text": "無料相談を予約", "href": "/contact?type=consultation", "position": "footer"}
+        ],
+        "images": [{"alt": "ブランディングプロジェクトの風景", "width": 1600, "height": 900}],
+        "stats": {"word_count": 3200, "link_count": 35, "image_count": 22}
+      },
+      "mock_screenshot_description": "FVは全幅のヒーロー画像（オフィスでのワークショップ風景）。その上に白文字で「ビジネスとデザインの力で、ブランドを共創する」。右上に「お問い合わせ」ボタン（白地）。ロゴ帯なし。実績数値なし。FV直下はすぐに「私たちの強み」セクション。",
+      "expected_issues": [
+        "FVに社会的証明（ロゴ帯/実績数値/受賞歴）がなく、初回訪問者の信頼獲得が弱い",
+        "メインコピー「ビジネスとデザインの力で、ブランドを共創する」が汎用的で差別化されていない",
+        "CTA「お問い合わせ」「資料ダウンロード」「無料相談を予約」の3種が混在し優先順位が不明確",
+        "事例セクションがFVから遠い（スクロール必要）→ 信頼構築が遅い"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "自分の営業LPがまさにこのパターン。改善提案がそのまま使える",
+        "urata": "コンサル依頼先選定時にこういうLPを見る立場",
+        "shichijo": "自社のサービスページ改善にそのまま適用可能"
+      }
+    },
+    {
+      "id": "S04",
+      "name": "採用LP",
+      "url": "https://example-corp.co.jp/recruit/engineer",
+      "description": "エンジニア採用LP。ターゲットの解像度が低く、汎用的な訴求。",
+      "page_type": "採用LP",
+      "mock_company_research": {
+        "company_overview": "株式会社TechExample。自社プロダクトのSaaSを開発。従業員80名。エンジニア40名。React/TypeScript/AWS。",
+        "brand_tone": {
+          "sentence_endings": ["〜を目指しています", "〜を大切にしています"],
+          "uses_questions": true,
+          "tone_keywords": ["挑戦", "成長", "技術"],
+          "example_phrases": ["技術で社会を変える", "エンジニアが主役の組織"]
+        },
+        "key_vocabulary": ["フルスタック", "マイクロサービス", "アジャイル", "裁量", "成長"],
+        "credentials": ["技術ブログ月間PV 10万", "OSS貢献実績"],
+        "case_studies": []
+      },
+      "mock_page_features": {
+        "meta": {"title": "エンジニア募集 | 株式会社TechExample"},
+        "headings": {"h1": ["一緒に未来を創りませんか？"], "h2": ["働く環境", "技術スタック", "メンバー紹介", "応募する"]},
+        "ctas": [
+          {"text": "エントリーする", "href": "/recruit/entry?position=engineer", "position": "fv"},
+          {"text": "カジュアル面談", "href": "/recruit/casual", "position": "middle"}
+        ],
+        "images": [{"alt": "オフィスの風景", "width": 1200, "height": 800}],
+        "stats": {"word_count": 2500, "link_count": 25, "image_count": 15}
+      },
+      "mock_screenshot_description": "FVは暗めのグラデーション背景に白文字「一緒に未来を創りませんか？」。具体的なポジション名や年収レンジは見えない。「エントリーする」ボタンは目立つが、「何のポジションに」が不明。",
+      "expected_issues": [
+        "FVコピーが汎用的すぎて、エンジニアに刺さる訴求になっていない",
+        "具体的な年収レンジ/技術スタック/チーム規模がFVに含まれず、検討材料が不足",
+        "「一緒に未来を創りませんか？」→ どのポジションのどんな未来かが不明",
+        "カジュアル面談のCTAがFV圏外で、低コミットの入口が見つけにくい"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "直接的には関係ないが、クライアントに求人LP案件がある場合に使える",
+        "urata": "自社の採用LP改善にそのまま使える",
+        "shichijo": "HR部門からの依頼で採用LP改善を求められることがある"
+      }
+    },
+    {
+      "id": "S05",
+      "name": "料金ページ",
+      "url": "https://example-saas.co.jp/pricing",
+      "description": "SaaSの料金ページ。プラン比較の設計が弱い。",
+      "page_type": "料金ページ",
+      "mock_company_research": {
+        "company_overview": "前述のExampleSaaS社と同じ。MAツール「AutoFlow」の料金ページ。",
+        "brand_tone": {
+          "sentence_endings": ["〜を実現します"],
+          "uses_questions": false,
+          "tone_keywords": ["信頼", "効率", "成長"],
+          "example_phrases": ["ビジネスの成長に合わせて柔軟に"]
+        },
+        "key_vocabulary": ["スタンダード", "プロフェッショナル", "エンタープライズ", "無料トライアル"],
+        "credentials": ["導入企業500社超"],
+        "case_studies": []
+      },
+      "mock_page_features": {
+        "meta": {"title": "料金プラン | AutoFlow"},
+        "headings": {"h1": ["料金プラン"], "h2": ["スタンダード", "プロフェッショナル", "エンタープライズ", "よくある質問"]},
+        "ctas": [
+          {"text": "無料で始める", "href": "/trial", "position": "each-plan"},
+          {"text": "お問い合わせ", "href": "/contact?plan=enterprise", "position": "enterprise-only"}
+        ],
+        "images": [],
+        "stats": {"word_count": 1500, "link_count": 20, "image_count": 3}
+      },
+      "mock_screenshot_description": "3カラムの料金テーブル。左からスタンダード¥9,800/月、プロフェッショナル¥29,800/月、エンタープライズ「要問い合わせ」。プロフェッショナルが「おすすめ」バッジ付き。機能比較表はスクロール下。",
+      "expected_issues": [
+        "各プランの価値差が機能リストだけで、ユースケース（誰に最適か）が不明確",
+        "年払い割引の表示がなく、ARPA最大化の機会損失",
+        "社会的証明（どのプランが最も選ばれているか）が未表示",
+        "エンタープライズの「要問い合わせ」が心理的障壁（せめて基準価格の提示を）"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "クライアントのSaaS料金ページの改善案件で参考",
+        "urata": "自社ツールの料金ページ改善に直結",
+        "shichijo": "プライシング戦略の議論材料として使える"
+      }
+    },
+    {
+      "id": "S06",
+      "name": "コーポレートサイトTOP",
+      "url": "https://example-corp.co.jp/",
+      "description": "中堅企業のコーポレートサイト。情報過多で導線が不明確。",
+      "page_type": "コーポレート",
+      "mock_company_research": {
+        "company_overview": "株式会社CorpExample。製造業。従業員500名。売上高100億円。BtoB向け部品メーカー。",
+        "brand_tone": {
+          "sentence_endings": ["〜をお届けします", "〜に貢献します"],
+          "uses_questions": false,
+          "tone_keywords": ["品質", "信頼", "技術力"],
+          "example_phrases": ["確かな品質で、ものづくりの未来を支える"]
+        },
+        "key_vocabulary": ["精密加工", "品質管理", "ISO9001", "グローバル"],
+        "credentials": ["ISO9001認証", "創業50年"],
+        "case_studies": []
+      },
+      "mock_page_features": {
+        "meta": {"title": "株式会社CorpExample | 精密加工の総合メーカー"},
+        "headings": {"h1": [""], "h2": ["お知らせ", "製品情報", "企業情報", "採用情報", "IR情報"]},
+        "ctas": [
+          {"text": "お問い合わせ", "href": "/contact", "position": "header"},
+          {"text": "製品カタログ", "href": "/catalog", "position": "middle"}
+        ],
+        "images": [{"alt": "工場の外観", "width": 1920, "height": 600}],
+        "stats": {"word_count": 1200, "link_count": 80, "image_count": 10}
+      },
+      "mock_screenshot_description": "ヒーローはスライダー（工場風景が3枚切り替わる）。その下にお知らせ一覧（IR/プレスリリース）。FVにメインコピーなし。グローバルナビが複雑（製品/ソリューション/技術/企業情報/IR/採用/お問い合わせ）。",
+      "expected_issues": [
+        "FVにメインコピーがなく、初回訪問者に「この会社は何をしている会社か」が伝わらない",
+        "スライダーは目を引くが情報伝達効率が低い（ユーザーは待たない）",
+        "お知らせ一覧がFV直下にあり、ビジネス上最も重要なCTA（問い合わせ/カタログ）が押し下げられている",
+        "ナビゲーションの項目数が多すぎ（7項目）、優先順位が不明確"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "直接関係は薄いが、クライアントの親会社サイト改善で参考",
+        "urata": "自社コーポレートサイトの改善",
+        "shichijo": "経営層への報告でコーポレートサイト改善が議題になることがある"
+      }
+    },
+    {
+      "id": "S07",
+      "name": "EC商品ページ（D2C化粧品）",
+      "url": "https://example-cosmetics.co.jp/lp/serum-x",
+      "description": "D2C化粧品のLP。薬機法チェック必須。画像ベースLP。",
+      "page_type": "商品LP",
+      "mock_company_research": {
+        "company_overview": "株式会社CosmeExample。D2C化粧品ブランド「PURE」を展開。主力商品は美容液「セラムX」。",
+        "brand_tone": {
+          "sentence_endings": ["〜へ導く", "〜を叶える"],
+          "uses_questions": true,
+          "tone_keywords": ["透明感", "うるおい", "科学"],
+          "example_phrases": ["透明感あふれる素肌へ", "皮膚科学に基づいた処方"]
+        },
+        "key_vocabulary": ["セラミド", "ヒアルロン酸", "無添加", "皮膚科医監修"],
+        "credentials": ["皮膚科医監修", "モンドセレクション金賞"],
+        "case_studies": []
+      },
+      "mock_page_features": {
+        "meta": {"title": "セラムX | シミが消える美容液 - PURE"},
+        "headings": {"h1": [], "h2": []},
+        "ctas": [
+          {"text": "", "href": "/cart?item=serum-x", "position": "fv"},
+          {"text": "", "href": "/cart?item=serum-x&plan=teiki", "position": "middle"}
+        ],
+        "images": [{"alt": "", "width": 750, "height": 8000}],
+        "stats": {"word_count": 200, "link_count": 5, "image_count": 1}
+      },
+      "mock_screenshot_description": "完全画像ベースLP（1枚の縦長画像）。FVに「-10歳肌を叶える奇跡の美容液」のコピー。Before/Afterの写真が掲載。「シミが消える」のテキストが画像内に。価格は「通常¥12,800→今だけ¥3,980」。全テキストが画像内でDOMからは読み取れない。",
+      "expected_issues": [
+        "titleタグ「シミが消える」は薬機法違反の可能性が高い（化粧品で効能効果の断定は禁止）",
+        "「-10歳肌」「奇跡の美容液」→ 薬機法上の誇大表現",
+        "Before/After写真 → 化粧品の場合、メーキャップ効果による変化のみ許容",
+        "二重価格表示「通常¥12,800→今だけ¥3,980」→ 通常価格での販売実績の確認要",
+        "完全画像ベースでh1/h2なし → SEO的に重大な問題",
+        "alt属性が全て空 → アクセシビリティ・SEOの問題"
+      ],
+      "expected_regulatory": {
+        "yakujiho_risks": [
+          "「シミが消える」→ 化粧品の効能効果範囲を逸脱（違法の可能性高）",
+          "「-10歳肌」→ 年齢に関する効能表現は化粧品では不可",
+          "「奇跡の美容液」→ 誇大広告（薬機法66条）",
+          "Before/After写真 → 化粧品広告適正基準ガイドラインの範囲確認要",
+          "「皮膚科医監修」→ 具体的な医師名/所属の記載要"
+        ],
+        "keihinhyoujiho_risks": [
+          "「今だけ¥3,980」→ 期間限定の表示根拠確認要",
+          "通常価格¥12,800の販売実績（直近8週間）確認要"
+        ]
+      },
+      "persona_relevance": {
+        "fujino": "EC/D2C案件で薬機法チェックは最大のリスク。自動検知は高価値",
+        "urata": "自社が化粧品事業を持つ場合に直結",
+        "shichijo": "法務リスクの事前検知として組織に導入したい"
+      }
+    },
+    {
+      "id": "S08",
+      "name": "BtoB SaaS LP（高品質）",
+      "url": "https://example-good-saas.co.jp/lp/project-management",
+      "description": "よくできたBtoB SaaS LP。課題が少ないケース。「良い点」も正しく認識するかのテスト。",
+      "page_type": "サービスLP",
+      "mock_company_research": {
+        "company_overview": "株式会社GoodSaaS。プロジェクト管理ツール「TaskBoard」。2020年設立。ARR 10億円。",
+        "brand_tone": {
+          "sentence_endings": ["〜できます", "〜しましょう"],
+          "uses_questions": false,
+          "tone_keywords": ["シンプル", "直感的", "チーム"],
+          "example_phrases": ["チームの力を最大化するプロジェクト管理"]
+        },
+        "key_vocabulary": ["プロジェクト管理", "タスク", "チーム", "効率化", "カンバン"],
+        "credentials": ["ITreview LEADER 3年連続", "利用企業2,000社", "NPS 72"],
+        "case_studies": [
+          {"title": "開発チームの生産性30%向上", "summary": "IT企業B社の導入事例"}
+        ]
+      },
+      "mock_page_features": {
+        "meta": {"title": "TaskBoard | チームの生産性を30%向上させるプロジェクト管理ツール"},
+        "headings": {"h1": ["チームの生産性を30%向上させる"], "h2": ["なぜTaskBoardが選ばれるのか", "利用企業2,000社の声", "料金", "無料で試す"]},
+        "ctas": [
+          {"text": "無料で始める", "href": "/trial", "position": "fv"},
+          {"text": "デモを予約", "href": "/demo", "position": "fv"}
+        ],
+        "images": [{"alt": "TaskBoardのカンバン画面", "width": 1200, "height": 700}],
+        "stats": {"word_count": 2200, "link_count": 30, "image_count": 12}
+      },
+      "mock_screenshot_description": "FVは白背景。左側にメインコピー「チームの生産性を30%向上させる」とサブコピー「2,000社が選んだプロジェクト管理ツール」。右側にプロダクトのスクリーンショット。CTA「無料で始める」（青ボタン）と「デモを予約」（白ボタン）が横並び。FV直下にロゴ帯（有名企業6社）。",
+      "expected_issues": [
+        "改善余地は小さいが、FVのサブコピー「2,000社が選んだ」の具体性を高められる（業種/規模/代表企業名）",
+        "「30%向上」の根拠をFV内で示すとさらに信頼性が上がる（※事例リンクorツールチップ）"
+      ],
+      "expected_regulatory": null,
+      "persona_relevance": {
+        "fujino": "「課題が少ない」と正しく判断されるかが重要。過剰な改善提案は信頼を壊す",
+        "urata": "ベンチマークとして「良いLP」の構造を学べる",
+        "shichijo": "チームに「良いLPとは何か」を示す教材として使える"
+      }
+    },
+    {
+      "id": "S09",
+      "name": "スクール/教育LP",
+      "url": "https://example-school.co.jp/lp/programming-bootcamp",
+      "description": "プログラミングスクールのLP。Before/Afterの訴求が強い。",
+      "page_type": "サービスLP",
+      "mock_company_research": {
+        "company_overview": "株式会社SchoolExample。プログラミングスクール「CodeCraft」を運営。累計受講者5,000名。転職成功率95%。",
+        "brand_tone": {
+          "sentence_endings": ["〜を変えられる", "〜を目指せる"],
+          "uses_questions": true,
+          "tone_keywords": ["挑戦", "変革", "実践的"],
+          "example_phrases": ["未経験から、エンジニアへ"]
+        },
+        "key_vocabulary": ["未経験", "転職", "副業", "短期集中", "メンター"],
+        "credentials": ["転職成功率95%", "累計5,000名", "厚生労働省認定"],
+        "case_studies": [
+          {"title": "営業職→フロントエンドエンジニア", "summary": "32歳男性が3ヶ月で転職成功"},
+          {"title": "主婦→副業エンジニア", "summary": "月収20万円の副業を実現"}
+        ]
+      },
+      "mock_page_features": {
+        "meta": {"title": "CodeCraft | 3ヶ月で人生を変えるプログラミングスクール"},
+        "headings": {"h1": ["3ヶ月で人生を変える"], "h2": ["受講生の声", "カリキュラム", "転職サポート", "料金", "無料カウンセリング"]},
+        "ctas": [
+          {"text": "無料カウンセリングを予約", "href": "/counseling", "position": "fv"},
+          {"text": "資料をダウンロード", "href": "/download", "position": "middle"}
+        ],
+        "images": [{"alt": "受講生の転職成功インタビュー", "width": 1200, "height": 800}],
+        "stats": {"word_count": 5000, "link_count": 40, "image_count": 25}
+      },
+      "mock_screenshot_description": "FVは動画背景（コードを書いている手元映像）。白文字で「3ヶ月で人生を変える」。その下に「転職成功率95%」「累計5,000名」「厚生労働省認定」のバッジが3つ横並び。CTA「無料カウンセリングを予約」（黄色大ボタン）。",
+      "expected_issues": [
+        "「転職成功率95%」の算出根拠・条件が不明（全受講者中/就活者中/コース限定等）",
+        "「3ヶ月で人生を変える」→ 景品表示法上、合理的根拠の提示が求められる可能性",
+        "料金がFVから遠く、心理的な「いくらかかるのか」の不安が長く続く",
+        "CTAが「無料カウンセリング」一択で、低コミット層（資料DL）の入口が目立たない"
+      ],
+      "expected_regulatory": {
+        "keihinhyoujiho_risks": [
+          "「転職成功率95%」→ 算出条件（母数の定義・期間・対象コース）の明記要",
+          "「3ヶ月で人生を変える」→ 成果保証と受け取られる表現の可能性"
+        ]
+      },
+      "persona_relevance": {
+        "fujino": "教育系クライアントの案件で参考",
+        "urata": "自社がスクール事業を持つ場合に直結",
+        "shichijo": "成果数値の表示根拠に関する組織的なリスク管理"
+      }
+    },
+    {
+      "id": "S10",
+      "name": "不動産LP（高額商材）",
+      "url": "https://example-realestate.co.jp/lp/investment-mansion",
+      "description": "投資用マンションのLP。高額商材特有の信頼構築パターン。",
+      "page_type": "サービスLP",
+      "mock_company_research": {
+        "company_overview": "株式会社RealEstateExample。投資用マンション販売。首都圏中心。年間販売戸数200戸。",
+        "brand_tone": {
+          "sentence_endings": ["〜を実現します", "〜をご提案します"],
+          "uses_questions": false,
+          "tone_keywords": ["安定", "資産", "信頼"],
+          "example_phrases": ["安定収益を実現する都心マンション投資"]
+        },
+        "key_vocabulary": ["利回り", "管理費", "入居率", "節税", "相続対策"],
+        "credentials": ["年間販売200戸", "入居率99%", "オーナー満足度4.8"],
+        "case_studies": [
+          {"title": "会社員Aさん（35歳）", "summary": "年間家賃収入120万円を実現"}
+        ]
+      },
+      "mock_page_features": {
+        "meta": {"title": "投資用マンション | 年利回り4.5%保証 - RealEstateExample"},
+        "headings": {"h1": ["年利回り4.5%保証の都心マンション投資"], "h2": ["なぜマンション投資なのか", "物件情報", "オーナーの声", "無料セミナー"]},
+        "ctas": [
+          {"text": "無料セミナーに参加", "href": "/seminar", "position": "fv"},
+          {"text": "資料請求", "href": "/request", "position": "middle"},
+          {"text": "個別相談", "href": "/consultation", "position": "footer"}
+        ],
+        "images": [{"alt": "都心のマンション外観", "width": 1200, "height": 800}],
+        "stats": {"word_count": 4000, "link_count": 30, "image_count": 20}
+      },
+      "mock_screenshot_description": "FVは夜景の高層マンション画像。金文字で「年利回り4.5%保証の都心マンション投資」。その下に「入居率99%」「オーナー満足度4.8」のバッジ。CTA「無料セミナーに参加」（赤ボタン）。",
+      "expected_issues": [
+        "titleとFVの「利回り4.5%保証」→ 投資商品の利回り保証は金融商品取引法上のリスク表現",
+        "高額商材（数千万円）にしてはFVの情報密度が低い（リスク説明がない）",
+        "CTA「無料セミナー」の導線が主だが、セミナー日程・場所・内容がFVから不明",
+        "「個別相談」がフッターにしかなく、真剣検討者の導線が弱い",
+        "リスク表示（元本保証なし/空室リスク等）がページ下部にしかない"
+      ],
+      "expected_regulatory": {
+        "keihinhyoujiho_risks": [
+          "「年利回り4.5%保証」→ 金融商品取引法上、利回り保証の表現は厳格に規制",
+          "「入居率99%」→ 算出条件（全物件/特定エリア/特定期間）の明記要"
+        ]
+      },
+      "persona_relevance": {
+        "fujino": "不動産クライアント案件がある場合に参考",
+        "urata": "直接関係は薄い",
+        "shichijo": "法務リスクの高い業種のLP改善を管轄する場合"
+      }
+    }
+  ]
+}

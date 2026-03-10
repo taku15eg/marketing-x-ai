@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Gate — ページを開くだけで、改善が前に進む</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  /* Brand */
+  --brand: #2563EB;
+  --brand-dark: #1D4ED8;
+  --brand-light: #DBEAFE;
+  --brand-50: #EFF6FF;
+
+  /* Semantic */
+  --success: #059669;
+  --success-light: #ECFDF5;
+  --warning: #D97706;
+  --warning-light: #FFFBEB;
+  --danger: #DC2626;
+  --danger-light: #FEF2F2;
+
+  /* Impact scale (5-level) */
+  --impact-5: #059669;
+  --impact-4: #10B981;
+  --impact-3: #9CA3AF;
+  --impact-2: #F59E0B;
+  --impact-1: #EF4444;
+
+  /* Neutral */
+  --bg: #FAFBFC;
+  --surface: #FFFFFF;
+  --surface-2: #F3F4F6;
+  --surface-3: #E5E7EB;
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --text-1: #111827;
+  --text-2: #4B5563;
+  --text-3: #9CA3AF;
+
+  /* Type */
+  --font-ja: 'Noto Sans JP', sans-serif;
+  --font-en: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.12);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-ja);
+  color: var(--text-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   LANDING PAGE
+   ═══════════════════════════════════════════ */
+.landing { min-height: 100vh; position: relative; }
+
+/* Nav */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 48px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.3s;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-en); font-weight: 700; font-size: 20px;
+  color: var(--text-1); text-decoration: none;
+}
+.nav-logo-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px; font-weight: 800;
+}
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-link {
+  font-size: 14px; color: var(--text-2); text-decoration: none;
+  font-weight: 500; transition: color 0.2s;
+}
+.nav-link:hover { color: var(--text-1); }
+.nav-cta {
+  background: var(--text-1); color: white; border: none;
+  padding: 10px 24px; border-radius: 999px; font-size: 14px;
+  font-weight: 600; cursor: pointer; font-family: var(--font-ja);
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: #000; transform: translateY(-1px); }
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 120px 24px 80px;
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(37,99,235,0.04) 0%, transparent 50%),
+    var(--bg);
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px; color: var(--text-2);
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-badge-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  max-width: 800px;
+  margin-bottom: 20px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 .accent { color: var(--brand); }
+
+.hero-sub {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text-2);
+  max-width: 560px;
+  line-height: 1.8;
+  font-weight: 400;
+  margin-bottom: 48px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+/* URL Input */
+.url-input-wrapper {
+  width: 100%; max-width: 640px;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.url-input-box {
+  display: flex; align-items: center;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 6px 6px 6px 20px;
+  transition: all 0.3s;
+  box-shadow: var(--shadow-md);
+}
+.url-input-box:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.1), var(--shadow-md);
+}
+.url-input-icon { color: var(--text-3); margin-right: 12px; flex-shrink: 0; }
+.url-input {
+  flex: 1; border: none; outline: none;
+  font-size: 16px; font-family: var(--font-en);
+  color: var(--text-1); background: transparent;
+  padding: 12px 0;
+}
+.url-input::placeholder { color: var(--text-3); }
+.url-submit {
+  background: var(--brand); color: white; border: none;
+  padding: 12px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  font-family: var(--font-ja);
+  transition: all 0.2s;
+}
+.url-submit:hover { background: var(--brand-dark); transform: translateY(-1px); }
+
+.url-hint {
+  margin-top: 12px; font-size: 13px; color: var(--text-3);
+}
+
+/* Trust bar */
+.trust-bar {
+  display: flex; gap: 40px; margin-top: 64px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.trust-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.trust-num {
+  font-family: var(--font-en); font-size: 28px; font-weight: 700; color: var(--text-1);
+}
+.trust-label { font-size: 12px; color: var(--text-3); }
+
+/* Features */
+.features {
+  padding: 120px 48px;
+  max-width: 1200px; margin: 0 auto;
+}
+.features-header {
+  text-align: center; margin-bottom: 64px;
+}
+.features-header h2 {
+  font-size: 32px; font-weight: 800; margin-bottom: 12px;
+}
+.features-header p { color: var(--text-2); font-size: 16px; }
+
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  transition: all 0.3s;
+}
+.feature-card:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+}
+.feature-icon.blue { background: var(--brand-50); }
+.feature-icon.green { background: var(--success-light); }
+.feature-icon.amber { background: var(--warning-light); }
+.feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.feature-card p { font-size: 14px; color: var(--text-2); line-height: 1.7; }
+
+/* Pain section */
+.pain-section {
+  padding: 100px 48px;
+  background: var(--text-1);
+  color: white;
+}
+.pain-inner { max-width: 900px; margin: 0 auto; }
+.pain-section h2 {
+  font-size: 28px; font-weight: 800; margin-bottom: 48px; text-align: center;
+}
+.pain-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+.pain-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.pain-num {
+  font-family: var(--font-en); font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,0.4); margin-bottom: 8px;
+}
+.pain-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.pain-card p { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+
+/* CTA section */
+.cta-section {
+  padding: 120px 48px; text-align: center;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(37,99,235,0.06) 0%, transparent 60%),
+    var(--bg);
+}
+.cta-section h2 { font-size: 32px; font-weight: 800; margin-bottom: 12px; }
+.cta-section p { color: var(--text-2); margin-bottom: 40px; font-size: 16px; }
+.cta-buttons { display: flex; gap: 16px; justify-content: center; }
+.btn-primary {
+  background: var(--brand); color: white; border: none;
+  padding: 14px 36px; border-radius: 12px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-ja); transition: all 0.2s;
+}
+.btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--surface); color: var(--text-1);
+  border: 1px solid var(--border);
+  padding: 14px 36px; border-radius: 12px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-ja); transition: all 0.2s;
+}
+.btn-secondary:hover { background: var(--surface-2); }
+
+/* ═══════════════════════════════════════════
+   SIDE PANEL DEMO
+   ═══════════════════════════════════════════ */
+.demo-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+.demo-overlay.active { display: flex; align-items: center; justify-content: center; }
+
+.demo-container {
+  display: flex; gap: 0;
+  width: 95vw; max-width: 1400px;
+  height: 90vh;
+  animation: slideUp 0.4s ease both;
+}
+
+/* Fake browser */
+.fake-browser {
+  flex: 1;
+  background: var(--surface);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+  border-right: none;
+}
+.browser-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.browser-dots { display: flex; gap: 6px; }
+.browser-dot { width: 12px; height: 12px; border-radius: 50%; }
+.browser-dot.r { background: #FF5F57; }
+.browser-dot.y { background: #FEBC2E; }
+.browser-dot.g { background: #28C840; }
+.browser-url {
+  flex: 1; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 12px; font-size: 12px;
+  font-family: var(--font-en); color: var(--text-2);
+}
+.browser-body {
+  flex: 1; padding: 32px;
+  overflow-y: auto;
+  background: var(--bg);
+}
+.browser-body h2 {
+  font-size: 28px; font-weight: 700; margin-bottom: 8px;
+  color: var(--text-1);
+}
+.browser-body .fake-hero-text {
+  font-size: 14px; color: var(--text-2); margin-bottom: 24px; max-width: 480px;
+}
+.fake-cta-btn {
+  display: inline-block; background: #2563EB; color: white;
+  padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  margin-bottom: 32px;
+}
+.fake-section { margin-bottom: 24px; }
+.fake-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-1); }
+.fake-section p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+.fake-stats {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 16px 0;
+}
+.fake-stat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; text-align: center;
+}
+.fake-stat-num { font-family: var(--font-en); font-size: 24px; font-weight: 700; color: var(--brand); }
+.fake-stat-label { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+/* Side Panel */
+.side-panel {
+  width: 380px; flex-shrink: 0;
+  background: var(--surface);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  border: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.panel-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 700;
+}
+.panel-logo {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px; font-weight: 800;
+}
+.panel-close {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: none; background: transparent; cursor: pointer;
+  font-size: 18px; color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.panel-close:hover { background: var(--surface-2); color: var(--text-1); }
+
+/* Panel Nav */
+.panel-nav {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.panel-nav-item {
+  flex: 1; padding: 10px 8px; text-align: center;
+  font-size: 12px; font-weight: 500; color: var(--text-3);
+  border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s; font-family: var(--font-ja);
+}
+.panel-nav-item.active {
+  color: var(--brand); border-bottom-color: var(--brand); font-weight: 600;
+}
+.panel-nav-item:hover:not(.active) { color: var(--text-2); }
+
+/* Panel Body */
+.panel-body {
+  flex: 1; overflow-y: auto; padding: 16px;
+}
+
+/* Screen: Home */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.scan-btn {
+  width: 100%; padding: 14px;
+  background: var(--brand); color: white; border: none;
+  border-radius: var(--radius); font-size: 15px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-ja);
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.scan-btn:hover { background: var(--brand-dark); }
+.scan-btn svg { width: 18px; height: 18px; }
+
+/* Estimation Card */
+.est-card {
+  background: var(--brand-50);
+  border: 1px solid rgba(37,99,235,0.15);
+  border-radius: var(--radius);
+  padding: 16px; margin-top: 16px;
+}
+.est-label {
+  font-size: 11px; font-weight: 600; color: var(--brand);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;
+}
+.est-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0;
+}
+.est-key { font-size: 12px; color: var(--text-3); }
+.est-val { font-size: 13px; font-weight: 600; color: var(--text-1); }
+.confidence-bar {
+  width: 100%; height: 4px; background: rgba(37,99,235,0.15);
+  border-radius: 2px; margin-top: 10px; overflow: hidden;
+}
+.confidence-fill {
+  height: 100%; background: var(--brand); border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* Proposal Cards */
+.proposal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px; margin-top: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.proposal-card:hover {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.06);
+}
+.proposal-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 8px;
+}
+.proposal-priority {
+  font-family: var(--font-en); font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+}
+.priority-1 { background: #FEE2E2; color: #DC2626; }
+.priority-2 { background: #FEF3C7; color: #D97706; }
+.priority-3 { background: #E5E7EB; color: #6B7280; }
+.proposal-category {
+  font-size: 11px; color: var(--text-3); background: var(--surface-2);
+  padding: 2px 8px; border-radius: 4px;
+}
+.proposal-title {
+  font-size: 14px; font-weight: 600; color: var(--text-1);
+  margin-bottom: 6px; line-height: 1.5;
+}
+.proposal-impact {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-3);
+}
+.impact-dots { display: flex; gap: 3px; }
+.impact-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--surface-3);
+}
+.impact-dot.active { background: var(--brand); }
+.proposal-arrow {
+  font-size: 16px; color: var(--text-3); margin-left: auto;
+}
+
+/* Screen: Detail */
+.detail-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-3); cursor: pointer;
+  border: none; background: none; padding: 0; margin-bottom: 16px;
+  font-family: var(--font-ja);
+}
+.detail-back:hover { color: var(--text-1); }
+.detail-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.detail-category {
+  font-size: 12px; color: var(--brand); font-weight: 500; margin-bottom: 16px;
+}
+
+/* Before/After */
+.ba-section { margin-bottom: 16px; }
+.ba-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.ba-label.before { color: var(--text-3); }
+.ba-label.after { color: var(--success); }
+.ba-content {
+  background: var(--surface-2); border-radius: var(--radius-sm);
+  padding: 12px; font-size: 13px; line-height: 1.7; color: var(--text-2);
+  border-left: 3px solid transparent;
+}
+.ba-content.before-content { border-left-color: var(--surface-3); }
+.ba-content.after-content { border-left-color: var(--success); }
+
+/* Evidence */
+.evidence-box {
+  background: var(--brand-50);
+  border: 1px solid rgba(37,99,235,0.1);
+  border-radius: var(--radius-sm);
+  padding: 12px; margin-bottom: 16px;
+}
+.evidence-title { font-size: 11px; font-weight: 700; color: var(--brand); margin-bottom: 6px; }
+.evidence-text { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+/* Detail Actions */
+.detail-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.action-primary {
+  width: 100%; padding: 12px;
+  background: var(--brand); color: white; border: none;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-ja); transition: all 0.2s;
+}
+.action-primary:hover { background: var(--brand-dark); }
+.action-secondary {
+  width: 100%; padding: 12px;
+  background: var(--surface); color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-ja); transition: all 0.2s;
+}
+.action-secondary:hover { background: var(--surface-2); }
+
+/* Screen: Handoff Pack */
+.handoff-tabs {
+  display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  overflow: hidden; margin-bottom: 16px;
+}
+.handoff-tab {
+  flex: 1; padding: 10px; text-align: center;
+  font-size: 13px; font-weight: 500; border: none;
+  cursor: pointer; transition: all 0.2s;
+  font-family: var(--font-ja);
+  background: var(--surface);
+  color: var(--text-3);
+}
+.handoff-tab.active {
+  background: var(--brand); color: white; font-weight: 600;
+}
+
+.handoff-section {
+  margin-bottom: 16px;
+}
+.handoff-section-title {
+  font-size: 12px; font-weight: 700; color: var(--text-1);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.handoff-section-title .icon {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+.handoff-content {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 12px; font-size: 12px; line-height: 1.8;
+  color: var(--text-2);
+}
+.handoff-content strong { color: var(--text-1); font-weight: 600; }
+.handoff-content .tag {
+  display: inline-block; background: var(--brand-50); color: var(--brand);
+  padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 500;
+}
+.handoff-content .warn-tag {
+  display: inline-block; background: var(--warning-light); color: var(--warning);
+  padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 500;
+}
+
+/* Lock overlay (L0 gate) */
+.lock-overlay {
+  position: relative;
+  border: 1px dashed var(--brand);
+  border-radius: var(--radius);
+  padding: 20px; margin-top: 12px;
+  text-align: center; background: rgba(37,99,235,0.02);
+}
+.lock-icon { font-size: 32px; margin-bottom: 8px; }
+.lock-text { font-size: 14px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
+.lock-sub { font-size: 12px; color: var(--text-3); margin-bottom: 12px; }
+.lock-btn {
+  background: var(--brand); color: white; border: none;
+  padding: 10px 24px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-ja); transition: all 0.2s;
+}
+.lock-btn:hover { background: var(--brand-dark); }
+
+/* Screen: Log */
+.log-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.log-title { font-size: 16px; font-weight: 700; }
+.log-count { font-size: 12px; color: var(--text-3); }
+
+.log-entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px; margin-bottom: 10px;
+}
+.log-entry-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.log-entry-page { font-size: 13px; font-weight: 600; color: var(--text-1); }
+.log-entry-date { font-size: 11px; color: var(--text-3); font-family: var(--font-en); }
+.log-entry-proposal { font-size: 12px; color: var(--text-2); margin-bottom: 8px; }
+
+/* 5-Level Result Buttons */
+.result-buttons {
+  display: flex; gap: 4px;
+}
+.result-btn {
+  flex: 1; padding: 6px 2px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); cursor: pointer;
+  text-align: center; transition: all 0.2s;
+  font-family: var(--font-ja); font-size: 10px;
+  color: var(--text-3); line-height: 1.3;
+}
+.result-btn:hover { border-color: var(--text-3); }
+.result-btn.selected { color: white; border-color: transparent; }
+.result-btn.s5.selected { background: var(--impact-5); }
+.result-btn.s4.selected { background: var(--impact-4); }
+.result-btn.s3.selected { background: var(--impact-3); }
+.result-btn.s2.selected { background: var(--impact-2); }
+.result-btn.s1.selected { background: var(--impact-1); }
+
+.log-entry-result {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+.result-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 4px;
+}
+.result-badge.s5 { background: #ECFDF5; color: #059669; }
+.result-badge.s4 { background: #D1FAE5; color: #10B981; }
+.result-badge.s3 { background: #F3F4F6; color: #9CA3AF; }
+.result-badge.s2 { background: #FEF3C7; color: #D97706; }
+.result-badge.s1 { background: #FEE2E2; color: #EF4444; }
+.result-metric {
+  font-size: 11px; color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* Loading */
+.loading-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 60px 24px; text-align: center;
+}
+.loading-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--surface-2);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+.loading-text { font-size: 14px; color: var(--text-2); }
+.loading-step {
+  font-size: 12px; color: var(--text-3); margin-top: 8px;
+  font-family: var(--font-mono);
+}
+.progress-bar {
+  width: 200px; height: 3px;
+  background: var(--surface-2); border-radius: 2px;
+  margin-top: 16px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--brand);
+  border-radius: 2px; width: 0;
+  animation: progress 2.5s ease-in-out forwards;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes progress {
+  0% { width: 0; }
+  30% { width: 30%; }
+  60% { width: 65%; }
+  85% { width: 85%; }
+  100% { width: 100%; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav { padding: 12px 20px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 20px 60px; }
+  .features { padding: 60px 20px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .pain-section { padding: 60px 20px; }
+  .pain-grid { grid-template-columns: 1fr; }
+  .trust-bar { gap: 24px; }
+  .demo-container { flex-direction: column; width: 98vw; height: 95vh; }
+  .fake-browser { display: none; }
+  .side-panel { width: 100%; border-radius: var(--radius-lg); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LANDING PAGE
+     ═══════════════════════════════════════════ -->
+<div class="landing" id="landing">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">PG</div>
+      Publish Gate
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">機能</a>
+      <a href="#pain" class="nav-link">課題</a>
+      <a href="#pricing" class="nav-link">料金</a>
+      <button class="nav-cta" onclick="openDemo()">デモを見る →</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Chrome拡張で今すぐ使える
+    </div>
+
+    <h1>ページを開くだけで<br><span class="accent">改善が前に進む</span></h1>
+
+    <p class="hero-sub">
+      URLを入れるだけで、AIが改善提案を生成。<br>
+      デザイナー向け・エンジニア向けの依頼書まで自動で作る。
+    </p>
+
+    <!-- URL Input -->
+    <div class="url-input-wrapper">
+      <div class="url-input-box">
+        <svg class="url-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input class="url-input" type="url" id="urlInput" placeholder="https://example.com — 改善したいページのURL" />
+        <button class="url-submit" onclick="handleUrlSubmit()">改善ポイントを見つける</button>
+      </div>
+      <p class="url-hint">アカウント不要・無料で3回/日まで</p>
+    </div>
+
+    <!-- Trust -->
+    <div class="trust-bar">
+      <div class="trust-item">
+        <span class="trust-num">30</span>
+        <span class="trust-label">秒でFirst Value</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-num">3</span>
+        <span class="trust-label">件の改善提案</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-num">2</span>
+        <span class="trust-label">種類の依頼書</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="features-header">
+      <h2>改善サイクルを、一気通貫で</h2>
+      <p>分析・判断・実装依頼・結果記録をページ上で完結</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon blue">🔍</div>
+        <h3>AI分析＋改善提案</h3>
+        <p>ページの構造・コピー・CTAをAIが分析し、インパクト順に最大3件の具体的な改善提案を生成。Before/After付きで即座に判断できる。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon green">📋</div>
+        <h3>役割別の依頼パック</h3>
+        <p>デザイナーにはビジュアル指示書、エンジニアには実装仕様書を自動生成。「渡すだけで伝わる」品質で分業の摩擦をゼロにする。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon amber">📊</div>
+        <h3>実験ノート</h3>
+        <p>施策のBefore/After＋結果を5段階で記録。蓄積されたデータがAI精度を向上させ、改善のナレッジが複利で積み上がる。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pain Section -->
+  <section class="pain-section" id="pain">
+    <div class="pain-inner">
+      <h2>マーケターが毎日ぶつかる4つの壁</h2>
+      <div class="pain-grid">
+        <div class="pain-card">
+          <div class="pain-num">PAIN 01</div>
+          <h4>なぜ数字が悪いかわからない</h4>
+          <p>データはある。でも「なんでこの数字なのか」が見えない。分析に時間を使っても答えが出ない。</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-num">PAIN 02</div>
+          <h4>何をすればいいかわからない</h4>
+          <p>課題は感じている。でも確からしい仮説が立てられず、施策の優先度がつけられない。</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-num">PAIN 03</div>
+          <h4>実装に渡すと壊れる</h4>
+          <p>指示書を書くのに2時間。渡しても意図が伝わらず手戻り。分業の摩擦でスピードが出ない。</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-num">PAIN 04</div>
+          <h4>やったことが残らない</h4>
+          <p>施策を回す時間より、ログや報告書を作る時間のほうが長い。学びが属人化して組織に残らない。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>まずは30秒で試してみる</h2>
+    <p>アカウント不要。URLを入れるだけで改善提案が出ます。</p>
+    <div class="cta-buttons">
+      <button class="btn-primary" onclick="openDemo()">デモを体験する</button>
+      <button class="btn-secondary" onclick="document.querySelector('.url-input').focus()">URLを入力する ↑</button>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SIDE PANEL DEMO OVERLAY
+     ═══════════════════════════════════════════ -->
+<div class="demo-overlay" id="demoOverlay">
+  <div class="demo-container">
+
+    <!-- Fake Browser -->
+    <div class="fake-browser">
+      <div class="browser-bar">
+        <div class="browser-dots">
+          <div class="browser-dot r"></div>
+          <div class="browser-dot y"></div>
+          <div class="browser-dot g"></div>
+        </div>
+        <div class="browser-url" id="browserUrl">https://timetrack.example.com/lp</div>
+      </div>
+      <div class="browser-body">
+        <h2>TimeTrack — チームの時間を見える化</h2>
+        <p class="fake-hero-text">プロジェクト管理とタイムトラッキングを一つに。チームの稼働状況をリアルタイムで把握し、生産性を最大化。</p>
+        <div class="fake-cta-btn">無料で始める</div>
+
+        <div class="fake-stats">
+          <div class="fake-stat">
+            <div class="fake-stat-num">500+</div>
+            <div class="fake-stat-label">導入企業</div>
+          </div>
+          <div class="fake-stat">
+            <div class="fake-stat-num">98%</div>
+            <div class="fake-stat-label">継続率</div>
+          </div>
+          <div class="fake-stat">
+            <div class="fake-stat-num">4.8</div>
+            <div class="fake-stat-label">満足度</div>
+          </div>
+        </div>
+
+        <div class="fake-section">
+          <h3>主な機能</h3>
+          <p>リアルタイム稼働ダッシュボード、プロジェクト別レポート、Slack/Teams連携、カスタムアラート設定。チームの生産性向上に必要な機能を網羅。</p>
+        </div>
+        <div class="fake-section">
+          <h3>導入事例</h3>
+          <p>株式会社A社様では導入後3ヶ月で残業時間を30%削減。プロジェクトの見積精度が向上し、利益率が12%改善しました。</p>
+        </div>
+        <div class="fake-section">
+          <h3>料金プラン</h3>
+          <p>Starter: ¥980/月/人、Professional: ¥2,480/月/人、Enterprise: お問い合わせ。14日間無料トライアル付き。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+      <!-- Header -->
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-logo">PG</div>
+          Publish Gate
+        </div>
+        <button class="panel-close" onclick="closeDemo()">✕</button>
+      </div>
+
+      <!-- Nav -->
+      <div class="panel-nav">
+        <button class="panel-nav-item active" data-screen="home" onclick="switchScreen('home', this)">ホーム</button>
+        <button class="panel-nav-item" data-screen="detail" onclick="switchScreen('detail', this)">詳細</button>
+        <button class="panel-nav-item" data-screen="handoff" onclick="switchScreen('handoff', this)">依頼パック</button>
+        <button class="panel-nav-item" data-screen="log" onclick="switchScreen('log', this)">実験ノート</button>
+      </div>
+
+      <!-- Body -->
+      <div class="panel-body">
+
+        <!-- HOME: Loading -->
+        <div class="screen" id="screen-loading">
+          <div class="loading-screen">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">ページを分析中...</div>
+            <div class="loading-step" id="loadingStep">DOM構造を読み取り中</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- HOME: Results -->
+        <div class="screen active" id="screen-home">
+          <button class="scan-btn" onclick="startScan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            改善ポイントを見つける
+          </button>
+
+          <!-- After scan results (hidden initially) -->
+          <div id="scanResults" style="display:none;">
+            <div class="est-card">
+              <div class="est-label">ページ推定</div>
+              <div class="est-row"><span class="est-key">種別</span><span class="est-val">BtoB SaaS 新規獲得LP</span></div>
+              <div class="est-row"><span class="est-key">主要CV</span><span class="est-val">無料トライアル申込</span></div>
+              <div class="est-row"><span class="est-key">ターゲット</span><span class="est-val">中小企業のプロジェクト管理者</span></div>
+              <div class="est-row"><span class="est-key">推定確度</span><span class="est-val" style="color:var(--brand)">78%</span></div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:78%"></div></div>
+            </div>
+
+            <!-- Proposal 1 -->
+            <div class="proposal-card" onclick="showDetail(1)">
+              <div class="proposal-top">
+                <span class="proposal-priority priority-1">P1</span>
+                <span class="proposal-category">コピー改善</span>
+              </div>
+              <div class="proposal-title">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+              <div class="proposal-impact">
+                <span>期待インパクト</span>
+                <div class="impact-dots">
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot"></div>
+                </div>
+                <span class="proposal-arrow">›</span>
+              </div>
+            </div>
+
+            <!-- Proposal 2 -->
+            <div class="proposal-card" onclick="showDetail(2)">
+              <div class="proposal-top">
+                <span class="proposal-priority priority-1">P1</span>
+                <span class="proposal-category">CTA最適化</span>
+              </div>
+              <div class="proposal-title">CTAのマイクロコピーを行動ベネフィット型に変更</div>
+              <div class="proposal-impact">
+                <span>期待インパクト</span>
+                <div class="impact-dots">
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot"></div>
+                </div>
+                <span class="proposal-arrow">›</span>
+              </div>
+            </div>
+
+            <!-- Proposal 3 -->
+            <div class="proposal-card" onclick="showDetail(3)">
+              <div class="proposal-top">
+                <span class="proposal-priority priority-2">P2</span>
+                <span class="proposal-category">信頼性強化</span>
+              </div>
+              <div class="proposal-title">FV直下に具体的な成果数値を追加</div>
+              <div class="proposal-impact">
+                <span>期待インパクト</span>
+                <div class="impact-dots">
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot active"></div>
+                  <div class="impact-dot"></div>
+                  <div class="impact-dot"></div>
+                </div>
+                <span class="proposal-arrow">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETAIL -->
+        <div class="screen" id="screen-detail">
+          <button class="detail-back" onclick="switchScreen('home')">← 提案一覧に戻る</button>
+          <div class="detail-title" id="detailTitle">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+          <div class="detail-category" id="detailCategory">コピー改善 · P1</div>
+
+          <div class="ba-section">
+            <div class="ba-label before">● BEFORE（現状）</div>
+            <div class="ba-content before-content" id="detailBefore">
+              「チームの時間を見える化」「プロジェクト管理とタイムトラッキングを一つに」 — 機能の説明に終始し、ユーザーが得られる成果が伝わらない。
+            </div>
+          </div>
+
+          <div class="ba-section">
+            <div class="ba-label after">● AFTER（変更後）</div>
+            <div class="ba-content after-content" id="detailAfter">
+              「チームの残業を30%減らす方法、見つかります」「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」 — 具体的な成果数値で訴求し、試用ハードルを下げる。
+            </div>
+          </div>
+
+          <div class="evidence-box">
+            <div class="evidence-title">📎 根拠</div>
+            <div class="evidence-text" id="detailEvidence">
+              BtoB SaaS LPの上位CVR事例では、FVのキャッチコピーが「機能名」ではなく「ユーザーの得られる成果」を具体的な数値で訴求するパターンが有効。導入事例セクションに「残業30%削減」「利益率12%改善」の実績があり、これをFVに引き上げることで説得力が大幅に向上する。
+            </div>
+          </div>
+
+          <div class="detail-actions">
+            <button class="action-primary" onclick="switchScreen('handoff')">📋 依頼パックを作る</button>
+            <button class="action-secondary" onclick="alert('プレビュー機能: ページ上にリアルタイムで変更が反映されます（デモでは省略）')">👁 プレビューで確認</button>
+          </div>
+        </div>
+
+        <!-- HANDOFF PACK -->
+        <div class="screen" id="screen-handoff">
+          <button class="detail-back" onclick="switchScreen('detail')">← 提案詳細に戻る</button>
+
+          <div style="font-size:16px;font-weight:700;margin-bottom:4px;">依頼パック</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+
+          <div class="handoff-tabs">
+            <button class="handoff-tab active" onclick="switchHandoffTab('designer', this)">🎨 デザイナー向け</button>
+            <button class="handoff-tab" onclick="switchHandoffTab('engineer', this)">⚙️ エンジニア向け</button>
+          </div>
+
+          <!-- Designer Tab -->
+          <div id="tab-designer">
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:var(--brand-50);color:var(--brand);">🎯</span>
+                変更の目的
+              </div>
+              <div class="handoff-content">
+                FVのキャッチコピーを<strong>機能説明型</strong>から<strong>成果訴求型</strong>に変更し、CVR向上を狙う。ユーザーが「自分ごと」として捉えられる表現にする。
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#ECFDF5;color:#059669;">✏️</span>
+                コピー変更指示
+              </div>
+              <div class="handoff-content">
+                <strong>メインコピー:</strong><br>
+                現: 「チームの時間を見える化」<br>
+                → 新: 「チームの残業を30%減らす方法、見つかります」<br><br>
+                <strong>サブコピー:</strong><br>
+                現: 「プロジェクト管理とタイムトラッキングを一つに」<br>
+                → 新: 「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」<br><br>
+                <span class="tag">トーン</span> 信頼感＋具体性。数字を主語にする。<br>
+                <span class="tag">フォント</span> メインコピーは現状のウェイトを維持。数字部分のみ太字強調を推奨。
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#FEF3C7;color:#D97706;">⚠️</span>
+                注意事項
+              </div>
+              <div class="handoff-content">
+                <span class="warn-tag">要確認</span> 数値「30%」「12%」は既存の導入事例セクションからの引用。マーケ担当に最新数値を確認のこと。<br><br>
+                <span class="warn-tag">NG</span> 「業界No.1」等の根拠なき最上級表現は使用しない。
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#F3F4F6;color:#6B7280;">✅</span>
+                確認チェックリスト
+              </div>
+              <div class="handoff-content">
+                □ メインコピーが1行に収まるか（SP表示で折り返し確認）<br>
+                □ 数値の強調が周囲のデザインと調和するか<br>
+                □ サブコピーのCTA誘導が自然か<br>
+                □ OGP画像のテキストも更新が必要か確認
+              </div>
+            </div>
+          </div>
+
+          <!-- Engineer Tab -->
+          <div id="tab-engineer" style="display:none;">
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:var(--brand-50);color:var(--brand);">🎯</span>
+                変更概要
+              </div>
+              <div class="handoff-content">
+                FVセクションのテキスト要素2箇所を変更。DOM構造・レイアウトの変更は不要。テキストのみの差し替え。
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#ECFDF5;color:#059669;">📝</span>
+                変更対象
+              </div>
+              <div class="handoff-content" style="font-family:var(--font-mono);font-size:11px;line-height:2;">
+                <strong>対象1: メインコピー</strong><br>
+                セレクタ: <span class="tag">.hero h2</span> or <span class="tag">.hero-title</span><br>
+                現テキスト: "チームの時間を見える化"<br>
+                新テキスト: "チームの残業を30%減らす方法、見つかります"<br><br>
+
+                <strong>対象2: サブコピー</strong><br>
+                セレクタ: <span class="tag">.hero p</span> or <span class="tag">.hero-subtitle</span><br>
+                現テキスト: "プロジェクト管理と..."<br>
+                新テキスト: "導入3ヶ月で利益率12%改善 — まずは14日間、無料で"
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#FEF3C7;color:#D97706;">📐</span>
+                実装仕様
+              </div>
+              <div class="handoff-content" style="font-family:var(--font-mono);font-size:11px;line-height:2;">
+                <strong>スコープ:</strong> テキスト差し替えのみ<br>
+                <strong>CSS変更:</strong> なし（既存スタイル適用）<br>
+                <strong>JS変更:</strong> なし<br>
+                <strong>影響範囲:</strong> FVセクションのみ<br>
+                <strong>SEO:</strong> title/descriptionの更新は不要（FV内テキストのみ）<br>
+                <strong>i18n:</strong> 日本語のみ（多言語対応なし）
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#FEE2E2;color:#EF4444;">🧪</span>
+                テスト項目
+              </div>
+              <div class="handoff-content">
+                □ PC / Tablet / SP で表示崩れがないこと<br>
+                □ 新テキストが1行に収まること（SP幅375px）<br>
+                □ Lighthouse スコアに影響がないこと<br>
+                □ 構造化データ（JSON-LD）に影響がないこと
+              </div>
+            </div>
+
+            <div class="handoff-section">
+              <div class="handoff-section-title">
+                <span class="icon" style="background:#F3F4F6;color:#6B7280;">📊</span>
+                計測設計
+              </div>
+              <div class="handoff-content">
+                <strong>観測期間:</strong> 変更後14日間<br>
+                <strong>主要KPI:</strong> FV→CTA到達率、CTA CTR<br>
+                <strong>比較基準:</strong> 変更前14日間の同KPI<br>
+                <strong>GA4イベント:</strong> 既存のscroll_depth, cta_clickで計測可能（追加不要）
+              </div>
+            </div>
+          </div>
+
+          <!-- L0 Gate -->
+          <div class="lock-overlay">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-text">依頼パックをコピーするには</div>
+            <div class="lock-sub">無料アカウントを作成すると、依頼パックのコピー・共有が使い放題になります</div>
+            <button class="lock-btn">無料アカウントを作成（10秒）</button>
+          </div>
+        </div>
+
+        <!-- LOG (Lab Notebook) -->
+        <div class="screen" id="screen-log">
+          <div class="log-header">
+            <div class="log-title">実験ノート</div>
+            <div class="log-count">3件の記録</div>
+          </div>
+
+          <!-- Log entry 1: with result -->
+          <div class="log-entry">
+            <div class="log-entry-top">
+              <div class="log-entry-page">TimeTrack LP</div>
+              <div class="log-entry-date">2026-02-28</div>
+            </div>
+            <div class="log-entry-proposal">CTAマイクロコピーを「無料で始める」→「14日間無料で試す」に変更</div>
+            <div class="log-entry-result">
+              <span class="result-badge s5">大幅改善</span>
+              <span class="result-metric">CTR 1.2% → 2.8% (+133%)</span>
+            </div>
+          </div>
+
+          <!-- Log entry 2: with result -->
+          <div class="log-entry">
+            <div class="log-entry-top">
+              <div class="log-entry-page">Corp. サービスページ</div>
+              <div class="log-entry-date">2026-02-25</div>
+            </div>
+            <div class="log-entry-proposal">事例セクションをFV直下に移動</div>
+            <div class="log-entry-result">
+              <span class="result-badge s4">やや改善</span>
+              <span class="result-metric">直帰率 68% → 61% (-7pt)</span>
+            </div>
+          </div>
+
+          <!-- Log entry 3: pending result -->
+          <div class="log-entry">
+            <div class="log-entry-top">
+              <div class="log-entry-page">料金ページ</div>
+              <div class="log-entry-date">2026-03-01</div>
+            </div>
+            <div class="log-entry-proposal">FVの訴求を「機能説明」から「成果訴求」に転換</div>
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light);">
+              <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;">結果を記録:</div>
+              <div class="result-buttons">
+                <button class="result-btn s5" onclick="selectResult(this, 's5')">大幅<br>改善</button>
+                <button class="result-btn s4" onclick="selectResult(this, 's4')">やや<br>改善</button>
+                <button class="result-btn s3" onclick="selectResult(this, 's3')">変化<br>なし</button>
+                <button class="result-btn s2" onclick="selectResult(this, 's2')">やや<br>悪化</button>
+                <button class="result-btn s1" onclick="selectResult(this, 's1')">大幅<br>悪化</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── Demo Control ───
+function openDemo() {
+  document.getElementById('demoOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeDemo() {
+  document.getElementById('demoOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function handleUrlSubmit() {
+  const url = document.getElementById('urlInput').value;
+  if (url) {
+    document.getElementById('browserUrl').textContent = url;
+  }
+  openDemo();
+  setTimeout(() => startScan(), 500);
+}
+
+// ─── Screen Switching ───
+function switchScreen(name, navBtn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + name);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.panel-nav-item').forEach(n => n.classList.remove('active'));
+  if (navBtn) {
+    navBtn.classList.add('active');
+  } else {
+    document.querySelectorAll('.panel-nav-item').forEach(n => {
+      if (n.dataset.screen === name) n.classList.add('active');
+    });
+  }
+}
+
+// ─── Scan Simulation ───
+function startScan() {
+  document.getElementById('scanResults').style.display = 'none';
+  switchScreen('loading');
+
+  const steps = [
+    'DOM構造を読み取り中',
+    'FVテキストを抽出中',
+    'CTA周辺コピーを分析中',
+    'AI分析を実行中...',
+    '改善提案を生成中...',
+  ];
+
+  let i = 0;
+  const stepEl = document.getElementById('loadingStep');
+  const interval = setInterval(() => {
+    i++;
+    if (i < steps.length) {
+      stepEl.textContent = steps[i];
+    } else {
+      clearInterval(interval);
+      switchScreen('home');
+      document.getElementById('scanResults').style.display = 'block';
+      document.querySelector('.scan-btn').style.display = 'none';
+    }
+  }, 500);
+}
+
+// ─── Proposal Detail ───
+const proposals = {
+  1: {
+    title: 'FVの訴求を「機能説明」から「成果訴求」に転換',
+    category: 'コピー改善 · P1',
+    before: '「チームの時間を見える化」「プロジェクト管理とタイムトラッキングを一つに」 — 機能の説明に終始し、ユーザーが得られる成果が伝わらない。',
+    after: '「チームの残業を30%減らす方法、見つかります」「導入3ヶ月で利益率12%改善 — まずは14日間、無料で」 — 具体的な成果数値で訴求し、試用ハードルを下げる。',
+    evidence: 'BtoB SaaS LPの上位CVR事例では、FVのキャッチコピーが「機能名」ではなく「ユーザーの得られる成果」を具体的な数値で訴求するパターンが有効。導入事例セクションに「残業30%削減」「利益率12%改善」の実績があり、これをFVに引き上げることで説得力が大幅に向上する。',
+  },
+  2: {
+    title: 'CTAのマイクロコピーを行動ベネフィット型に変更',
+    category: 'CTA最適化 · P1',
+    before: '「無料で始める」 — 汎用的な表現で差別化がない。「始める」が何を意味するかが曖昧で、クリック後の体験がイメージできない。',
+    after: '「14日間、チームで無料トライアル」 — 期間の明示でリスク軽減を伝え、「チームで」を入れることで組織的な活用イメージを喚起。',
+    evidence: 'CTA文言のA/Bテスト事例では「期間＋無料」の組み合わせが最もCTRが高い。また「始める」より「試す/試してみる」のほうが心理的ハードルが低い。現状のCTAは周囲のSaaS LPと差別化できていない。',
+  },
+  3: {
+    title: 'FV直下に具体的な成果数値を追加',
+    category: '信頼性強化 · P2',
+    before: '実績数値（500+社、98%継続率、4.8満足度）がページ中盤に配置されており、FVだけで離脱するユーザーには訴求が届かない。',
+    after: '「残業30%削減」「利益率12%改善」「導入後3ヶ月で効果実感」の3つの成果数値をFV直下にバッジ形式で配置。スクロールせずに信頼性を感じられる設計にする。',
+    evidence: 'ページ中盤の導入事例セクションに具体的な成果数値が存在するが、平均的なLPユーザーの50%以上がFV内で離脱するデータがある。最も説得力のある数値をFVに引き上げることで、離脱前に信頼性を訴求できる。',
+  },
+};
+
+function showDetail(id) {
+  const p = proposals[id];
+  document.getElementById('detailTitle').textContent = p.title;
+  document.getElementById('detailCategory').textContent = p.category;
+  document.getElementById('detailBefore').textContent = p.before;
+  document.getElementById('detailAfter').textContent = p.after;
+  document.getElementById('detailEvidence').textContent = p.evidence;
+  switchScreen('detail');
+}
+
+// ─── Handoff Tabs ───
+function switchHandoffTab(tab, btn) {
+  document.querySelectorAll('.handoff-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-designer').style.display = tab === 'designer' ? 'block' : 'none';
+  document.getElementById('tab-engineer').style.display = tab === 'engineer' ? 'block' : 'none';
+}
+
+// ─── Result Selection (5-level) ───
+function selectResult(btn, level) {
+  const buttons = btn.parentElement.querySelectorAll('.result-btn');
+  buttons.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ─── Keyboard ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDemo();
+});
+
+// ─── URL input enter ───
+document.getElementById('urlInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleUrlSubmit();
+});
+</script>
+
+</body>
+</html>

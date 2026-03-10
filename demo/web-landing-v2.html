@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Gate — ページを開くだけで、改善の判断が前に進む</title>
+<meta name="description" content="URLを入力するだけ。30秒でAIが根拠つきの改善提案を出します。登録不要・無料。">
+<meta property="og:title" content="Publish Gate">
+<meta property="og:description" content="ページを開くだけで、改善の判断が前に進む">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --primary: #2563EB; --primary-light: #EFF6FF; --success: #059669;
+    --success-light: #ECFDF5; --warning: #D97706; --danger: #DC2626;
+    --text: #1E293B; --text2: #64748B; --bg: #F8FAFC; --surface: #FFF; --border: #E2E8F0;
+    --font: 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); color: var(--text); background: var(--bg); line-height: 1.6; }
+  a { color: var(--primary); text-decoration: none; }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px 24px; }
+  .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; }
+  .nav-logo-icon { background: var(--primary); color: #fff; font-size: 14px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .nav-cta { background: var(--primary); color: #fff; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; transition: opacity .15s; }
+  .nav-cta:hover { opacity: .88; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 80px 24px 40px; max-width: 700px; margin: 0 auto; }
+  .hero h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; line-height: 1.3; margin-bottom: 16px; letter-spacing: -.02em; }
+  .hero p { font-size: 16px; color: var(--text2); margin-bottom: 32px; }
+
+  /* Input area */
+  .input-area { max-width: 600px; margin: 0 auto; display: flex; gap: 8px; }
+  .input-area input { flex: 1; padding: 14px 18px; border: 2px solid var(--border); border-radius: 10px; font-size: 16px; font-family: var(--font); transition: border-color .15s; }
+  .input-area input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .input-area button { background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+  .input-area button:hover { opacity: .88; }
+  .input-area button:disabled { opacity: .5; cursor: not-allowed; }
+  .sub-text { text-align: center; margin-top: 12px; font-size: 13px; color: var(--text2); }
+
+  /* Result */
+  .result-container { max-width: 700px; margin: 40px auto; padding: 0 24px; display: none; }
+  .result-container.show { display: block; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .result-card h3 { font-size: 16px; margin-bottom: 12px; }
+  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .badge-pass { background: var(--success-light); color: var(--success); }
+  .badge-fail { background: #FEF2F2; color: var(--danger); }
+  .badge-hold { background: #FFFBEB; color: var(--warning); }
+  .result-row { display: flex; gap: 8px; align-items: baseline; margin: 8px 0; font-size: 14px; }
+  .result-label { font-weight: 600; color: var(--text2); min-width: 80px; font-size: 13px; }
+  .diff-box { margin: 12px 0; }
+  .diff-before { padding: 8px 12px; border-left: 3px solid var(--danger); background: #FEF2F2; border-radius: 0 6px 6px 0; font-size: 14px; margin-bottom: 6px; }
+  .diff-after { padding: 8px 12px; border-left: 3px solid var(--success); background: var(--success-light); border-radius: 0 6px 6px 0; font-size: 14px; }
+  .evidence { font-size: 13px; color: var(--text2); padding: 8px 12px; background: var(--bg); border-radius: 6px; margin-top: 8px; }
+  .proposal-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: var(--surface); }
+  .proposal-title { font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+
+  /* Loading */
+  .loading-state { text-align: center; padding: 40px; }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CTA section */
+  .cta-install { max-width: 700px; margin: 0 auto 40px; padding: 0 24px; }
+  .cta-install-card { background: var(--primary-light); border: 1px solid #BFDBFE; border-radius: 12px; padding: 24px; text-align: center; }
+  .cta-install-card h3 { font-size: 18px; margin-bottom: 8px; }
+  .cta-install-card p { font-size: 14px; color: var(--text2); margin-bottom: 16px; }
+  .cta-install-card .nav-cta { font-size: 16px; padding: 12px 32px; }
+
+  /* Features */
+  .features { max-width: 800px; margin: 60px auto; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+  .feature { text-align: center; padding: 24px 16px; }
+  .feature-icon { font-size: 32px; margin-bottom: 12px; }
+  .feature h3 { font-size: 15px; margin-bottom: 6px; }
+  .feature p { font-size: 13px; color: var(--text2); }
+
+  /* Footer */
+  .footer { text-align: center; padding: 32px; font-size: 12px; color: var(--text2); border-top: 1px solid var(--border); margin-top: 60px; }
+
+  /* Error */
+  .error-msg { background: #FEF2F2; color: var(--danger); padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-top: 12px; max-width: 600px; margin-left: auto; margin-right: auto; display: none; }
+  .error-msg.show { display: block; }
+
+  @media (max-width: 600px) {
+    .input-area { flex-direction: column; }
+    .input-area button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><div class="nav-logo-icon">PG</div>Publish Gate</div>
+  <a href="https://chrome.google.com/webstore" class="nav-cta">拡張をインストール →</a>
+</nav>
+
+<section class="hero">
+  <h1>ページを開くだけで、<br>改善の判断が前に進む</h1>
+  <p>URLを入力するだけ。30秒でAIが根拠つきの改善提案を出します。</p>
+  <div class="input-area">
+    <input type="url" id="urlInput" placeholder="https://example.com/lp" autocomplete="url">
+    <button id="analyzeBtn">チェック →</button>
+  </div>
+  <p class="sub-text">登録不要・無料・30秒で結果</p>
+  <div class="error-msg" id="errorMsg"></div>
+</section>
+
+<div class="result-container" id="resultContainer">
+  <div id="resultInner"></div>
+  <div class="cta-install">
+    <div class="cta-install-card">
+      <h3>🔌 もっと深く使うなら</h3>
+      <p>Chrome拡張をインストールすると、ページ上で即時プレビュー、<br>判断ログの蓄積、GSC/GA4連携が使えます。</p>
+      <a href="https://chrome.google.com/webstore" class="nav-cta">Chrome拡張をインストール →</a>
+    </div>
+  </div>
+</div>
+
+<div class="features" id="featureSection">
+  <div class="feature">
+    <div class="feature-icon">📊</div>
+    <h3>根拠つきの改善提案</h3>
+    <p>AIがページ構造を分析し、確からしさ付きで改善ポイントを提示</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">📋</div>
+    <h3>そのまま渡せる依頼パック</h3>
+    <p>デザイナー・エンジニアに「これだけ見れば実装できる」指示書を自動生成</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">🔄</div>
+    <h3>結果が積み上がる学習ループ</h3>
+    <p>判断ログが蓄積され、次回の分析精度が自動的に向上</p>
+  </div>
+</div>
+
+<footer class="footer">© 2026 Publish Gate</footer>
+
+<script>
+const urlInput = document.getElementById('urlInput');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const resultContainer = document.getElementById('resultContainer');
+const resultInner = document.getElementById('resultInner');
+const errorMsg = document.getElementById('errorMsg');
+const featureSection = document.getElementById('featureSection');
+
+analyzeBtn.addEventListener('click', runAnalysis);
+urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runAnalysis(); });
+
+async function runAnalysis() {
+  const url = urlInput.value.trim();
+  if (!url || !url.startsWith('http')) {
+    showError('有効なURLを入力してください（https://...）');
+    return;
+  }
+  hideError();
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = '分析中…';
+  resultContainer.classList.remove('show');
+
+  resultInner.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>AIがページを分析中…（約30秒）</p></div>';
+  resultContainer.classList.add('show');
+  featureSection.style.display = 'none';
+
+  try {
+    // In production: call API proxy. For demo, show placeholder.
+    const response = await fetch('/api/v1/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, layer: 0 }),
+    });
+
+    if (!response.ok) throw new Error('API error');
+    const data = await response.json();
+    renderResult(data);
+  } catch (e) {
+    // Demo fallback: show sample result
+    renderResult(sampleResult(url));
+  } finally {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = 'チェック →';
+  }
+}
+
+function renderResult(data) {
+  const gc = data.goal_card || {};
+  const j = data.judgment || 'PASS';
+  const proposals = data.proposals || [];
+
+  let html = `
+    <div class="result-card">
+      <h3>📊 分析結果 <span class="result-badge badge-${j.toLowerCase()}">${j}</span></h3>
+      <div class="result-row"><span class="result-label">🏢 事業</span><span>${esc(gc.company_hypothesis || '—')}</span></div>
+      <div class="result-row"><span class="result-label">📄 役割</span><span>${esc(gc.page_role || '—')}</span></div>
+      <div class="result-row"><span class="result-label">🎯 主要CV</span><span>${esc(gc.primary_cv || '—')}</span></div>
+      ${gc.good_outcome_hypothesis ? `<div class="result-row"><span class="result-label">💡 仮説</span><span>${esc(gc.good_outcome_hypothesis)}</span></div>` : ''}
+      ${data.judgment_reason ? `<p style="font-size:13px;color:var(--text2);margin-top:8px">${esc(data.judgment_reason)}</p>` : ''}
+    </div>`;
+
+  proposals.forEach((p, i) => {
+    html += `
+      <div class="proposal-card">
+        <div class="proposal-title">${i === 0 ? '★ ' : ''}提案 ${i + 1}: ${esc(p.title)}</div>
+        <div class="diff-box">
+          <div class="diff-before">Before: ${esc(p.before)}</div>
+          <div class="diff-after">After: ${esc(p.after)}</div>
+        </div>
+        <div class="evidence">根拠: ${esc(p.evidence)}</div>
+        <div style="margin-top:6px"><span class="result-badge badge-${p.confidence === 'high' ? 'pass' : p.confidence === 'medium' ? 'hold' : 'fail'}">確度: ${p.confidence}</span></div>
+      </div>`;
+  });
+
+  if (data.layer_upgrade_hint) {
+    html += `<p style="text-align:center;font-size:13px;color:var(--text2);margin-top:16px">${esc(data.layer_upgrade_hint)}</p>`;
+  }
+
+  resultInner.innerHTML = html;
+  resultContainer.classList.add('show');
+}
+
+function sampleResult(url) {
+  const domain = (() => { try { return new URL(url).hostname; } catch { return url; } })();
+  return {
+    goal_card: {
+      company_hypothesis: `${domain} のWebサービス`,
+      page_role: '獲得LP',
+      primary_cv: '問い合わせ / 資料請求',
+      good_outcome_hypothesis: '質の高いリードの獲得',
+      confidence: 'medium',
+    },
+    judgment: 'PASS',
+    judgment_reason: 'ページ構造に大きな問題はありませんが、CTA周りの改善余地があります。',
+    proposals: [
+      { priority: 1, title: 'CTAのマイクロコピー改善', before: '「お問い合わせ」', after: '「3分で無料相談する」', evidence: 'CTAが一般的な表現で、行動を促す具体性が不足', confidence: 'high', category: 'cta' },
+      { priority: 2, title: 'ファーストビュー直下に実績数値を追加', before: '実績表示なし', after: '「導入企業300社以上」をロゴ付きで表示', evidence: 'BtoB LPでは信頼の可視化がCVR向上に直結', confidence: 'medium', category: 'trust' },
+    ],
+    layer_upgrade_hint: '💡 Chrome拡張をインストールすると、ページ上で即時プレビュー＋判断ログの蓄積ができます',
+  };
+}
+
+function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.add('show'); }
+function hideError() { errorMsg.classList.remove('show'); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+</script>
+</body>
+</html>
