@@ -4,7 +4,8 @@ import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limi
 import { runAnalysis, storeAnalysis, getAnalysis } from '../../../lib/analyzer';
 import type { AnalyzeRequest } from '../../../lib/types';
 
-// CORS headers for Chrome extension access
+// CORS headers: '*' required for Chrome extension (chrome-extension:// origins are unpredictable)
+// Phase 1+: restrict to dashboard origin + extension ID when auth is added
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',

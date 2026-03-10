@@ -139,6 +139,24 @@ export async function fetchWithSSRFProtection(
     const maxRedirects = 3;
 
     while (redirectCount <= maxRedirects) {
+      // DNS rebinding defense: resolve hostname and check IP before fetching
+      const parsedUrl = new URL(currentUrl);
+      if (!isIPAddress(parsedUrl.hostname)) {
+        try {
+          const { resolve4 } = await import('node:dns/promises');
+          const addresses = await resolve4(parsedUrl.hostname);
+          for (const addr of addresses) {
+            if (!validateResolvedIP(addr)) {
+              throw new SSRFError(`DNSが内部IPに解決されました: ${parsedUrl.hostname} -> ${addr}`);
+            }
+          }
+        } catch (e) {
+          // If DNS resolution fails with SSRFError, re-throw
+          if (e instanceof SSRFError) throw e;
+          // Otherwise DNS resolution unavailable (edge runtime) — proceed with URL-level checks only
+        }
+      }
+
       const response = await fetch(currentUrl, {
         signal: controller.signal,
         redirect: 'manual',
