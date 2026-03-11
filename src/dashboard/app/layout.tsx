@@ -4,18 +4,18 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Publish Gate - URLを入れるだけで、プロのマーケ責任者がやることを全部やってくれる',
-  description: 'URLを入力するだけで、LP分析・課題診断・デザイナーへの改善依頼書まで自動生成。何を聞くべきかすら知らなくても、答えが出るAI分析エンジン。',
+  title: 'Publish Gate — ページを開くだけで、改善が前に進む',
+  description: 'URLを入れるだけで、LP改善提案を自動生成。デザイナー向け・エンジニア向けの依頼書まで作ります。アカウント不要・無料。',
   openGraph: {
-    title: 'Publish Gate — URLを入れるだけでLP改善が見える',
-    description: '課題の診断からデザイナーへの依頼書まで自動生成。アカウント登録不要・完全無料。',
+    title: 'Publish Gate — ページを開くだけで、改善が前に進む',
+    description: 'URLを入れるだけで、LP改善提案を自動生成。デザイナー向け・エンジニア向けの依頼書まで作ります。',
     type: 'website',
     siteName: 'Publish Gate',
   },
   twitter: {
     card: 'summary',
-    title: 'Publish Gate — URLを入れるだけでLP改善が見える',
-    description: '課題の診断からデザイナーへの依頼書まで自動生成。アカウント登録不要・完全無料。',
+    title: 'Publish Gate — ページを開くだけで、改善が前に進む',
+    description: 'URLを入れるだけで、LP改善提案を自動生成。デザイナー向け・エンジニア向けの依頼書まで作ります。',
   },
 };
 
@@ -31,22 +31,21 @@ export default function RootLayout({
             Using link tags with preconnect for equivalent performance. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-screen bg-[#F8F9FB]">
-        <header className="border-b border-[#E2E8F0] bg-white">
+      <body className="min-h-screen bg-[#FAFBFC]" style={{ fontFamily: "'Noto Sans JP', sans-serif" }}>
+        <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-white/85 backdrop-blur-lg">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-14 items-center justify-between">
-              <Link href="/" className="flex items-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#1B3A5C]">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.8" />
-                  <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-lg font-bold text-[#1B3A5C]">Publish Gate</span>
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center text-white text-xs font-extrabold">
+                  PG
+                </div>
+                <span className="text-lg font-bold text-[#111827]">Publish Gate</span>
               </Link>
-              <nav className="flex items-center gap-4 text-sm text-[#64748B]">
-                <span>Phase 0.5 β</span>
+              <nav className="hidden sm:flex items-center gap-8 text-sm">
+                <a href="#features" className="text-[#4B5563] hover:text-[#111827] transition-colors">機能</a>
+                <a href="#pain" className="text-[#4B5563] hover:text-[#111827] transition-colors">課題</a>
               </nav>
             </div>
           </div>
