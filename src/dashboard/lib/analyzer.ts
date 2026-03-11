@@ -9,7 +9,32 @@ import type { AnalysisResult, AnalyzeResponse, AnalysisProgress } from './types'
 
 export type ProgressCallback = (progress: AnalysisProgress) => void;
 
+// In-flight request deduplication: prevents concurrent Claude API calls for the same URL
+const inflightRequests = new Map<string, Promise<AnalyzeResponse>>();
+
 export async function runAnalysis(
+  url: string,
+  onProgress?: ProgressCallback
+): Promise<AnalyzeResponse> {
+  const cacheKey = normalizeUrlForCache(url);
+
+  // Return existing in-flight promise if same URL is already being analyzed
+  const inflight = inflightRequests.get(cacheKey);
+  if (inflight) {
+    return inflight;
+  }
+
+  const promise = runAnalysisInternal(url, onProgress);
+  inflightRequests.set(cacheKey, promise);
+
+  try {
+    return await promise;
+  } finally {
+    inflightRequests.delete(cacheKey);
+  }
+}
+
+async function runAnalysisInternal(
   url: string,
   onProgress?: ProgressCallback
 ): Promise<AnalyzeResponse> {

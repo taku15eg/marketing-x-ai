@@ -37,8 +37,9 @@ export default function SharePage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="flex items-center justify-center py-24">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1B3A5C] border-t-transparent" />
+        <div className="flex items-center justify-center py-24" role="status" aria-busy="true">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1B3A5C] border-t-transparent" aria-hidden="true" />
+          <span className="sr-only">読み込み中...</span>
         </div>
       </div>
     );
@@ -107,7 +108,7 @@ export default function SharePage() {
         <h2 className="text-xl font-bold mb-2">あなたのLPも分析してみませんか？</h2>
         <p className="text-white/80 text-sm mb-5">URLを入れるだけ。アカウント登録不要。完全無料。</p>
         <Link
-          href="/"
+          href="/?ref=share"
           className="inline-flex items-center gap-2 rounded-lg bg-white text-[#1B3A5C] px-8 py-3 font-bold hover:bg-gray-100 transition-colors shadow-lg"
         >
           無料で分析を始める

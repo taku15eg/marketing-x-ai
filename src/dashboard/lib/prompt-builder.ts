@@ -10,6 +10,8 @@ import type {
 } from './types';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
+const CLAUDE_API_TIMEOUT_MS = 30000;
+const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 export async function analyzeWithClaude(params: {
   company: CompanyResearchResult;
@@ -22,6 +24,7 @@ export async function analyzeWithClaude(params: {
     throw new Error('ANTHROPIC_API_KEY is not configured');
   }
 
+  const model = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
   const systemPrompt = buildSystemPrompt();
   const userContent = buildUserContent(params);
 
@@ -33,11 +36,12 @@ export async function analyzeWithClaude(params: {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model,
       max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
     }),
+    signal: AbortSignal.timeout(CLAUDE_API_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -179,7 +183,7 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
       metadata: {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 0,
-        model_used: 'claude-sonnet-4-6',
+        model_used: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
         vision_used: false,
         dom_extracted: true,
       },
