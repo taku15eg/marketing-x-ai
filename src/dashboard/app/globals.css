@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1B3A5C;
-  --color-primary-light: #2A5580;
-  --color-primary-dark: #0F2640;
+  --color-primary: #2563EB;
+  --color-primary-light: #3B82F6;
+  --color-primary-dark: #1D4ED8;
   --color-accent: #E8913A;
-  --color-bg: #F8F9FB;
+  --color-bg: #FAFBFC;
   --color-surface: #FFFFFF;
-  --color-border: #E2E8F0;
-  --color-text: #1A202C;
-  --color-text-secondary: #64748B;
+  --color-border: #E5E7EB;
+  --color-text: #111827;
+  --color-text-secondary: #4B5563;
   --font-sans: 'Noto Sans JP', system-ui, sans-serif;
 }
 
@@ -26,6 +26,15 @@ body {
 
 .animate-pulse-ring {
   animation: pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease both;
 }
 
 /* Respect user motion preferences (WCAG 2.1 SC 2.3.3) */
