@@ -53,8 +53,8 @@ export default function AnalysisPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="flex items-center justify-center py-24">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1B3A5C] border-t-transparent" />
+        <div className="flex items-center justify-center py-24" role="status" aria-busy="true">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1B3A5C] border-t-transparent" aria-hidden="true" />
           <span className="ml-3 text-[#64748B]">読み込み中...</span>
         </div>
       </div>
