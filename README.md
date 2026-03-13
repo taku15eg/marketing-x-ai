@@ -22,7 +22,7 @@ claude .
 
 | カテゴリ | ファイル数 | 説明 |
 |----------|------------|------|
-| 設計ドキュメント | 16 | v2.0設計ドキュメント一式 |
+| 設計ドキュメント | 16 | v3.0設計ドキュメント一式 |
 | Deep Research | 7 | 市場・競合・製品調査レポート |
 | Legacy資料 | 4 | v0.x/v3.0関連資料 |
 | ソースコード | 14 | Chrome拡張 + Cloudflare Worker |
@@ -150,11 +150,11 @@ publish-gate-claude-code/
 
 ## コア設計原則
 
-1. **Progressive Value**: Layer 0だけで価値を感じられる設計
+1. **深さ課金**: Freeで「おっ」→ Starterで「どう直すか」→ Proで「市場が見える」
 2. **アップサイドフレーミング**: PASS/FAILではなく改善ポテンシャル
-3. **360px最適化**: Side Panelの幅制約
+3. **Ahrefs型UI**: Webダッシュボードが本体。6タブ構造
 4. **ハンドオフパックの質**: 最も価値が高い出力物
-5. **ラボノート形式**: Before/After+結果の実験記録
+5. **バイラル設計**: 共有URL＋依頼書Powered by＋Chrome拡張可視性
 
 ---
 
@@ -162,18 +162,21 @@ publish-gate-claude-code/
 
 | レイヤー | 技術 |
 |---------|------|
+| Web Dashboard | Next.js 15 + Tailwind CSS 4（Vercel） |
 | Chrome拡張 | Manifest V3 / Side Panel API |
-| APIプロキシ | Cloudflare Workers |
-| バックエンド | Supabase (PostgreSQL + Auth) |
-| AI | Claude API (Anthropic) |
+| バックエンド | Next.js API Routes（サーバーサイド） |
+| DB | Supabase (PostgreSQL + Auth)（Phase 1〜） |
+| AI | Claude Sonnet 4.6 API + Vision API |
+| 決済 | Stripe（Phase 1〜） |
 
 ---
 
 ## 現在のステータス
 
-- **LP+デモHTML**: v8-enriched版仮確定済み
-- **Chrome拡張プロトタイプ**: v0.1構築済み（モックモード）
-- **次ステップ**: 実機テスト → Claude API接続 → プロジェクトドキュメント更新
+- **Phase 0.5 MVP**: タブ1（LP分析）＋タブ2（広告訴求）＋共有URL＋Chrome拡張 実装済み
+- **分析パイプライン**: 4ステップパイプライン（企業リサーチ→Vision+DOM→診断→依頼パック）稼働中
+- **テスト**: ユニットテスト（11ファイル）＋E2Eテスト（4ファイル）整備済み
+- **次ステップ**: β検証（藤野型3-5名）→ Phase 1（アカウント＋Stripe＋CSV）
 
 ---
 
@@ -181,8 +184,8 @@ publish-gate-claude-code/
 
 - **開発元**: Hashigaya Takuya
 - **プロジェクト開始**: 2026-02-27
-- **現在のバージョン**: v2.0
+- **現在のバージョン**: v3.0
 
 ---
 
-*Last Updated: 2026-03-05*
+*Last Updated: 2026-03-13*

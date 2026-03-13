@@ -15,8 +15,22 @@ export interface RateLimitConfig {
 
 export const RATE_LIMITS = {
   free_monthly: { max_requests: 5, window_ms: 30 * 24 * 60 * 60 * 1000 },
+  starter_monthly: { max_requests: 30, window_ms: 30 * 24 * 60 * 60 * 1000 },
+  pro_monthly: { max_requests: 200, window_ms: 30 * 24 * 60 * 60 * 1000 },
+  business_monthly: { max_requests: 500, window_ms: 30 * 24 * 60 * 60 * 1000 },
   per_minute: { max_requests: 10, window_ms: 60 * 1000 },
 } as const;
+
+export type PlanType = 'free' | 'starter' | 'pro' | 'business';
+
+export function getRateLimitForPlan(plan: PlanType): RateLimitConfig {
+  switch (plan) {
+    case 'starter': return RATE_LIMITS.starter_monthly;
+    case 'pro': return RATE_LIMITS.pro_monthly;
+    case 'business': return RATE_LIMITS.business_monthly;
+    default: return RATE_LIMITS.free_monthly;
+  }
+}
 
 export interface RateLimitResult {
   allowed: boolean;

@@ -23,8 +23,9 @@ src/
 │   ├── analysis/[id]/page.tsx # 結果画面（タブ1のみ活性。他はロック表示）
 │   ├── share/[id]/page.tsx   # 共有URL（誰でも閲覧可）
 │   └── api/
-│       ├── analyze/route.ts  # 分析API
-│       └── share/route.ts   # 共有URL生成
+│       ├── analyze/route.ts      # 分析API
+│       ├── ad-creative/route.ts # 広告訴求API（タブ2）
+│       └── share/route.ts       # 共有URL生成
 ├── components/
 │   ├── UrlInput.tsx
 │   ├── AnalysisResult.tsx
@@ -42,11 +43,29 @@ src/
 │   ├── url-validator.ts      # SSRF防御
 │   ├── rate-limiter.ts       # レート制限
 │   ├── types.ts
-│   └── supabase.ts
+│   ├── ad-creative-generator.ts  # タブ2: 広告訴求生成
+│   ├── event-logger.ts
+│   └── url-cache.ts
 └── __tests__/
-    ├── security.test.ts      # SEC-1〜18
-    ├── prompt-quality.test.ts
-    └── e2e.test.ts
+    ├── security.test.ts
+    ├── prompt-builder.test.ts
+    ├── analyzer.test.ts
+    ├── company-research.test.ts
+    ├── page-reader.test.ts
+    ├── api-integration.test.ts
+    ├── rate-limiter.test.ts
+    ├── event-logger.test.ts
+    ├── url-cache.test.ts
+    ├── ad-creative-generator.test.ts
+    └── ad-creative-api.test.ts
+```
+
+```
+e2e/
+├── homepage.spec.ts
+├── analysis-flow.spec.ts
+├── share.spec.ts
+└── api.spec.ts
 ```
 
 ### Chrome拡張（Manifest V3 + Side Panel）

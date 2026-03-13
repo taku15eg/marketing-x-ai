@@ -1,3 +1,5 @@
+> **⚠️ DEPRECATED (v0.x)** — このドキュメントはv0.x時代のもので、v3.0で全面刷新済み。最新の設計は `docs/02_technical_design.md`、ロードマップは `docs/08_roadmap.md` を参照。
+
 # Publish Gate Chrome拡張MVPとDecision Ops OS統合の設計・実装・運用ロードマップ
 
 ## Executive Summary

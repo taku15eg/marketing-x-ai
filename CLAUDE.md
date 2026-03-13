@@ -92,8 +92,8 @@ Webダッシュボードと同じAPIを叩く。
 |---|---|---|---|---|---|---|
 | Free | ¥0 | 課題一覧 月5回 | — | — | — | — |
 | Starter | ¥4,980 | 詳細+依頼書 月30回 | 広告訴求文 | — | — | — |
-| Pro | ¥14,800 | 無制限+計測設計 | +ターゲット推薦 | GSC/GA4連携 | 3社 | — |
-| Business | ¥49,800 | チーム+複数サイト | +全媒体 | +Ads連携 | 無制限 | 全機能 |
+| Pro | ¥14,800 | 月200回+計測設計 | +ターゲット推薦 | GSC/GA4連携 | 3社 | — |
+| Business | ¥49,800 | 月500回+チーム+複数サイト | +全媒体 | +Ads連携 | 無制限 | 全機能 |
 
 ---
 
@@ -101,13 +101,24 @@ Webダッシュボードと同じAPIを叩く。
 
 | 領域 | 技術 |
 |------|------|
-| Web | Next.js + Tailwind CSS |
+| Web | Next.js 15 + Tailwind CSS 4（Vercel） |
 | Chrome拡張 | Manifest V3 + Side Panel API |
-| バックエンド | Cloudflare Workers |
-| DB | Supabase（PostgreSQL + Auth + RLS） |
-| AI | Claude API + Vision API |
+| バックエンド | Next.js API Routes（サーバーサイド） |
+| DB | Supabase（PostgreSQL + Auth + RLS）※Phase 0.5はインメモリMap |
+| AI | Claude Sonnet 4.6 API + Vision API |
 | 決済 | Stripe |
 | デザイン | Noto Sans JP / #1B3A5C系 |
+
+### APIコスト実績値（Claude Sonnet 4.6: $3/MTok入力, $15/MTok出力）
+
+| 分析種別 | 入力トークン | 出力トークン | コスト/回 |
+|---------|------------|------------|----------|
+| タブ1 LP分析（Step 3-4） | ~4,000 | ~3,500 | ≈¥9 |
+| タブ2 広告訴求 | ~3,500 | ~3,000 | ≈¥8 |
+| フル分析（タブ1+2） | ~7,500 | ~6,500 | ≈¥17 |
+
+※Step 1（企業リサーチ）はHTML fetch+正規表現のみ。Claude API呼び出しなし
+※Step 2（Vision+DOM）のVision API分はStep 3-4のトークンに含む
 
 ---
 
@@ -155,6 +166,9 @@ Webダッシュボードと同じAPIを叩く。
 
 ### MEDIUM: レート制限
 - Free: 月5回（IP+フィンガープリント）
+- Starter: 月30回（user_id）
+- Pro: 月200回（user_id、安全弁）
+- Business: 月500回（user_id、安全弁）
 - 同一IP: 10リクエスト/分
 
 ### LOW: Chrome拡張の最小権限
@@ -174,10 +188,10 @@ Webダッシュボードと同じAPIを叩く。
 
 ---
 
-## Phase 0.5 MVP（最初に作るもの）
+## Phase 0.5 MVP（実装済み）
 
-**作る:** Webダッシュボード（タブ1のみ）+ 共有URL + Chrome拡張Side Panel
-**作らない:** タブ2-6 / アカウント機能 / メール通知 / CSV / 決済
+**実装済み:** Webダッシュボード（タブ1 LP分析 + タブ2 広告訴求）+ 共有URL + Chrome拡張Side Panel
+**未実装:** タブ3-6 / アカウント機能 / メール通知 / CSV / 決済
 
 **成功指標:** β5名中3名が共有URL生成1回以上
 

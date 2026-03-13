@@ -20,16 +20,16 @@ v2.0ではChrome拡張を日常の入口としていたが、v3.0ではWebダッ
 |-------|------|
 | Web Dashboard | Next.js + Tailwind CSS |
 | Chrome Extension | Manifest V3 / Side Panel API |
-| Backend / API Proxy | Cloudflare Workers |
+| Backend / API | Next.js API Routes（Vercel） |
 | DB / Auth / Storage | Supabase (PostgreSQL + Auth + Storage) |
-| AI Engine | Claude API (4-step pipeline + Vision API) |
+| AI Engine | Claude Sonnet 4.6 API (4-step pipeline + Vision API) |
 | Google APIs | GSC / GA4 / Ads（Phase 2〜） |
 | Email | Resend or SendGrid（Phase 2〜） |
 | Payment | Stripe |
 
 ### 1.2 4ステップパイプライン概要
 
-AIによる分析は以下の4ステップで構成される。全てサーバーサイド（Cloudflare Workers）で実行する。
+AIによる分析は以下の4ステップで構成される。全てサーバーサイド（Next.js API Routes）で実行する。
 
 ```
 Step 1: 企業リサーチ     — URL→企業情報・業界・事業モデルを推定
@@ -62,13 +62,13 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
                 │                                    │
                 ▼                                    ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                    Cloudflare Workers（API Proxy）                        │
+│                    Next.js API Routes（Vercel）                           │
 │                                                                          │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐  │
-│  │ /analyze │ │ /ad-copy │ │ /market  │ │/traffic  │ │ /competitor   │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬───────┘  │
-│       │             │            │             │              │           │
-│       ▼             ▼            ▼             ▼              ▼           │
+│  ┌────────────────┐ ┌────────────────┐ ┌──────────┐ ┌──────────────┐   │
+│  │ /api/analyze   │ │/api/ad-creative│ │/api/share │ │ /api/market  │   │
+│  └────┬───────────┘ └────┬───────────┘ └────┬──────┘ └──────┬───────┘  │
+│       │                   │                   │               │          │
+│       ▼                   ▼                   ▼               ▼          │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
 │  │              4-Step AI Pipeline                                   │    │
 │  │  Step1: 企業リサーチ → Step2: Vision+DOM → Step3: 診断           │    │
@@ -76,19 +76,19 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
 │  └──────────────────────┬───────────────────────────────────────────┘    │
 │                          │                                               │
 │  ┌───────────────┐  ┌───┴───────────┐  ┌──────────────────────────┐     │
-│  │ Rate Limiter  │  │ Prompt KV     │  │ Cloudflare Turnstile     │     │
-│  │ (多層制限)     │  │ Store (暗号化) │  │ (Bot防御)                │     │
+│  │ Rate Limiter  │  │ Prompt        │  │ Turnstile / CAPTCHA      │     │
+│  │ (多層制限)     │  │ (コード内管理) │  │ (Bot防御, Phase 1〜)     │     │
 │  └───────────────┘  └───────────────┘  └──────────────────────────┘     │
 └──────────────┬───────────────────────────────┬───────────────────────────┘
                │                               │
                ▼                               ▼
 ┌──────────────────────────┐    ┌──────────────────────────────────┐
-│     Claude API            │    │          Supabase                 │
-│  (Sonnet / Haiku)         │    │                                   │
+│     Claude API            │    │          Supabase（Phase 1〜）     │
+│  (Sonnet 4.6)             │    │                                   │
 │  + Vision API             │    │  ・PostgreSQL（データ永続化）      │
 │                           │    │  ・Auth（認証・セッション管理）    │
-│                           │    │  ・Storage（スクリーンショット）   │
 │                           │    │  ・RLS（行レベルセキュリティ）     │
+│                           │    │  ※Phase 0.5はインメモリMap       │
 └──────────────────────────┘    └──────────────────────────────────┘
 ```
 
@@ -134,38 +134,38 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
 
 ---
 
-## 4. APIプロキシ（Cloudflare Workers）
+## 4. API（Next.js API Routes）
 
 ### 4.1 エンドポイント一覧
 
-| Method | Path | 説明 | 認証 | Phase |
-|--------|------|------|------|-------|
-| POST | `/api/v1/analyze` | LP分析（4ステップパイプライン実行） | 任意（なしでもFree範囲で動作） | 0.5 |
-| POST | `/api/v1/ad-copy` | 広告訴求文生成 | 必須（Starter以上） | 1 |
-| POST | `/api/v1/market` | 市場分析 | 必須（Pro以上） | 2 |
-| POST | `/api/v1/traffic` | 流入分析 | 必須（Pro以上） | 2 |
-| POST | `/api/v1/competitor` | 競合分析 | 必須（Pro以上） | 2 |
-| POST | `/api/v1/business` | 事業分析 | 必須（Business） | 3 |
-| POST | `/api/v1/share` | 共有URL生成 | 任意 | 0.5 |
-| GET | `/api/v1/share/:id` | 共有URL閲覧データ取得 | 不要 | 0.5 |
-| POST | `/api/v1/export` | CSV/PDF/レポートエクスポート | 必須（Starter以上） | 1 |
+| Method | Path | 説明 | 認証 | Phase | 実装状況 |
+|--------|------|------|------|-------|---------|
+| POST | `/api/analyze` | LP分析（4ステップパイプライン実行） | 任意（なしでもFree範囲で動作） | 0.5 | 実装済み |
+| GET/POST | `/api/ad-creative` | 広告訴求文生成 | 必須（Starter以上） | 1 | 実装済み |
+| POST | `/api/share` | 共有URL生成 | 任意 | 0.5 | 実装済み |
+| GET | `/api/share/:id` | 共有URL閲覧データ取得 | 不要 | 0.5 | 実装済み |
+| POST | `/api/market` | 市場分析 | 必須（Pro以上） | 2 | 未実装 |
+| POST | `/api/traffic` | 流入分析 | 必須（Pro以上） | 2 | 未実装 |
+| POST | `/api/competitor` | 競合分析 | 必須（Pro以上） | 2 | 未実装 |
+| POST | `/api/business` | 事業分析 | 必須（Business） | 3 | 未実装 |
+| POST | `/api/export` | CSV/PDF/レポートエクスポート | 必須（Starter以上） | 1 | 未実装 |
 
 ### 4.2 4ステップパイプラインの処理フロー
 
-`/api/v1/analyze` が受けたリクエストの内部処理フロー：
+`/api/analyze` が受けたリクエストの内部処理フロー：
 
 ```
 リクエスト受信（URL）
     │
     ▼
 [Step 1] 企業リサーチ
-    │  ・URLからドメイン情報を取得
-    │  ・企業名・業界・事業モデルをClaude APIで推定
+    │  ・URLからドメイン情報を取得（HTML fetch + 正規表現パース）
+    │  ・企業名・業界・事業モデルを推定（Claude API呼び出しなし）
     │  ・業界固有のコンテキスト（薬機法対象か等）を判定
     │
     ▼
 [Step 2] Vision + DOM分析
-    │  ・Cloudflare Workerからスクリーンショット取得（※後述）
+    │  ・Next.js API Routeからスクリーンショット取得（※後述）
     │  ・DOM構造をContent Script経由またはサーバーサイドで取得
     │  ・Vision APIでスクリーンショットを分析（画像埋め込みテキスト含む）
     │  ・DOM解析で構造情報（見出し・CTA・フォーム・ナビゲーション）を抽出
@@ -199,7 +199,7 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
 **Vision APIへの送信フォーマット：**
 ```json
 {
-  "model": "claude-sonnet-4-20250514",
+  "model": "claude-sonnet-4-6",
   "messages": [
     {
       "role": "user",
@@ -225,14 +225,14 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
 
 | プラン | 月間分析回数 | 識別方法 |
 |--------|------------|---------|
-| Free | 5回/月 | user_id（未認証はIPアドレス） |
+| Free | 5回/月 | IP+Cookie（未認証） |
 | Starter | 30回/月 | user_id |
-| Pro | 無制限（安全弁：500回/月） | user_id |
-| Business | 無制限（安全弁：2000回/月） | user_id |
+| Pro | 200回/月 | user_id |
+| Business | 500回/月 | user_id |
 
 **多層レート制限（セキュリティ§8参照）：**
 - L1：Cloudflare WAF（IP単位、1分10リクエスト）
-- L2：Cloudflare Workers内（user_id単位、プラン別月間制限）
+- L2：Next.js API Routes内（user_id単位、プラン別月間制限）
 - L3：Claude API呼び出し（コスト上限アラート）
 
 ---
@@ -243,18 +243,16 @@ Step 4: 依頼パック生成    — デザイナー/エンジニア向け構造
 
 ```json
 {
-  "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
-  "optional_permissions": ["identity"]
+  "permissions": ["activeTab", "sidePanel"]
 }
 ```
 
 | 権限 | 用途 |
 |------|------|
 | `activeTab` | ユーザーがクリックしたタブにのみアクセス |
-| `scripting` | Content Scriptのプログラマティック注入 |
 | `sidePanel` | Side Panel APIでの簡略版UI表示 |
-| `storage` | ローカルキャッシュ（セッショントークン、直近分析結果） |
-| `identity`（optional） | Google OAuthでGSC/GA4連携する場合のみ要求 |
+
+※ `scripting`, `storage` は将来必要時に追加。現在は最小権限で動作。
 
 **`<all_urls>` は使わない。** `activeTab` のみで動作する。
 
@@ -497,7 +495,7 @@ create index idx_pharma_checks_analysis_id on pharma_checks(analysis_id);
 
 ### 7.1 生成ロジック
 
-- 分析完了時に自動生成（`/api/v1/share` を内部呼び出し）
+- 分析完了時に自動生成（`/api/share` を内部呼び出し）
 - `share_token` はnanoid（12文字）で生成。例：`https://publishgate.io/share/xK9mZ2pQ4rYn`
 - 分析結果ページの「共有」ボタンからもワンクリックで取得可能
 
@@ -519,7 +517,7 @@ create index idx_pharma_checks_analysis_id on pharma_checks(analysis_id);
 <meta property="og:url" content="https://publishgate.io/share/[token]" />
 ```
 
-OGP画像はCloudflare WorkersまたはVercel OG Image Generationで動的生成。
+OGP画像はNext.js API RoutesまたはVercel OG Image Generationで動的生成。
 
 ### 7.4 アクセス制限
 
@@ -573,22 +571,22 @@ OGP画像はCloudflare WorkersまたはVercel OG Image Generationで動的生成
 #### 出力正規化
 
 - Claude APIの応答をそのままユーザーに返さない
-- Cloudflare Workers内でJSON構造にパース → 想定スキーマに合致するかバリデーション
+- Next.js API Routes内でJSON構造にパース → 想定スキーマに合致するかバリデーション
 - 異常応答（プロンプト漏洩の兆候、想定外のフォーマット）は破棄してエラー返却
 
 ### 8.3 P1：高優先対策
 
-#### プロンプトKV Store暗号化
+#### プロンプト管理（Phase 1以降でKV Store暗号化予定）
 
-- プロンプトテンプレートはCloudflare KVに保存（コードにハードコードしない）
-- KVの値はAES-256-GCMで暗号化。復号キーはCloudflare Workersの環境変数（Secret）
-- プロンプトの更新はCI/CDパイプライン経由のみ（手動KV編集を禁止）
+- Phase 0.5：プロンプトはサーバーサイドコード内（`prompt-builder.ts`）に保持
+- Phase 1以降：KV Storeに移行し、AES-256-GCMで暗号化予定
+- プロンプトの更新はCI/CDパイプライン経由のみ
 
 #### 多層レート制限
 
 ```
 L1: Cloudflare WAF         — IP単位、1分10リクエスト
-L2: Workers内レート制限     — user_id単位、プラン別月間制限
+L2: API Route内レート制限    — user_id単位、プラン別月間制限
 L3: Claude API呼び出し制限  — コスト上限アラート（月額$X超過で通知）
 L4: 共有URL閲覧制限         — 共有URL単位、月100回
 ```
@@ -610,7 +608,7 @@ L4: 共有URL閲覧制限         — 共有URL単位、月100回
 #### カラムレベル暗号化
 
 - `oauth_tokens.access_token_encrypted` / `refresh_token_encrypted` はアプリケーション層で暗号化
-- 暗号化キーはCloudflare Workers環境変数に保持（Supabase側には渡さない）
+- 暗号化キーはNext.js API Routes環境変数に保持（Supabase側には渡さない）
 - Supabase管理者でもトークンの平文を読めない設計
 
 #### APIキーローテーション
@@ -664,7 +662,7 @@ Publish Gateの価値の源泉を「見えない層」に置く設計：
     ↓
 Google OAuth 2.0 認可画面（スコープ確認）
     ↓
-認可コード → Cloudflare Workers（/api/v1/oauth/callback）
+認可コード → Next.js API Routes（/api/oauth/callback）
     ↓
 Workers がトークン交換 → アプリ層で暗号化 → Supabase oauth_tokens に保存
     ↓
@@ -689,7 +687,7 @@ OAuth連携が完了するまでの暫定対応として、CSV手動アップロ
 | GA4データ | GA4からのエクスポート形式 | Webダッシュボード（/settings） |
 | 広告データ | Google Ads / Meta Adsからのエクスポート形式 | Webダッシュボード（/settings） |
 
-CSVはSupabase Storageにアップロード後、Cloudflare Workersでパース・正規化し、分析パイプラインに統合する。
+CSVはSupabase Storageにアップロード後、Next.js API Routesでパース・正規化し、分析パイプラインに統合する。
 
 ---
 
@@ -720,7 +718,7 @@ Resend または SendGrid を使用。選定基準は以下：
 ### 10.3 配信アーキテクチャ
 
 ```
-Cloudflare Workers (Cron Trigger)
+Next.js API Routes (Cron Trigger)
     ↓
 対象ユーザー抽出（Supabase クエリ）
     ↓
@@ -737,7 +735,7 @@ Resend API 呼び出し
 
 | 機能 | Free | Starter | Pro | Business |
 |------|------|---------|-----|----------|
-| 月間分析回数 | 5回 | 30回 | 無制限 | 無制限 |
+| 月間分析回数 | 5回 | 30回 | 200回 | 500回 |
 | タブ1（LP分析） | 概要のみ | 詳細+依頼書+薬機法 | ○ | ○ |
 | タブ2（広告訴求） | ✕ | ○ | ○ | ○ |
 | タブ3（市場分析） | ✕ | ✕ | ○ | ○ |
