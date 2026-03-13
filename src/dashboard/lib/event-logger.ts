@@ -13,7 +13,9 @@ export type EventType =
   | 'analysis_cache_hit'
   | 'share_url_generated'
   | 'share_page_viewed'
-  | 'share_cta_clicked';
+  | 'share_cta_clicked'
+  | 'ad_creative_started'
+  | 'ad_creative_completed';
 
 interface EventEntry {
   type: EventType;

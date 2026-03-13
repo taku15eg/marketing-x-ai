@@ -160,6 +160,67 @@ export interface AnalysisProgress {
   message: string;
 }
 
+// === Ad Creative (Tab 2) ===
+
+export interface AdCreativeRequest {
+  analysis_id: string;
+}
+
+export interface AdCreativeResult {
+  analysis_id: string;
+  generated_at: string;
+  google_ads: GoogleAdsCreative;
+  meta_ads: MetaAdsCreative;
+  pmax: PMaxCreative;
+  targeting_recommendations: TargetingRecommendation[];
+}
+
+export interface GoogleAdsCreative {
+  headlines: AdHeadline[];
+  descriptions: AdDescription[];
+  rationale: string;
+}
+
+export interface AdHeadline {
+  text: string;
+  char_count: number;
+  angle: string;
+}
+
+export interface AdDescription {
+  text: string;
+  char_count: number;
+  angle: string;
+}
+
+export interface MetaAdsCreative {
+  primary_texts: MetaAdText[];
+  headlines: AdHeadline[];
+  descriptions: AdDescription[];
+  recommended_format: string;
+  rationale: string;
+}
+
+export interface MetaAdText {
+  text: string;
+  char_count: number;
+  angle: string;
+}
+
+export interface PMaxCreative {
+  headlines: AdHeadline[];
+  long_headlines: AdHeadline[];
+  descriptions: AdDescription[];
+  rationale: string;
+}
+
+export interface TargetingRecommendation {
+  platform: 'google' | 'meta';
+  audience_type: string;
+  description: string;
+  rationale: string;
+}
+
 // === Tab System ===
 
 export interface TabConfig {
@@ -172,7 +233,7 @@ export interface TabConfig {
 
 export const TABS: TabConfig[] = [
   { id: 1, name: 'LP分析', locked: false, unlock_tier: 'free', description: '課題→詳細→依頼書→薬機法→計測設計' },
-  { id: 2, name: '広告訴求', locked: true, unlock_tier: 'starter', description: 'Google Ads RSA / Meta / PMax' },
+  { id: 2, name: '広告訴求', locked: false, unlock_tier: 'starter', description: 'Google Ads RSA / Meta / PMax' },
   { id: 3, name: '市場分析', locked: true, unlock_tier: 'pro', description: '流入クエリ / 検索ボリューム推移' },
   { id: 4, name: '流入分析', locked: true, unlock_tier: 'pro', description: '参照元ランキング / 時系列推移' },
   { id: 5, name: '競合分析', locked: true, unlock_tier: 'pro', description: '競合LP構造比較 / 訴求差別化' },
