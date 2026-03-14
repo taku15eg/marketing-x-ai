@@ -145,7 +145,13 @@ export async function POST(request: NextRequest) {
     // This avoids redundant Claude API calls, reducing cost significantly.
     // Cache hit does NOT consume monthly rate limit.
     const referralSource = ref === 'share' ? 'share' : 'direct';
-    logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
+    const source = request.headers.get('x-source') || 'web';
+    logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource, source });
+
+    // Track shared visitor reanalysis (viral loop metric)
+    if (ref === 'share') {
+      logEvent('shared_visitor_reanalyzed', { url: validation.sanitized_url! });
+    }
 
     const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
     if (cached) {
@@ -168,9 +174,9 @@ export async function POST(request: NextRequest) {
     storeAnalysis(result);
 
     if (result.status === 'completed') {
-      logEvent('analysis_completed', { url: validation.sanitized_url!, referral_source: referralSource });
+      logEvent('analysis_completed', { url: validation.sanitized_url!, referral_source: referralSource, source });
     } else {
-      logEvent('analysis_error', { url: validation.sanitized_url!, error: result.error || '' });
+      logEvent('analysis_failed', { url: validation.sanitized_url!, error: result.error || '', source });
     }
 
     // --- Return response ---

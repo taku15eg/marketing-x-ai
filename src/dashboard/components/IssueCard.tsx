@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Issue } from '../lib/types';
 import BriefPanel from './BriefPanel';
+import { trackEvent } from '../lib/tracker';
 
 interface IssueCardProps {
   issue: Issue;
@@ -44,6 +45,7 @@ const HANDOFF_CONFIG: Record<Issue['handoff_to'], { label: string; className: st
 
 export default function IssueCard({ issue }: IssueCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const trackedRef = useRef(false);
 
   const impact = IMPACT_CONFIG[issue.impact];
   const handoff = HANDOFF_CONFIG[issue.handoff_to];
@@ -58,7 +60,14 @@ export default function IssueCard({ issue }: IssueCardProps) {
       {/* Header - always visible */}
       <button
         className="w-full px-5 py-4 flex items-center gap-4 text-left cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          const next = !isExpanded;
+          setIsExpanded(next);
+          if (next && !trackedRef.current) {
+            trackedRef.current = true;
+            trackEvent('brief_viewed', { issue_priority: issue.priority, issue_title: issue.title });
+          }
+        }}
         aria-expanded={isExpanded}
         aria-controls={`issue-detail-${issue.priority}`}
       >

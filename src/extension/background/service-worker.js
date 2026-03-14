@@ -72,6 +72,16 @@ async function handleCaptureScreenshot() {
   }
 }
 
+// --- Event tracking (fire-and-forget) ---
+function trackExtensionEvent(type, data = {}) {
+  const trackUrl = (typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:3000') + '/api/track';
+  fetch(trackUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, data }),
+  }).catch(() => { /* silently ignore */ });
+}
+
 // --- Main analysis flow ---
 // Step 1: Capture screenshot
 // Step 2: Inject content script and extract DOM features
@@ -80,6 +90,9 @@ async function handleCaptureScreenshot() {
 async function handleStartAnalysis(msg) {
   const url = msg.url;
   if (!url) return { error: true, message: 'URL is required' };
+
+  // Track extension analysis start
+  trackExtensionEvent('extension_analysis_started', { url });
 
   // Get the active tab
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

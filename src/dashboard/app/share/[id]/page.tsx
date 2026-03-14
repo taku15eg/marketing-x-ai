@@ -6,6 +6,7 @@ import Link from 'next/link';
 import AnalysisResult from '@/components/AnalysisResult';
 import PoweredByBadge from '@/components/PoweredByBadge';
 import SocialShareButtons from '@/components/SocialShareButtons';
+import { trackEvent } from '@/lib/tracker';
 import type { AnalyzeResponse } from '@/lib/types';
 
 export default function SharePage() {
@@ -33,6 +34,13 @@ export default function SharePage() {
     }
     fetchSharedAnalysis();
   }, [shareId]);
+
+  // Track tab_viewed on share page (dedup per share)
+  useEffect(() => {
+    if (data && !loading) {
+      trackEvent('tab_viewed', { tab: 'lp_analysis', share_id: shareId, context: 'share' }, `tab_viewed_share_${shareId}`);
+    }
+  }, [data, loading, shareId]);
 
   if (loading) {
     return (

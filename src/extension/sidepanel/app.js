@@ -278,7 +278,7 @@ function renderResults(data, url) {
 
   // Link to full results on web dashboard
   if (analysisId) {
-    html += '<a class="dashboard-link" href="' + DASHBOARD_URL + '/analysis/' + escAttr(analysisId) + '" target="_blank">';
+    html += '<a class="dashboard-link" href="' + DASHBOARD_URL + '/analysis/' + escAttr(analysisId) + '" target="_blank" id="dashboardLink">';
     html += 'Webダッシュボードで詳細を見る';
     html += '</a>';
   }
@@ -289,6 +289,11 @@ function renderResults(data, url) {
   html += '</button>';
 
   container.innerHTML = html;
+
+  // Track extension → dashboard navigation
+  document.getElementById('dashboardLink')?.addEventListener('click', function () {
+    trackEventFromExtension('extension_sent_to_dashboard', { analysis_id: analysisId, url: url });
+  });
 
   // Bind new analysis button
   document.getElementById('newAnalysisBtn')?.addEventListener('click', function () {
@@ -379,4 +384,14 @@ function escAttr(str) {
 
 function delay(ms) {
   return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+// --- Event Tracking (fire-and-forget) ---
+function trackEventFromExtension(type, data) {
+  var trackUrl = DASHBOARD_URL + '/api/track';
+  fetch(trackUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: type, data: data || {} }),
+  }).catch(function () { /* silently ignore */ });
 }

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import TabNavigation from '@/components/TabNavigation';
 import AnalysisResult from '@/components/AnalysisResult';
 import ShareButton from '@/components/ShareButton';
+import { trackEvent } from '@/lib/tracker';
 import type { AnalyzeResponse } from '@/lib/types';
 
 export default function AnalysisPage() {
@@ -49,6 +50,13 @@ export default function AnalysisPage() {
 
     fetchAnalysis();
   }, [id]);
+
+  // Track tab_viewed on mount (dedup per analysis)
+  useEffect(() => {
+    if (data && !loading) {
+      trackEvent('tab_viewed', { tab: 'lp_analysis', analysis_id: id }, `tab_viewed_${id}_1`);
+    }
+  }, [data, loading, id]);
 
   if (loading) {
     return (

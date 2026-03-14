@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       || request.nextUrl.origin;
     const shareUrl = `${origin}/share/${shareId}`;
 
-    logEvent('share_url_generated', { analysis_id, share_id: shareId });
+    logEvent('share_created', { analysis_id, share_id: shareId });
 
     return NextResponse.json(
       {
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    logEvent('share_page_viewed', { share_id: shareId });
+    logEvent('share_opened', { share_id: shareId });
 
     return NextResponse.json(analysis, {
       status: 200,
