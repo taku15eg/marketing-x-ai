@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnalysis } from '../../../lib/analyzer';
 import { generateAdCreatives } from '../../../lib/ad-creative-generator';
-import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
+import { checkRateLimitAsync, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
 import { CORS_HEADERS } from '../../../lib/cors';
 import { logEvent } from '../../../lib/event-logger';
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const clientIP = getClientIP(request);
-    const minuteLimit = checkRateLimit(
+    const minuteLimit = await checkRateLimitAsync(
       `minute:${clientIP}`,
       RATE_LIMITS.per_minute
     );

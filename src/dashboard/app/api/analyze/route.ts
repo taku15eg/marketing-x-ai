@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
-import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
+import { checkRateLimitAsync, getClientIP, getRateLimitForPlan, RATE_LIMITS } from '../../../lib/rate-limiter';
 import { runAnalysis, storeAnalysis, getAnalysis, getCachedAnalysisByUrl } from '../../../lib/analyzer';
 import { CORS_HEADERS } from '../../../lib/cors';
 import { logEvent } from '../../../lib/event-logger';
+import { getAuthenticatedUser } from '../../../lib/auth';
 import type { AnalyzeRequest } from '../../../lib/types';
 
 /**
@@ -95,8 +96,8 @@ export async function POST(request: NextRequest) {
     // --- Rate limiting ---
     const clientIP = getClientIP(request);
 
-    // Per-minute rate limit
-    const minuteLimit = checkRateLimit(
+    // Per-minute rate limit (applies to all tiers)
+    const minuteLimit = await checkRateLimitAsync(
       `minute:${clientIP}`,
       RATE_LIMITS.per_minute
     );
@@ -118,16 +119,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Monthly free-tier limit
-    const monthlyLimit = checkRateLimit(
-      `monthly:${clientIP}`,
-      RATE_LIMITS.free_monthly
-    );
+    // Determine user plan and apply tier-appropriate monthly limit
+    const authUser = await getAuthenticatedUser(request);
+    const plan = authUser?.plan ?? 'free';
+    const monthlyConfig = getRateLimitForPlan(plan);
+    const rateLimitKey = authUser ? `monthly:user:${authUser.id}` : `monthly:${clientIP}`;
+
+    const monthlyLimit = await checkRateLimitAsync(rateLimitKey, monthlyConfig);
     if (!monthlyLimit.allowed) {
+      const limitLabel = monthlyConfig.max_requests;
       return NextResponse.json(
         {
-          error: '月間の無料分析回数（5回）に達しました。',
+          error: `月間の分析回数（${limitLabel}回）に達しました。`,
           reset_at: new Date(monthlyLimit.reset_at).toISOString(),
+          plan,
         },
         {
           status: 429,

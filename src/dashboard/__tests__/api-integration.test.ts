@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // the underlying functions the routes call.
 
 import { validateUrl } from '../lib/url-validator';
-import { checkRateLimit, RATE_LIMITS } from '../lib/rate-limiter';
+import { checkRateLimit, checkRateLimitAsync, RATE_LIMITS } from '../lib/rate-limiter';
 import { storeAnalysis, getAnalysis, createShareId, getShareAnalysis } from '../lib/analyzer';
 import type { AnalyzeResponse } from '../lib/types';
 import fs from 'fs';
@@ -52,16 +52,17 @@ describe('POST /api/analyze - Request Validation', () => {
       'utf-8'
     );
     expect(routeSource).toContain('RATE_LIMITS.per_minute');
+    expect(routeSource).toContain('checkRateLimitAsync');
     expect(routeSource).toContain('status: 429');
   });
 
-  it('route applies monthly free-tier rate limit', () => {
+  it('route applies plan-aware monthly rate limit', () => {
     const routeSource = fs.readFileSync(
       path.resolve(__dirname, '../app/api/analyze/route.ts'),
       'utf-8'
     );
-    expect(routeSource).toContain('RATE_LIMITS.free_monthly');
-    expect(routeSource).toContain('月間の無料分析回数');
+    expect(routeSource).toContain('getRateLimitForPlan');
+    expect(routeSource).toContain('月間の分析回数');
   });
 
   it('route includes Retry-After header on 429', () => {

@@ -118,6 +118,7 @@ function buildUserContent(params: {
   content.push({ type: 'text', text: textParts.join('\n') });
 
   // Add screenshot if available (Vision API)
+  // Structured visual analysis prompt inspired by screenshot-to-code patterns
   if (params.screenshot_base64) {
     content.push({
       type: 'image',
@@ -129,7 +130,16 @@ function buildUserContent(params: {
     });
     content.push({
       type: 'text',
-      text: '上記はページのファーストビューのスクリーンショットです。DOMデータだけでは読み取れない視覚的な情報（レイアウト、配色、画像内テキスト、空間配置）も含めて分析してください。',
+      text: `上記はページのファーストビュー（1280x800表示）のスクリーンショットです。以下の観点で視覚的に分析してください:
+
+1. レイアウト構造: ヘッダー/ヒーロー/CTAの空間配置、視線誘導（Z型/F型）、余白バランス
+2. 色彩設計: メインカラー/アクセントカラーの使い方、CTAボタンの目立ち度、コントラスト比
+3. タイポグラフィ: 文字サイズの階層、可読性、FV内の文字量（多すぎ/少なすぎ）
+4. 画像内テキスト: DOMには含まれない画像内の文言（バナー、ロゴ、キャッチコピー画像）
+5. CTA視認性: CTAボタンが3秒以内に認識できるか、位置・サイズ・色の妥当性
+6. 信頼要素の配置: 実績数値、ロゴ、メディア掲載、認証バッジの視覚的配置
+
+DOMデータとスクリーンショットの情報が矛盾する場合、スクリーンショット（実際の表示）を優先してください。`,
     });
   }
 

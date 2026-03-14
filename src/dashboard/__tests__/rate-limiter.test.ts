@@ -2,11 +2,11 @@
  * Rate Limiter Unit Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { checkRateLimit, getClientIP, RATE_LIMITS } from '../lib/rate-limiter';
+import { describe, it, expect } from 'vitest';
+import { checkRateLimit, checkRateLimitAsync, getClientIP, RATE_LIMITS } from '../lib/rate-limiter';
 
 describe('Rate Limiter', () => {
-  describe('checkRateLimit', () => {
+  describe('checkRateLimit (synchronous / in-memory)', () => {
     it('allows first request within window', () => {
       const result = checkRateLimit('test-first-' + Date.now(), {
         max_requests: 5,
@@ -72,6 +72,42 @@ describe('Rate Limiter', () => {
       checkRateLimit(`key-a-${ts}`, config);
       const result = checkRateLimit(`key-b-${ts}`, config);
       expect(result.allowed).toBe(true);
+    });
+  });
+
+  describe('checkRateLimitAsync (falls back to in-memory without Redis)', () => {
+    it('allows first request', async () => {
+      const result = await checkRateLimitAsync('async-first-' + Date.now(), {
+        max_requests: 5,
+        window_ms: 60000,
+      });
+      expect(result.allowed).toBe(true);
+      expect(result.remaining).toBe(4);
+    });
+
+    it('blocks after limit reached', async () => {
+      const key = 'async-block-' + Date.now();
+      const config = { max_requests: 2, window_ms: 60000 };
+
+      await checkRateLimitAsync(key, config);
+      await checkRateLimitAsync(key, config);
+
+      const result = await checkRateLimitAsync(key, config);
+      expect(result.allowed).toBe(false);
+      expect(result.remaining).toBe(0);
+    });
+
+    it('returns same interface as sync version', async () => {
+      const result = await checkRateLimitAsync('async-interface-' + Date.now(), {
+        max_requests: 10,
+        window_ms: 60000,
+      });
+      expect(result).toHaveProperty('allowed');
+      expect(result).toHaveProperty('remaining');
+      expect(result).toHaveProperty('reset_at');
+      expect(typeof result.allowed).toBe('boolean');
+      expect(typeof result.remaining).toBe('number');
+      expect(typeof result.reset_at).toBe('number');
     });
   });
 

@@ -72,7 +72,9 @@ describe('Prompt Builder - User Content Construction', () => {
   });
 
   it('adds screenshot analysis instruction', () => {
-    expect(source).toContain('ファーストビューのスクリーンショット');
+    expect(source).toContain('ファーストビュー');
+    expect(source).toContain('レイアウト構造');
+    expect(source).toContain('CTA視認性');
   });
 });
 

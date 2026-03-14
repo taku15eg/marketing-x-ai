@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
-import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
+import { checkRateLimitAsync, getClientIP } from '../../../lib/rate-limiter';
 import { CORS_HEADERS } from '../../../lib/cors';
 import { logEvent } from '../../../lib/event-logger';
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limit share creation (30/min per IP)
     const clientIP = getClientIP(request);
-    const rateCheck = checkRateLimit(`share:${clientIP}`, { max_requests: 30, window_ms: 60_000 });
+    const rateCheck = await checkRateLimitAsync(`share:${clientIP}`, { max_requests: 30, window_ms: 60_000 });
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: '共有リンクの作成が制限されています。しばらくお待ちください。' },

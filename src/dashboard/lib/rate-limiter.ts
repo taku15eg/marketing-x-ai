@@ -1,12 +1,10 @@
-// Simple in-memory rate limiter
-// Production should use Redis/Cloudflare KV
+// Rate limiter with Upstash Redis backend
+// Falls back to in-memory store when UPSTASH_REDIS_REST_URL is not configured
 
-interface RateLimitEntry {
-  count: number;
-  reset_at: number;
-}
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
-const store = new Map<string, RateLimitEntry>();
+// === Types ===
 
 export interface RateLimitConfig {
   max_requests: number;
@@ -38,15 +36,60 @@ export interface RateLimitResult {
   reset_at: number;
 }
 
-export function checkRateLimit(
-  key: string,
-  config: RateLimitConfig
-): RateLimitResult {
+// === Redis detection ===
+
+function isRedisConfigured(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+}
+
+// === Upstash Redis rate limiters (lazy-initialized) ===
+
+let redis: Redis | null = null;
+
+function getRedis(): Redis {
+  if (!redis) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+  return redis;
+}
+
+// Cache Ratelimit instances by config key to avoid re-creating them
+const ratelimiterCache = new Map<string, Ratelimit>();
+
+function getUpstashRatelimiter(config: RateLimitConfig): Ratelimit {
+  const cacheKey = `${config.max_requests}:${config.window_ms}`;
+  let limiter = ratelimiterCache.get(cacheKey);
+  if (!limiter) {
+    // Convert window_ms to the appropriate Upstash duration string
+    const windowSeconds = Math.ceil(config.window_ms / 1000);
+    limiter = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(config.max_requests, `${windowSeconds} s`),
+      prefix: 'pg:ratelimit',
+    });
+    ratelimiterCache.set(cacheKey, limiter);
+  }
+  return limiter;
+}
+
+// === In-memory fallback (development/test) ===
+
+interface RateLimitEntry {
+  count: number;
+  reset_at: number;
+}
+
+const memoryStore = new Map<string, RateLimitEntry>();
+
+function checkRateLimitMemory(key: string, config: RateLimitConfig): RateLimitResult {
   const now = Date.now();
-  const entry = store.get(key);
+  const entry = memoryStore.get(key);
 
   if (!entry || now >= entry.reset_at) {
-    store.set(key, { count: 1, reset_at: now + config.window_ms });
+    memoryStore.set(key, { count: 1, reset_at: now + config.window_ms });
     return {
       allowed: true,
       remaining: config.max_requests - 1,
@@ -68,6 +111,38 @@ export function checkRateLimit(
     remaining: config.max_requests - entry.count,
     reset_at: entry.reset_at,
   };
+}
+
+// === Public API (same interface as before) ===
+
+export async function checkRateLimitAsync(
+  key: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  if (!isRedisConfigured()) {
+    return checkRateLimitMemory(key, config);
+  }
+
+  const limiter = getUpstashRatelimiter(config);
+  const result = await limiter.limit(key);
+
+  return {
+    allowed: result.success,
+    remaining: result.remaining,
+    reset_at: result.reset,
+  };
+}
+
+/**
+ * Synchronous rate limit check (in-memory only).
+ * Kept for backward compatibility with existing code.
+ * In production with Redis, use checkRateLimitAsync instead.
+ */
+export function checkRateLimit(
+  key: string,
+  config: RateLimitConfig
+): RateLimitResult {
+  return checkRateLimitMemory(key, config);
 }
 
 export function getClientIP(request: Request): string {
