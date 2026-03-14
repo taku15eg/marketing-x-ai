@@ -6,4 +6,5 @@
 
 | 日付 | タスク | ステータス | 備考 |
 |------|--------|-----------|------|
-| 2026-03-14 | 監査モード報告テンプレート追加 | Done | AUDIT_REPORT_TEMPLATE.md 新規作成 |
+| 2026-03-14 | 監査モード報告テンプレート追加 | Done | AUDIT_REPORT_TEMPLATE.md, PROGRESS.md 新規作成 |
+| 2026-03-14 | 運用ルール正本統合 | Done | CLAUDE_CODE_OPERATING_PROMPT.md に一本化、CLAUDE.md はポインタ化 |
