@@ -78,6 +78,43 @@
 
 ---
 
+## DEC-005: Worker API 非推奨 (Phase 1)
+
+**日付**: 2026-03-14
+**判断**: Worker API を非推奨とし、Dashboard API に統一
+
+**根拠**:
+- CLAUDE.md「Webダッシュボードが本体」原則
+- Dashboard API が CLAUDE.md の4ステップパイプラインと出力構造に一致
+- Worker API のスキーマ(goal_card + PASS/FAIL/HOLD)は正本と乖離
+- Extension を Dashboard API に直接接続する方が実装がシンプル
+- Worker 固有の handoff/memo はUI導線がなく、Phase 0.5 スコープ外
+
+**影響**:
+- `src/proxy/worker.js` に @deprecated 追記済み
+- Extension の service-worker を `{ url, ref: "extension" }` 送信に変更済み
+- Worker の handoff/memo 機能は将来 Dashboard API に移植する
+
+---
+
+## DEC-006: Extension → Dashboard API 直接接続 (Phase 1)
+
+**日付**: 2026-03-14
+**判断**: Extension は content-script によるDOM抽出を行わず、URL送信のみで Dashboard API のサーバーサイド分析を利用
+
+**根拠**:
+- Dashboard API がサーバーサイドで HTML fetch + DOM抽出 + Screenshot を行う
+- Extension 側の DOM抽出は Dashboard API では使われない（無駄な処理）
+- サーバーサイド処理の方がブラウザ制約に縛られず安定
+- Extension のコードが大幅にシンプルになる
+
+**影響**:
+- content-script.js は変更なし（将来の拡張用に保持）
+- service-worker.js から content-script 注入 + screenshot 取得を削除
+- Side Panel のステップ表示を4ステップパイプラインに合わせて更新
+
+---
+
 ## Backlog（発見した未決定事項）
 
 | ID | 内容 | 優先度 | 発見Phase |

@@ -73,112 +73,77 @@ async function handleCaptureScreenshot() {
 }
 
 // --- Main analysis flow ---
-// Step 1: Capture screenshot
-// Step 2: Inject content script and extract DOM features
-// Step 3: Send to API (screenshot + DOM features)
-// Step 4: Return results
+// The extension delegates all analysis to the Dashboard API.
+// It sends { url, ref: "extension" } conforming to AnalyzeRequest (types.ts).
+// The Dashboard API performs server-side fetch, DOM extraction, screenshot,
+// and Claude API call. The extension only needs to display results.
+//
+// Contract: POST /api/analyze
+//   Request:  { url: string, ref: "extension" }
+//   Response: AnalyzeResponse { id, url, status, result?, error?, created_at }
 async function handleStartAnalysis(msg) {
   const url = msg.url;
   if (!url) return { error: true, message: 'URL is required' };
 
-  // Get the active tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) return { error: true, message: 'No active tab found' };
-
-  // Verify the tab URL matches the requested URL (basic check)
-  if (tab.url !== url) {
-    return { error: true, message: 'Active tab URL does not match. Please navigate to the target page first.' };
+  // Basic URL validation before sending to API
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return { error: true, message: '有効なURLのページを開いてください' };
   }
 
-  // --- Step 1: Capture screenshot ---
-  let screenshotDataUrl = null;
-  try {
-    screenshotDataUrl = await chrome.tabs.captureVisibleTab(null, {
-      format: 'jpeg',
-      quality: 80,
-    });
-  } catch (e) {
-    console.warn('Screenshot capture failed, continuing without it:', e.message);
-    // Continue without screenshot - DOM analysis alone is still valuable
-  }
-
-  // --- Step 2: Inject content script and extract DOM ---
-  let pageFeatures = null;
-  try {
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content/content-script.js'],
-    });
-
-    const [result] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => window.__publishGate?.extractFeatures?.(),
-    });
-
-    pageFeatures = result?.result;
-  } catch (e) {
-    return {
-      error: true,
-      message: 'This page cannot be analyzed: ' + e.message,
-      step: 2,
-    };
-  }
-
-  if (!pageFeatures || pageFeatures.error) {
-    return {
-      error: true,
-      message: 'Failed to extract page features: ' + (pageFeatures?.error || 'unknown'),
-      step: 2,
-    };
-  }
-
-  // --- Step 3: Send to API ---
+  // --- Send to Dashboard API ---
+  // The API handles all analysis steps server-side:
+  // Step 1: Company research (server-side HTML fetch)
+  // Step 2: Page reading (server-side DOM extraction + screenshot)
+  // Step 3: Diagnosis (Claude API)
+  // Step 4: Brief generation (Claude API)
   let analysisResult;
   try {
-    const requestBody = {
-      url: url,
-      page_features: pageFeatures,
-    };
-
-    // Include screenshot as base64 if available
-    if (screenshotDataUrl) {
-      requestBody.screenshot = screenshotDataUrl;
-    }
-
     const response = await fetch(ENDPOINTS.ANALYZE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Source': 'chrome-extension',
-        'X-Extension-Version': '0.5.0',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        url: url,
+        ref: 'extension',
+      }),
     });
 
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({}));
-      return {
-        error: true,
-        message: errBody.error?.message || 'API error (HTTP ' + response.status + ')',
-        step: 3,
-      };
+      // Dashboard API returns { error: string } for all error responses
+      const errorMsg = errBody.error || 'API error (HTTP ' + response.status + ')';
+
+      // Provide user-friendly messages for known status codes
+      if (response.status === 429) {
+        return { error: true, message: errorMsg };
+      }
+      if (response.status === 400) {
+        return { error: true, message: errorMsg };
+      }
+      return { error: true, message: errorMsg };
     }
 
     analysisResult = await response.json();
   } catch (e) {
     return {
       error: true,
-      message: 'API connection failed: ' + e.message,
-      step: 3,
+      message: 'API接続に失敗しました: ' + e.message,
     };
   }
 
-  // --- Step 4: Return results ---
+  // Validate response conforms to AnalyzeResponse contract
+  if (analysisResult.status === 'error') {
+    return {
+      error: true,
+      message: analysisResult.error || '分析中にエラーが発生しました',
+    };
+  }
+
+  // --- Return results ---
   return {
     success: true,
     data: analysisResult,
     url: url,
-    tabId: tab.id,
-    hasScreenshot: !!screenshotDataUrl,
   };
 }

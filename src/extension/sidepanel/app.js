@@ -68,6 +68,10 @@ function showScreen(name) {
 }
 
 // --- Analysis Flow ---
+// Sends { url, ref: "extension" } to Dashboard API via service worker.
+// The API performs all 4 steps server-side. Progress steps here are
+// time-based approximations matching the Dashboard's 4-step pipeline:
+// 1. Company research  2. Page reading  3. Diagnosis  4. Brief generation
 async function startAnalysis() {
   if (state.isAnalyzing) return;
 
@@ -81,47 +85,35 @@ async function startAnalysis() {
   showScreen('loading');
   resetLoadingSteps();
 
-  // Step 1: Screenshot
+  // Step 1: Company research (simulated progress)
   setLoadingStep(1, 'active');
   updateProgress(10);
 
-  // Small delay to show step 1 visually
-  await delay(300);
-  setLoadingStep(1, 'done');
-
-  // Step 2: DOM extraction
-  setLoadingStep(2, 'active');
-  updateProgress(30);
-  await delay(300);
-  setLoadingStep(2, 'done');
-
-  // Step 3: AI analysis (actual API call)
-  setLoadingStep(3, 'active');
-  updateProgress(50);
+  // Simulated progress timers (approximation of server-side pipeline)
+  var progressTimers = [
+    setTimeout(function () { setLoadingStep(1, 'done'); setLoadingStep(2, 'active'); updateProgress(30); }, 3000),
+    setTimeout(function () { setLoadingStep(2, 'done'); setLoadingStep(3, 'active'); updateProgress(55); }, 8000),
+    setTimeout(function () { setLoadingStep(3, 'done'); setLoadingStep(4, 'active'); updateProgress(80); }, 15000),
+  ];
 
   try {
-    const result = await sendMessage({
+    var result = await sendMessage({
       type: 'START_ANALYSIS',
       url: url,
     });
 
+    // Clear progress timers
+    progressTimers.forEach(clearTimeout);
+
     if (!result || result.error) {
       state.isAnalyzing = false;
-      const msg = result?.message || 'Analysis failed';
-      showError(msg);
+      showError(result?.message || '分析に失敗しました');
       return;
     }
 
-    // Step 3 done
-    setLoadingStep(3, 'done');
-    updateProgress(85);
-
-    // Step 4: Rendering results
-    setLoadingStep(4, 'active');
-    await delay(400);
-    setLoadingStep(4, 'done');
+    // Mark all steps done
+    for (var i = 1; i <= 4; i++) setLoadingStep(i, 'done');
     updateProgress(100);
-
     await delay(300);
 
     state.analysisData = result.data;
@@ -129,8 +121,9 @@ async function startAnalysis() {
     renderResults(result.data, url);
     showScreen('results');
   } catch (err) {
+    progressTimers.forEach(clearTimeout);
     state.isAnalyzing = false;
-    showError(err.message || 'Unknown error occurred');
+    showError(err.message || '予期しないエラーが発生しました');
   }
 }
 

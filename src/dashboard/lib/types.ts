@@ -1,9 +1,17 @@
 // Publish Gate - Core Types
 
+// === API Error ===
+
+export interface ApiError {
+  error: string;
+  reset_at?: string;
+}
+
 // === Analysis Request/Response ===
 
 export interface AnalyzeRequest {
   url: string;
+  ref?: 'share' | 'extension';
 }
 
 export interface AnalyzeResponse {
@@ -178,3 +186,23 @@ export const TABS: TabConfig[] = [
   { id: 5, name: '競合分析', locked: true, unlock_tier: 'pro', description: '競合LP構造比較 / 訴求差別化' },
   { id: 6, name: '事業分析', locked: true, unlock_tier: 'business', description: '市場規模推定 / 事業モデル推定' },
 ];
+
+// === Share API ===
+
+export interface ShareRequest {
+  analysis_id: string;
+}
+
+export interface ShareResponse {
+  share_id: string;
+  share_url: string;
+}
+
+// === Extension → Dashboard API Contract ===
+// The Chrome extension sends requests to Dashboard API endpoints.
+// It should use the same AnalyzeRequest/AnalyzeResponse types.
+// Extension-specific fields are added via the `ref` field in AnalyzeRequest.
+
+export interface ExtensionAnalyzeRequest extends AnalyzeRequest {
+  ref: 'extension';
+}

@@ -1,7 +1,7 @@
 # API契約 — Publish Gate
 
 **更新日**: 2026-03-14
-**状態**: Phase 0 棚卸し。Phase 1 で統一・テスト追加予定。
+**状態**: Phase 1 完了。契約テスト追加済み (`__tests__/contract.test.ts`)。
 
 ---
 
@@ -18,7 +18,7 @@
 ```
 Request:
   Content-Type: application/json
-  Body: { "url": string, "ref"?: "share" }
+  Body: { "url": string, "ref"?: "share" | "extension" }
   Max body size: 10KB
 
 Response (200):
@@ -85,11 +85,13 @@ Response (404): 存在しない / TTL超過
 
 ---
 
-### Worker API (旧アーキテクチャ — 未使用)
+### Worker API (@deprecated — 非推奨)
 
 **Base**: Cloudflare Workers (`src/proxy/worker.js`)
 
-> ⚠️ Dashboard APIとスキーマが異なる。Phase 1で方針決定。
+> ⚠️ **Phase 1判断 (2026-03-14)**: Worker APIは非推奨。Dashboard APIが正本。
+> Extension も Dashboard API に直接接続する方式に統一済み。
+> Worker は参考実装として残置。handoff/memo 機能は将来 Dashboard API に移植予定。
 
 #### POST /api/v1/analyze
 
@@ -200,3 +202,48 @@ Phase 1+: dashboard origin + chrome-extension://{extensionId} に制限予定
 | URL Cache | 1時間 | 同一URLの重複分析を防止 |
 
 ストアサイズ上限: 1000エントリ (FIFO eviction)
+
+---
+
+## Extension ↔ Dashboard API 接続契約
+
+### Phase 1 統一方針 (2026-03-14)
+
+Chrome拡張は Dashboard API に直接接続する。Worker API は使用しない。
+
+```
+Extension (Side Panel)
+  ↓ sendMessage({ type: 'START_ANALYSIS', url })
+Service Worker
+  ↓ POST /api/analyze { url, ref: "extension" }
+Dashboard API (Next.js)
+  ↓ Server-side: fetch HTML → extract DOM → screenshot → Claude API
+  ↑ Response: AnalyzeResponse { id, url, status, result, created_at }
+Service Worker
+  ↑ { success: true, data: AnalyzeResponse }
+Extension (Side Panel)
+  → renderResults(data)
+```
+
+### 契約テスト
+
+`src/dashboard/__tests__/contract.test.ts` で以下を検証:
+
+- AnalyzeRequest/Response の型適合
+- AnalysisResult の CLAUDE.md 4ステップ構造適合
+- Issue の handoff_to カテゴリ適合
+- RegulatoryCheck の構造適合
+- ApiError のフォーマット
+- Extension 固有の ref=extension フィールド
+- ShareRequest/Response の構造
+
+### エラーハンドリング契約
+
+すべてのエラーレスポンスは `{ error: string, reset_at?: string }` 形式。
+
+| HTTP Status | 意味 | error フィールド例 |
+|-------------|------|-------------------|
+| 400 | リクエスト不正 | "URLが指定されていません" |
+| 413 | ボディサイズ超過 | "リクエストボディが大きすぎます" |
+| 429 | レート制限 | "月間の無料分析回数（5回）に達しました" |
+| 500 | 内部エラー | "分析中に予期せぬエラーが発生しました" |

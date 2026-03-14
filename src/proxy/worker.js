@@ -3,6 +3,14 @@
  * Progressive Prompt: Layer 0-3 に応じてシステムプロンプトを段階拡張
  *
  * env secrets: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
+ *
+ * @deprecated Phase 0.5+
+ * This Worker API uses a different schema (page_features + goal_card + PASS/FAIL/HOLD)
+ * than the canonical Dashboard API (url → AnalysisResult with issues[]).
+ * As of Phase 1 (2026-03-14), the Dashboard API (src/dashboard/app/api/) is the
+ * canonical API. Both Dashboard and Chrome Extension connect to Dashboard API directly.
+ * This Worker is retained for reference but is not actively used.
+ * See: docs/api_contract.md, docs/current_source_of_truth.md
  */
 
 export default {

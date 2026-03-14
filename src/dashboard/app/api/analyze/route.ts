@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url, ref } = body as AnalyzeRequest & { ref?: string };
+    const { url, ref } = body;
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
