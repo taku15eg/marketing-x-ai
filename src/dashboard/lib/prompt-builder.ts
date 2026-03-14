@@ -207,8 +207,66 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
 
     return result;
   } catch (e) {
-    throw new Error(`Failed to parse Claude response as JSON: ${e}`);
+    // Self-heal: return a fallback result instead of crashing
+    // This ensures the UI always gets a valid AnalysisResult
+    console.error(`[parseAnalysisResponse] JSON parse failed, returning fallback result. Error: ${e}`);
+    console.error(`[parseAnalysisResponse] Raw response (first 500 chars): ${responseText.slice(0, 500)}`);
+    return createFallbackResult(responseText, url);
   }
+}
+
+/**
+ * Create a minimal valid AnalysisResult when Claude's response cannot be parsed.
+ * This prevents UI from crashing while still communicating the failure.
+ */
+function createFallbackResult(rawResponse: string, url: string): AnalysisResult {
+  return {
+    company_understanding: {
+      summary: '',
+      industry: '',
+      business_model: '',
+      brand_tone: { sentence_endings: [], uses_questions: false, tone_keywords: [], example_phrases: [] },
+      key_vocabulary: [],
+      credentials: [],
+      site_cta_structure: '',
+    },
+    page_reading: {
+      page_type: '',
+      fv_main_copy: '',
+      fv_sub_copy: '',
+      cta_map: [],
+      trust_elements: '',
+      content_structure: '',
+      confidence: 'low',
+      screenshot_insights: '',
+      dom_insights: '',
+    },
+    improvement_potential: '',
+    issues: [
+      {
+        priority: 1,
+        title: 'AI分析レスポンスの解析に失敗しました',
+        diagnosis: 'AIからのレスポンスが予期した形式ではありませんでした。再度分析をお試しください。',
+        impact: 'high',
+        handoff_to: 'engineer',
+        brief: {
+          objective: '分析の再実行',
+          direction: 'URLを再入力して分析をやり直してください',
+          specifics: '',
+          constraints: [],
+          qa_checklist: [],
+        },
+        evidence: `Parse error. Response length: ${rawResponse.length} chars`,
+      },
+    ],
+    metadata: {
+      analyzed_at: new Date().toISOString(),
+      analysis_duration_ms: 0,
+      model_used: 'claude-sonnet-4-6',
+      vision_used: false,
+      dom_extracted: true,
+    },
+  };
 }
 
 /**
