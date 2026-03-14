@@ -150,7 +150,11 @@ export async function POST(request: NextRequest) {
     const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
     if (cached) {
       logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
-      return NextResponse.json(cached, {
+      // Mark metadata as cache-sourced for the response (does not mutate store)
+      const cachedResponse = cached.result
+        ? { ...cached, result: { ...cached.result, metadata: { ...cached.result.metadata, analysis_source: 'cache' as const } } }
+        : cached;
+      return NextResponse.json(cachedResponse, {
         status: 200,
         headers: {
           ...CORS_HEADERS,

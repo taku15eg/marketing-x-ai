@@ -11,6 +11,12 @@ import type {
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
+// Version constants for reproducibility tracking
+export const PROMPT_VERSION = '1.0.0';
+export const PIPELINE_VERSION = '0.5.0';
+export const SCHEMA_VERSION = '1.0.0';
+export const MODEL_ID = 'claude-sonnet-4-6';
+
 export async function analyzeWithClaude(params: {
   company: CompanyResearchResult;
   dom: DOMData;
@@ -33,7 +39,7 @@ export async function analyzeWithClaude(params: {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: MODEL_ID,
       max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
@@ -179,9 +185,17 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
       metadata: {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 0,
-        model_used: 'claude-sonnet-4-6',
+        model_used: MODEL_ID,
         vision_used: false,
         dom_extracted: true,
+        prompt_version: PROMPT_VERSION,
+        pipeline_version: PIPELINE_VERSION,
+        schema_version: SCHEMA_VERSION,
+        vision_capture_status: 'skipped',
+        compliance_check_status: parsed.regulatory ? 'completed' : 'skipped',
+        analysis_source: 'fresh',
+        generated_at: new Date().toISOString(),
+        normalized_at: new Date().toISOString(),
       },
     };
 

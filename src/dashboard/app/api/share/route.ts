@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createShareId, getAnalysis, getShareAnalysis } from '../../../lib/analyzer';
+import { createShareId, getAnalysis, getShareAnalysisPublic } from '../../../lib/analyzer';
 import { checkRateLimit, getClientIP } from '../../../lib/rate-limiter';
 import { CORS_HEADERS } from '../../../lib/cors';
 import { logEvent } from '../../../lib/event-logger';
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const analysis = getShareAnalysis(shareId);
+    const analysis = getShareAnalysisPublic(shareId);
     if (!analysis) {
       return NextResponse.json(
         { error: '指定された共有リンクが見つかりません' },

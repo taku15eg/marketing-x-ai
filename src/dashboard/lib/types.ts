@@ -98,7 +98,40 @@ export interface AnalysisMetadata {
   model_used: string;
   vision_used: boolean;
   dom_extracted: boolean;
+  // --- Audit / Reproducibility fields (internal use) ---
+  prompt_version: string;
+  pipeline_version: string;
+  schema_version: string;
+  vision_capture_status: 'success' | 'failed' | 'skipped';
+  compliance_check_status: 'completed' | 'partial' | 'skipped';
+  analysis_source: 'fresh' | 'cache';
+  generated_at: string;
+  normalized_at: string;
 }
+
+/**
+ * Metadata fields that are internal-only and should NOT be exposed
+ * in shared/public analysis responses.
+ */
+export const INTERNAL_METADATA_KEYS: (keyof AnalysisMetadata)[] = [
+  'prompt_version',
+  'pipeline_version',
+  'schema_version',
+  'vision_capture_status',
+  'compliance_check_status',
+  'analysis_source',
+  'generated_at',
+  'normalized_at',
+];
+
+/**
+ * Public-facing metadata (subset of AnalysisMetadata).
+ * Used when rendering shared URLs — no internal audit fields.
+ */
+export type PublicAnalysisMetadata = Pick<
+  AnalysisMetadata,
+  'analyzed_at' | 'analysis_duration_ms' | 'model_used' | 'vision_used' | 'dom_extracted'
+>;
 
 // === Share ===
 

@@ -6,6 +6,7 @@ import { researchCompany } from './company-research';
 import { readPage } from './page-reader';
 import { analyzeWithClaude } from './prompt-builder';
 import type { AnalysisResult, AnalyzeResponse, AnalysisProgress } from './types';
+import { INTERNAL_METADATA_KEYS } from './types';
 
 export type ProgressCallback = (progress: AnalysisProgress) => void;
 
@@ -60,9 +61,14 @@ export async function runAnalysis(
       url,
     });
 
-    // Update metadata
+    // Update metadata with pipeline-level information
     result.metadata.analysis_duration_ms = Date.now() - startTime;
     result.metadata.vision_used = screenshot_base64 !== null;
+    result.metadata.vision_capture_status = screenshot_base64 !== null ? 'success' : 'failed';
+    result.metadata.compliance_check_status = result.regulatory
+      ? (result.regulatory.yakujiho_risks.length > 0 || result.regulatory.keihinhyoujiho_risks.length > 0
+        ? 'completed' : 'partial')
+      : 'skipped';
 
     return {
       id,
@@ -191,4 +197,36 @@ export function getShareAnalysis(shareId: string): AnalyzeResponse | undefined {
     return undefined;
   }
   return getAnalysis(share.analysis_id);
+}
+
+/**
+ * Strip internal audit metadata from an analysis response.
+ * Used when returning data through public endpoints (share URLs).
+ * Internal metadata is preserved in storage but not sent to external viewers.
+ */
+export function stripInternalMetadata(response: AnalyzeResponse): AnalyzeResponse {
+  if (!response.result) return response;
+
+  const publicMetadata = { ...response.result.metadata };
+  for (const key of INTERNAL_METADATA_KEYS) {
+    delete (publicMetadata as Record<string, unknown>)[key];
+  }
+
+  return {
+    ...response,
+    result: {
+      ...response.result,
+      metadata: publicMetadata,
+    },
+  };
+}
+
+/**
+ * Retrieve analysis for a share ID with internal metadata stripped.
+ * Use this for public-facing share endpoints.
+ */
+export function getShareAnalysisPublic(shareId: string): AnalyzeResponse | undefined {
+  const analysis = getShareAnalysis(shareId);
+  if (!analysis) return undefined;
+  return stripInternalMetadata(analysis);
 }

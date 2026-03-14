@@ -113,4 +113,35 @@ describe('Prompt Builder - Response Parsing', () => {
   it('sets default metadata values', () => {
     expect(source).toContain("dom_extracted: true");
   });
+
+  it('includes prompt_version in metadata', () => {
+    expect(source).toContain('prompt_version: PROMPT_VERSION');
+  });
+
+  it('includes pipeline_version in metadata', () => {
+    expect(source).toContain('pipeline_version: PIPELINE_VERSION');
+  });
+
+  it('includes schema_version in metadata', () => {
+    expect(source).toContain('schema_version: SCHEMA_VERSION');
+  });
+
+  it('exports version constants for reproducibility', () => {
+    expect(source).toContain("export const PROMPT_VERSION = '1.0.0'");
+    expect(source).toContain("export const PIPELINE_VERSION = '0.5.0'");
+    expect(source).toContain("export const SCHEMA_VERSION = '1.0.0'");
+    expect(source).toContain("export const MODEL_ID = 'claude-sonnet-4-6'");
+  });
+
+  it('uses MODEL_ID constant instead of hardcoded model string', () => {
+    expect(source).toContain('model: MODEL_ID');
+  });
+
+  it('sets compliance_check_status based on regulatory data', () => {
+    expect(source).toContain('compliance_check_status');
+  });
+
+  it('sets vision_capture_status', () => {
+    expect(source).toContain('vision_capture_status');
+  });
 });

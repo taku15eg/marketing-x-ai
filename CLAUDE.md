@@ -80,9 +80,31 @@ Webダッシュボードと同じAPIを叩く。
         "constraints": [...], "qa_checklist": [...]
       }
     }
-  ]
+  ],
+  "metadata": {
+    "analyzed_at": "ISO8601",
+    "analysis_duration_ms": 0,
+    "model_used": "claude-sonnet-4-6",
+    "vision_used": true,
+    "dom_extracted": true,
+    "prompt_version": "1.0.0",
+    "pipeline_version": "0.5.0",
+    "schema_version": "1.0.0",
+    "vision_capture_status": "success|failed|skipped",
+    "compliance_check_status": "completed|partial|skipped",
+    "analysis_source": "fresh|cache",
+    "generated_at": "ISO8601",
+    "normalized_at": "ISO8601"
+  }
 }
 ```
+
+### メタデータ責務分離
+
+- **公開（共有URL）**: `analyzed_at`, `analysis_duration_ms`, `model_used`, `vision_used`, `dom_extracted` のみ
+- **内部（監査・CS・品質改善用）**: `prompt_version`, `pipeline_version`, `schema_version`, `vision_capture_status`, `compliance_check_status`, `analysis_source`, `generated_at`, `normalized_at`
+- 共有API (`GET /api/share`) は `stripInternalMetadata()` で内部フィールドを除去して返す
+- 内部API (`GET /api/analyze`) は全メタデータを返す
 
 ---
 

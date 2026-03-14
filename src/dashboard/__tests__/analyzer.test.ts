@@ -8,8 +8,11 @@ import {
   getAnalysis,
   createShareId,
   getShareAnalysis,
+  stripInternalMetadata,
+  getShareAnalysisPublic,
 } from '../lib/analyzer';
 import type { AnalyzeResponse } from '../lib/types';
+import { INTERNAL_METADATA_KEYS } from '../lib/types';
 
 function makeMockResponse(id: string): AnalyzeResponse {
   return {
@@ -63,9 +66,17 @@ function makeMockResponse(id: string): AnalyzeResponse {
       metadata: {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 5000,
-        model_used: 'claude-sonnet-4-5-20250514',
+        model_used: 'claude-sonnet-4-6',
         vision_used: false,
         dom_extracted: true,
+        prompt_version: '1.0.0',
+        pipeline_version: '0.5.0',
+        schema_version: '1.0.0',
+        vision_capture_status: 'skipped',
+        compliance_check_status: 'skipped',
+        analysis_source: 'fresh',
+        generated_at: new Date().toISOString(),
+        normalized_at: new Date().toISOString(),
       },
     },
     created_at: new Date().toISOString(),
@@ -133,5 +144,102 @@ describe('Share Store', () => {
     const shareId = createShareId('missing-analysis-' + Date.now());
     const result = getShareAnalysis(shareId);
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Metadata Stripping', () => {
+  it('stripInternalMetadata removes internal fields from response', () => {
+    const mock = makeMockResponse('test-strip-1');
+    const stripped = stripInternalMetadata(mock);
+
+    // Public fields should remain
+    expect(stripped.result?.metadata.analyzed_at).toBeDefined();
+    expect(stripped.result?.metadata.analysis_duration_ms).toBe(5000);
+    expect(stripped.result?.metadata.model_used).toBe('claude-sonnet-4-6');
+    expect(stripped.result?.metadata.vision_used).toBe(false);
+    expect(stripped.result?.metadata.dom_extracted).toBe(true);
+
+    // Internal fields should be removed
+    const meta = stripped.result?.metadata as Record<string, unknown>;
+    for (const key of INTERNAL_METADATA_KEYS) {
+      expect(meta[key]).toBeUndefined();
+    }
+  });
+
+  it('stripInternalMetadata handles response without result', () => {
+    const errorResponse: AnalyzeResponse = {
+      id: 'test-strip-error',
+      url: 'https://example.com',
+      status: 'error',
+      error: 'Some error',
+      created_at: new Date().toISOString(),
+    };
+    const stripped = stripInternalMetadata(errorResponse);
+    expect(stripped).toEqual(errorResponse);
+  });
+
+  it('stripInternalMetadata does not mutate original response', () => {
+    const mock = makeMockResponse('test-strip-immutable');
+    const originalMeta = { ...mock.result!.metadata };
+    stripInternalMetadata(mock);
+
+    // Original should still have all fields
+    expect(mock.result!.metadata.prompt_version).toBe(originalMeta.prompt_version);
+    expect(mock.result!.metadata.pipeline_version).toBe(originalMeta.pipeline_version);
+  });
+
+  it('getShareAnalysisPublic returns stripped metadata', () => {
+    const mock = makeMockResponse('test-share-public-1');
+    storeAnalysis(mock);
+    const shareId = createShareId('test-share-public-1');
+
+    const result = getShareAnalysisPublic(shareId);
+    expect(result).toBeDefined();
+    expect(result?.id).toBe('test-share-public-1');
+
+    // Internal fields should not be present
+    const meta = result?.result?.metadata as Record<string, unknown>;
+    for (const key of INTERNAL_METADATA_KEYS) {
+      expect(meta[key]).toBeUndefined();
+    }
+  });
+
+  it('internal analysis retrieval preserves all metadata', () => {
+    const mock = makeMockResponse('test-internal-meta');
+    storeAnalysis(mock);
+
+    const retrieved = getAnalysis('test-internal-meta');
+    expect(retrieved?.result?.metadata.prompt_version).toBe('1.0.0');
+    expect(retrieved?.result?.metadata.pipeline_version).toBe('0.5.0');
+    expect(retrieved?.result?.metadata.schema_version).toBe('1.0.0');
+    expect(retrieved?.result?.metadata.vision_capture_status).toBe('skipped');
+    expect(retrieved?.result?.metadata.compliance_check_status).toBe('skipped');
+    expect(retrieved?.result?.metadata.analysis_source).toBe('fresh');
+    expect(retrieved?.result?.metadata.generated_at).toBeDefined();
+    expect(retrieved?.result?.metadata.normalized_at).toBeDefined();
+  });
+});
+
+describe('Analysis Metadata Version Constants', () => {
+  it('new metadata fields are populated with valid values', () => {
+    const mock = makeMockResponse('test-versions');
+    expect(mock.result!.metadata.prompt_version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(mock.result!.metadata.pipeline_version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(mock.result!.metadata.schema_version).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it('vision_capture_status has valid enum value', () => {
+    const mock = makeMockResponse('test-vision-status');
+    expect(['success', 'failed', 'skipped']).toContain(mock.result!.metadata.vision_capture_status);
+  });
+
+  it('compliance_check_status has valid enum value', () => {
+    const mock = makeMockResponse('test-compliance-status');
+    expect(['completed', 'partial', 'skipped']).toContain(mock.result!.metadata.compliance_check_status);
+  });
+
+  it('analysis_source has valid enum value', () => {
+    const mock = makeMockResponse('test-source');
+    expect(['fresh', 'cache']).toContain(mock.result!.metadata.analysis_source);
   });
 });
