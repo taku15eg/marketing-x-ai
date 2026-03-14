@@ -189,3 +189,13 @@ Webダッシュボードと同じAPIを叩く。
 - 結論ファースト。日本語
 - 不確かなことは推測せずツールで確認
 - テストを必ず書く
+
+---
+
+## 運用ガバナンス
+
+実装の運用ルール・バックログ・判断ログ・レビュー基準は `governance/` ディレクトリを参照。
+
+**Claude Code の開始手順**: `governance/CLAUDE_CODE_OPERATING_PROMPT.md` を参照。
+
+詳細は `governance/00_PROJECT_CHARTER.md`（正本の所在マップ）を参照。
