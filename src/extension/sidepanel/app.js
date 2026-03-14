@@ -276,6 +276,14 @@ function renderResults(data, url) {
     html += '</div>';
   }
 
+  // Share button - generates persistent share URL
+  if (analysisId) {
+    html += '<button class="btn btn-primary w-full" id="shareBtn" data-analysis-id="' + escAttr(analysisId) + '">';
+    html += '\u{1F517} 共有URLを生成';
+    html += '</button>';
+    html += '<div id="shareResult" style="display:none;margin-top:8px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px"></div>';
+  }
+
   // Link to full results on web dashboard
   if (analysisId) {
     html += '<a class="dashboard-link" href="' + DASHBOARD_URL + '/analysis/' + escAttr(analysisId) + '" target="_blank">';
@@ -294,6 +302,56 @@ function renderResults(data, url) {
   document.getElementById('newAnalysisBtn')?.addEventListener('click', function () {
     showScreen('input');
     loadCurrentTab();
+  });
+
+  // Bind share button
+  document.getElementById('shareBtn')?.addEventListener('click', async function () {
+    var btn = this;
+    var id = btn.getAttribute('data-analysis-id');
+    var resultDiv = document.getElementById('shareResult');
+    if (!id || !resultDiv) return;
+
+    btn.disabled = true;
+    btn.textContent = '生成中...';
+
+    try {
+      var response = await fetch(API_BASE + '/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysis_id: id }),
+      });
+
+      if (!response.ok) throw new Error('共有URLの生成に失敗しました');
+      var shareData = await response.json();
+      var shareUrl = shareData.share_url || (DASHBOARD_URL + '/share/' + shareData.share_id);
+
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML =
+        '<div style="font-weight:600;margin-bottom:4px;color:var(--primary)">共有URL（90日間有効）</div>' +
+        '<input type="text" value="' + escAttr(shareUrl) + '" readonly ' +
+        'style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:monospace;background:white" ' +
+        'onclick="this.select()" />' +
+        '<button class="btn btn-primary w-full" style="margin-top:6px" id="copyShareBtn">URLをコピー</button>';
+
+      document.getElementById('copyShareBtn')?.addEventListener('click', async function () {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          this.textContent = '\u2713 コピーしました';
+          setTimeout(function () {
+            var copyBtn = document.getElementById('copyShareBtn');
+            if (copyBtn) copyBtn.textContent = 'URLをコピー';
+          }, 2000);
+        } catch (e) { /* clipboard API not available */ }
+      });
+
+      btn.textContent = '\u2713 生成完了';
+    } catch (err) {
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = err.message || '共有URLの生成に失敗しました';
+      resultDiv.style.color = 'var(--danger, red)';
+      btn.textContent = '\u{1F517} 共有URLを生成';
+      btn.disabled = false;
+    }
   });
 }
 

@@ -61,7 +61,7 @@ test.describe('Share Page', () => {
     await page.goto('/share/valid-share-id');
 
     // Should show shared analysis header
-    await expect(page.locator('text=共有された分析結果')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=LP分析レポート')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('text=https://example.com/lp')).toBeVisible();
 
     // Should show CTA to analyze own LP
