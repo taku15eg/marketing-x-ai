@@ -12,20 +12,18 @@ const STEPS = [
   { number: 4, label: '提案作成', icon: 'document' },
 ] as const;
 
-function StepIcon({ icon, isActive }: { icon: string; isActive: boolean }) {
-  const color = isActive ? 'currentColor' : 'currentColor';
-
+function StepIcon({ icon }: { icon: string }) {
   switch (icon) {
     case 'building':
       return (
-        <svg className="w-5 h-5" fill="none" stroke={color} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       );
     case 'eye':
       return (
-        <svg className="w-5 h-5" fill="none" stroke={color} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -34,14 +32,14 @@ function StepIcon({ icon, isActive }: { icon: string; isActive: boolean }) {
       );
     case 'search':
       return (
-        <svg className="w-5 h-5" fill="none" stroke={color} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
       );
     case 'document':
       return (
-        <svg className="w-5 h-5" fill="none" stroke={color} viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
@@ -59,7 +57,6 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
         {STEPS.map((step, index) => {
           const isCompleted = step.number < currentStep;
           const isActive = step.number === currentStep;
-          const isPending = step.number > currentStep;
 
           return (
             <div key={step.number} className="flex items-center flex-1 last:flex-none">
@@ -81,7 +78,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <StepIcon icon={step.icon} isActive={isActive} />
+                    <StepIcon icon={step.icon} />
                   )}
 
                   {/* Pulse animation for active step */}

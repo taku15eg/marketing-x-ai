@@ -18,12 +18,12 @@ describe('Company Research - Source Validation', () => {
     expect(source).toContain('fetchWithSSRFProtection');
   });
 
-  it('limits fetched HTML to 50,000 characters', () => {
-    expect(source).toContain('50000');
+  it('limits fetched HTML to MAX_TEXT_LENGTH', () => {
+    expect(source).toContain('MAX_TEXT_LENGTH');
   });
 
-  it('has 10 second timeout for fetch', () => {
-    expect(source).toContain('timeout: 10000');
+  it('uses FETCH_TIMEOUT_MS constant for fetch timeout', () => {
+    expect(source).toContain('FETCH_TIMEOUT_MS');
   });
 
   it('fetches both target page and root page', () => {

@@ -1,6 +1,8 @@
 // SSRF Defense - URL Validator
 // CRITICAL security component: validates URLs before server-side fetch
 
+import { MAX_REDIRECTS } from './constants';
+
 const PRIVATE_IP_RANGES = [
   // IPv4
   /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,        // 127.0.0.0/8
@@ -136,9 +138,8 @@ export async function fetchWithSSRFProtection(
   try {
     let currentUrl = validation.sanitized_url!;
     let redirectCount = 0;
-    const maxRedirects = 3;
 
-    while (redirectCount <= maxRedirects) {
+    while (redirectCount <= MAX_REDIRECTS) {
       // DNS rebinding defense: resolve hostname and check IP before fetching
       const parsedUrl = new URL(currentUrl);
       if (!isIPAddress(parsedUrl.hostname)) {
@@ -190,7 +191,7 @@ export async function fetchWithSSRFProtection(
       return response;
     }
 
-    throw new SSRFError('リダイレクト回数が上限(3回)を超えました');
+    throw new SSRFError(`リダイレクト回数が上限(${MAX_REDIRECTS}回)を超えました`);
   } finally {
     clearTimeout(timeoutId);
   }

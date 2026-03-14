@@ -447,14 +447,20 @@ describe('SEC-14: DOM Sanitization', () => {
     expect(source).toMatch(/on\w+/);
   });
 
-  it('page-reader limits HTML to 50,000 characters', () => {
+  it('page-reader limits HTML to MAX_TEXT_LENGTH', () => {
     const source = readLib('page-reader.ts');
-    expect(source).toContain('50000');
+    expect(source).toContain('MAX_TEXT_LENGTH');
+    // Verify the constant is properly defined
+    const constants = readLib('constants.ts');
+    expect(constants).toContain('50_000');
   });
 
-  it('page-reader limits text content to 10,000 characters', () => {
+  it('page-reader limits text content to MAX_TEXT_CONTENT_LENGTH', () => {
     const source = readLib('page-reader.ts');
-    expect(source).toContain('10000');
+    expect(source).toContain('MAX_TEXT_CONTENT_LENGTH');
+    // Verify the constant is properly defined
+    const constants = readLib('constants.ts');
+    expect(constants).toContain('10_000');
   });
 });
 
@@ -463,18 +469,20 @@ describe('SEC-14: DOM Sanitization', () => {
 // ---------------------------------------------------------------------------
 describe('SEC-15: Content Size Limits', () => {
   it('fetchWithSSRFProtection defaults to 5MB max response size', () => {
-    const source = readLib('url-validator.ts');
-    expect(source).toContain('5 * 1024 * 1024');
+    const constants = readLib('constants.ts');
+    expect(constants).toContain('5 * 1024 * 1024');
   });
 
   it('fetchWithSSRFProtection has 10s default timeout', () => {
-    const source = readLib('url-validator.ts');
-    expect(source).toContain('10000');
+    const constants = readLib('constants.ts');
+    expect(constants).toContain('10_000');
   });
 
-  it('redirect chain is limited to 3 hops', () => {
+  it('redirect chain is limited to MAX_REDIRECTS', () => {
     const source = readLib('url-validator.ts');
-    expect(source).toMatch(/maxRedirects\s*=\s*3/);
+    expect(source).toContain('MAX_REDIRECTS');
+    const constants = readLib('constants.ts');
+    expect(constants).toMatch(/MAX_REDIRECTS\s*=\s*3/);
   });
 });
 
@@ -533,18 +541,19 @@ describe('SEC-16: Chrome Extension Security', () => {
 // SEC-17: CORS Configuration
 // ---------------------------------------------------------------------------
 describe('SEC-17: CORS Configuration', () => {
-  it('analyze API route sets CORS headers', () => {
+  it('analyze API route uses CORS helpers from shared module', () => {
     const source = readRoute('analyze/route.ts');
-    // CORS imported from shared module
-    expect(source).toContain('CORS_HEADERS');
+    expect(source).toContain("from '../../../lib/cors'");
+    expect(source).toContain('corsPreflightResponse');
     const corsSource = readLib('cors.ts');
     expect(corsSource).toContain('Access-Control-Allow-Origin');
     expect(corsSource).toContain('Access-Control-Allow-Methods');
   });
 
-  it('share API route sets CORS headers', () => {
+  it('share API route uses CORS helpers from shared module', () => {
     const source = readRoute('share/route.ts');
-    expect(source).toContain('CORS_HEADERS');
+    expect(source).toContain("from '../../../lib/cors'");
+    expect(source).toContain('corsPreflightResponse');
   });
 
   it('API routes handle OPTIONS preflight', () => {

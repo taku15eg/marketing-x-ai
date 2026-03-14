@@ -39,12 +39,14 @@ describe('Page Reader - Sanitization Patterns', () => {
     expect(htmlUtilsSource).toContain('on\\w+');
   });
 
-  it('limits CTA extraction to 20 items', () => {
-    expect(source).toContain('.slice(0, 20)');
+  it('limits CTA extraction to MAX_CTA_COUNT', () => {
+    expect(source).toContain('MAX_CTA_COUNT');
+    expect(source).toContain('.slice(0, MAX_CTA_COUNT)');
   });
 
-  it('limits image extraction to 50 items', () => {
-    expect(source).toContain('.slice(0, 50)');
+  it('limits image extraction to MAX_IMAGE_COUNT', () => {
+    expect(source).toContain('MAX_IMAGE_COUNT');
+    expect(source).toContain('.slice(0, MAX_IMAGE_COUNT)');
   });
 });
 

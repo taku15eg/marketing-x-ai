@@ -76,13 +76,20 @@ describe('Prompt Builder - User Content Construction', () => {
   });
 });
 
+const constantsSource = fs.readFileSync(
+  path.resolve(__dirname, '../lib/constants.ts'),
+  'utf-8'
+);
+
 describe('Prompt Builder - Claude API Configuration', () => {
   it('uses the correct API endpoint', () => {
-    expect(source).toContain('https://api.anthropic.com/v1/messages');
+    expect(source).toContain('CLAUDE_API_URL');
+    expect(constantsSource).toContain('https://api.anthropic.com/v1/messages');
   });
 
-  it('sets max_tokens to 4096', () => {
-    expect(source).toContain('4096');
+  it('sets max_tokens via CLAUDE_MAX_TOKENS constant', () => {
+    expect(source).toContain('CLAUDE_MAX_TOKENS');
+    expect(constantsSource).toContain('4096');
   });
 
   it('requires ANTHROPIC_API_KEY from env', () => {

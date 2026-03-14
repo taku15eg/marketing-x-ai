@@ -4,6 +4,8 @@
 
 export interface AnalyzeRequest {
   url: string;
+  /** Referral source (e.g. 'share') for viral tracking */
+  ref?: string;
 }
 
 export interface AnalyzeResponse {

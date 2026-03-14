@@ -8,8 +8,7 @@ import type {
   Issue,
   RegulatoryCheck,
 } from './types';
-
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
+import { CLAUDE_MODEL, CLAUDE_API_URL, CLAUDE_MAX_TOKENS, CLAUDE_API_VERSION } from './constants';
 
 export async function analyzeWithClaude(params: {
   company: CompanyResearchResult;
@@ -25,16 +24,16 @@ export async function analyzeWithClaude(params: {
   const systemPrompt = buildSystemPrompt();
   const userContent = buildUserContent(params);
 
-  const response = await fetch(ANTHROPIC_API_URL, {
+  const response = await fetch(CLAUDE_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      'anthropic-version': CLAUDE_API_VERSION,
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      model: CLAUDE_MODEL,
+      max_tokens: CLAUDE_MAX_TOKENS,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
     }),
@@ -179,7 +178,7 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
       metadata: {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 0,
-        model_used: 'claude-sonnet-4-6',
+        model_used: CLAUDE_MODEL,
         vision_used: false,
         dom_extracted: true,
       },
@@ -187,23 +186,16 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
 
     // Add regulatory if present
     if (parsed.regulatory) {
+      const normalizeRisk = (r: Partial<RegulatoryRiskRaw>) => ({
+        expression: r.expression || '',
+        risk_level: (r.risk_level || 'medium') as 'high' | 'medium' | 'low',
+        reason: r.reason || '',
+        recommendation: r.recommendation || '',
+      });
+
       const reg: RegulatoryCheck = {
-        yakujiho_risks: (parsed.regulatory.yakujiho_risks || []).map(
-          (r: { expression?: string; risk_level?: string; reason?: string; recommendation?: string }) => ({
-            expression: r.expression || '',
-            risk_level: r.risk_level || 'medium',
-            reason: r.reason || '',
-            recommendation: r.recommendation || '',
-          })
-        ),
-        keihinhyoujiho_risks: (parsed.regulatory.keihinhyoujiho_risks || []).map(
-          (r: { expression?: string; risk_level?: string; reason?: string; recommendation?: string }) => ({
-            expression: r.expression || '',
-            risk_level: r.risk_level || 'medium',
-            reason: r.reason || '',
-            recommendation: r.recommendation || '',
-          })
-        ),
+        yakujiho_risks: (parsed.regulatory.yakujiho_risks || []).map(normalizeRisk),
+        keihinhyoujiho_risks: (parsed.regulatory.keihinhyoujiho_risks || []).map(normalizeRisk),
       };
       if (reg.yakujiho_risks.length > 0 || reg.keihinhyoujiho_risks.length > 0) {
         result.regulatory = reg;
@@ -216,22 +208,45 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
   }
 }
 
-function normalizeIssues(issues: Array<Record<string, unknown>>): Issue[] {
+interface RegulatoryRiskRaw {
+  expression?: string;
+  risk_level?: string;
+  reason?: string;
+  recommendation?: string;
+}
+
+interface RawIssue {
+  priority?: number;
+  title?: string;
+  diagnosis?: string;
+  impact?: string;
+  handoff_to?: string;
+  brief?: {
+    objective?: string;
+    direction?: string;
+    specifics?: string;
+    constraints?: string[];
+    qa_checklist?: string[];
+  };
+  evidence?: string;
+}
+
+function normalizeIssues(issues: RawIssue[]): Issue[] {
   return issues
     .map((issue, index) => ({
-      priority: (issue.priority as number) || index + 1,
-      title: (issue.title as string) || '',
-      diagnosis: (issue.diagnosis as string) || '',
-      impact: ((issue.impact as string) || 'medium') as 'high' | 'medium' | 'low',
-      handoff_to: ((issue.handoff_to as string) || 'designer') as Issue['handoff_to'],
+      priority: issue.priority ?? index + 1,
+      title: issue.title || '',
+      diagnosis: issue.diagnosis || '',
+      impact: (issue.impact || 'medium') as 'high' | 'medium' | 'low',
+      handoff_to: (issue.handoff_to || 'designer') as Issue['handoff_to'],
       brief: {
-        objective: (issue.brief as Record<string, unknown>)?.objective as string || '',
-        direction: (issue.brief as Record<string, unknown>)?.direction as string || '',
-        specifics: (issue.brief as Record<string, unknown>)?.specifics as string || '',
-        constraints: ((issue.brief as Record<string, unknown>)?.constraints as string[]) || [],
-        qa_checklist: ((issue.brief as Record<string, unknown>)?.qa_checklist as string[]) || [],
+        objective: issue.brief?.objective || '',
+        direction: issue.brief?.direction || '',
+        specifics: issue.brief?.specifics || '',
+        constraints: issue.brief?.constraints || [],
+        qa_checklist: issue.brief?.qa_checklist || [],
       },
-      evidence: (issue.evidence as string) || '',
+      evidence: issue.evidence || '',
     }))
     .sort((a, b) => a.priority - b.priority);
 }

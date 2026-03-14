@@ -34,7 +34,7 @@ describe('POST /api/analyze - Request Validation', () => {
       path.resolve(__dirname, '../app/api/analyze/route.ts'),
       'utf-8'
     );
-    expect(routeSource).toContain("status: 400");
+    expect(routeSource).toContain("400");
     expect(routeSource).toContain('URLが指定されていません');
   });
 
@@ -52,7 +52,7 @@ describe('POST /api/analyze - Request Validation', () => {
       'utf-8'
     );
     expect(routeSource).toContain('RATE_LIMITS.per_minute');
-    expect(routeSource).toContain('status: 429');
+    expect(routeSource).toContain('429');
   });
 
   it('route applies monthly free-tier rate limit', () => {
@@ -105,7 +105,7 @@ describe('POST /api/share - Share Link Creation', () => {
       path.resolve(__dirname, '../app/api/share/route.ts'),
       'utf-8'
     );
-    expect(routeSource).toContain('status: 404');
+    expect(routeSource).toContain('404');
     expect(routeSource).toContain('指定された分析結果が見つかりません');
   });
 
@@ -114,7 +114,7 @@ describe('POST /api/share - Share Link Creation', () => {
       path.resolve(__dirname, '../app/api/share/route.ts'),
       'utf-8'
     );
-    expect(routeSource).toContain('status: 201');
+    expect(routeSource).toContain('201');
     expect(routeSource).toContain('share_id');
     expect(routeSource).toContain('share_url');
   });

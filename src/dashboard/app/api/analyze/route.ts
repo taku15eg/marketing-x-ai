@@ -1,170 +1,103 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { validateUrl } from '../../../lib/url-validator';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../../lib/rate-limiter';
 import { runAnalysis, storeAnalysis, getAnalysis, getCachedAnalysisByUrl } from '../../../lib/analyzer';
-import { CORS_HEADERS } from '../../../lib/cors';
+import { corsPreflightResponse, errorResponse, jsonResponse } from '../../../lib/cors';
 import { logEvent } from '../../../lib/event-logger';
+import { MAX_REQUEST_BODY_SIZE } from '../../../lib/constants';
 import type { AnalyzeRequest } from '../../../lib/types';
 
-/**
- * OPTIONS handler for CORS preflight requests from Chrome extension.
- */
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  });
+  return corsPreflightResponse();
 }
 
 /**
  * GET /api/analyze?id=<analysisId>
- *
  * Retrieves a stored analysis result by its ID.
  */
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id');
-
   if (!id) {
-    return NextResponse.json(
-      { error: '分析IDが指定されていません' },
-      { status: 400, headers: CORS_HEADERS }
-    );
+    return errorResponse('分析IDが指定されていません', 400);
   }
 
   const analysis = getAnalysis(id);
   if (!analysis) {
-    return NextResponse.json(
-      { error: '指定された分析結果が見つかりません' },
-      { status: 404, headers: CORS_HEADERS }
-    );
+    return errorResponse('指定された分析結果が見つかりません', 404);
   }
 
-  return NextResponse.json(analysis, {
-    status: 200,
-    headers: CORS_HEADERS,
-  });
+  return jsonResponse(analysis);
 }
 
 /**
  * POST /api/analyze
- *
- * Accepts { url: string }, validates the URL, checks rate limits,
- * runs the 4-step analysis pipeline, stores the result, and returns
- * the AnalyzeResponse JSON.
+ * Accepts { url: string }, validates, rate-limits, runs the 4-step pipeline.
  */
 export async function POST(request: NextRequest) {
   try {
-    // --- Check body size (max 10KB) ---
+    // Check body size
     const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > 10240) {
-      return NextResponse.json(
-        { error: 'リクエストボディが大きすぎます（上限10KB）' },
-        { status: 413, headers: CORS_HEADERS }
-      );
+    if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_BODY_SIZE) {
+      return errorResponse('リクエストボディが大きすぎます（上限10KB）', 413);
     }
 
-    // --- Parse request body ---
+    // Parse body
     let body: AnalyzeRequest;
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: 'リクエストボディのJSONが不正です' },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return errorResponse('リクエストボディのJSONが不正です', 400);
     }
 
-    const { url, ref } = body as AnalyzeRequest & { ref?: string };
+    const { url, ref } = body;
 
     if (!url || typeof url !== 'string') {
-      return NextResponse.json(
-        { error: 'URLが指定されていません' },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return errorResponse('URLが指定されていません', 400);
     }
 
-    // --- Validate URL (SSRF protection) ---
+    // SSRF protection
     const validation = validateUrl(url);
     if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return errorResponse(validation.error!, 400);
     }
 
-    // --- Rate limiting ---
+    // Rate limiting
     const clientIP = getClientIP(request);
 
-    // Per-minute rate limit
-    const minuteLimit = checkRateLimit(
-      `minute:${clientIP}`,
-      RATE_LIMITS.per_minute
-    );
+    const minuteLimit = checkRateLimit(`minute:${clientIP}`, RATE_LIMITS.per_minute);
     if (!minuteLimit.allowed) {
-      return NextResponse.json(
-        {
-          error: 'レート制限に達しました。しばらくお待ちください。',
-          reset_at: new Date(minuteLimit.reset_at).toISOString(),
-        },
-        {
-          status: 429,
-          headers: {
-            ...CORS_HEADERS,
-            'Retry-After': String(
-              Math.ceil((minuteLimit.reset_at - Date.now()) / 1000)
-            ),
-          },
-        }
+      return errorResponse(
+        'レート制限に達しました。しばらくお待ちください。',
+        429,
+        { 'Retry-After': String(Math.ceil((minuteLimit.reset_at - Date.now()) / 1000)) },
       );
     }
 
-    // Monthly free-tier limit
-    const monthlyLimit = checkRateLimit(
-      `monthly:${clientIP}`,
-      RATE_LIMITS.free_monthly
-    );
+    const monthlyLimit = checkRateLimit(`monthly:${clientIP}`, RATE_LIMITS.free_monthly);
     if (!monthlyLimit.allowed) {
-      return NextResponse.json(
-        {
-          error: '月間の無料分析回数（5回）に達しました。',
-          reset_at: new Date(monthlyLimit.reset_at).toISOString(),
-        },
-        {
-          status: 429,
-          headers: {
-            ...CORS_HEADERS,
-            'Retry-After': String(
-              Math.ceil((monthlyLimit.reset_at - Date.now()) / 1000)
-            ),
-          },
-        }
+      return errorResponse(
+        '月間の無料分析回数（5回）に達しました。',
+        429,
+        { 'Retry-After': String(Math.ceil((monthlyLimit.reset_at - Date.now()) / 1000)) },
       );
     }
 
-    // --- Check URL cache (same URL analyzed within 1h returns cached result) ---
-    // This avoids redundant Claude API calls, reducing cost significantly.
-    // Cache hit does NOT consume monthly rate limit.
+    // URL cache check
     const referralSource = ref === 'share' ? 'share' : 'direct';
     logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
 
     const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
     if (cached) {
       logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
-      return NextResponse.json(cached, {
-        status: 200,
-        headers: {
-          ...CORS_HEADERS,
-          'X-Cache': 'HIT',
-          'X-RateLimit-Remaining': String(monthlyLimit.remaining + 1), // refund the count
-          'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
-        },
+      return jsonResponse(cached, 200, {
+        'X-Cache': 'HIT',
+        'X-RateLimit-Remaining': String(monthlyLimit.remaining + 1),
+        'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
       });
     }
 
-    // --- Run analysis pipeline ---
+    // Run pipeline
     const result = await runAnalysis(validation.sanitized_url!);
-
-    // --- Store result ---
     storeAnalysis(result);
 
     if (result.status === 'completed') {
@@ -173,26 +106,16 @@ export async function POST(request: NextRequest) {
       logEvent('analysis_error', { url: validation.sanitized_url!, error: result.error || '' });
     }
 
-    // --- Return response ---
-    return NextResponse.json(result, {
-      status: 200,
-      headers: {
-        ...CORS_HEADERS,
-        'X-Cache': 'MISS',
-        'X-RateLimit-Remaining': String(monthlyLimit.remaining),
-        'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
-      },
+    return jsonResponse(result, 200, {
+      'X-Cache': 'MISS',
+      'X-RateLimit-Remaining': String(monthlyLimit.remaining),
+      'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
     });
   } catch (error) {
     console.error('[/api/analyze] Unhandled error:', error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : '分析中に予期せぬエラーが発生しました',
-      },
-      { status: 500, headers: CORS_HEADERS }
+    return errorResponse(
+      error instanceof Error ? error.message : '分析中に予期せぬエラーが発生しました',
+      500,
     );
   }
 }

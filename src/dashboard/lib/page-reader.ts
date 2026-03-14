@@ -2,7 +2,12 @@
 // DOM extraction + Screenshot capture via Vision API
 
 import { fetchWithSSRFProtection } from './url-validator';
-import { stripHtml as sharedStripHtml, sanitizeHtml as sharedSanitizeHtml } from './html-utils';
+import { stripHtml, sanitizeHtml } from './html-utils';
+import {
+  FETCH_TIMEOUT_MS, FETCH_MAX_SIZE_BYTES, MAX_TEXT_LENGTH,
+  MAX_TEXT_CONTENT_LENGTH, MAX_CTA_COUNT, MAX_IMAGE_COUNT, MAX_CTA_TEXT_LENGTH,
+  SCREENSHOT_TIMEOUT_MS, SCREENSHOT_VIEWPORT,
+} from './constants';
 import type { DOMData, CTAInfo } from './types';
 
 export async function readPage(url: string): Promise<{
@@ -11,9 +16,9 @@ export async function readPage(url: string): Promise<{
   raw_html: string;
 }> {
   // Fetch the page HTML
-  const response = await fetchWithSSRFProtection(url, { timeout: 10000, maxSize: 5 * 1024 * 1024 });
+  const response = await fetchWithSSRFProtection(url, { timeout: FETCH_TIMEOUT_MS, maxSize: FETCH_MAX_SIZE_BYTES });
   const html = await response.text();
-  const limitedHtml = html.slice(0, 50000);
+  const limitedHtml = html.slice(0, MAX_TEXT_LENGTH);
 
   // Extract DOM data
   const dom = extractDOMData(limitedHtml, url);
@@ -25,7 +30,6 @@ export async function readPage(url: string): Promise<{
 }
 
 function extractDOMData(html: string, url: string): DOMData {
-  // Sanitize: remove script tags and event handlers
   const sanitized = sanitizeHtml(html);
 
   // Extract meta
@@ -48,7 +52,7 @@ function extractDOMData(html: string, url: string): DOMData {
   const images = extractImages(sanitized);
 
   // Extract text content
-  const textContent = stripHtml(sanitized).slice(0, 10000);
+  const textContent = stripHtml(sanitized).slice(0, MAX_TEXT_CONTENT_LENGTH);
   const wordCount = textContent.length;
   const linkCount = (sanitized.match(/<a\s/gi) || []).length;
 
@@ -66,10 +70,6 @@ function extractDOMData(html: string, url: string): DOMData {
     word_count: wordCount,
     link_count: linkCount,
   };
-}
-
-function sanitizeHtml(html: string): string {
-  return sharedSanitizeHtml(html);
 }
 
 function extractTag(html: string, tag: string): string | null {
@@ -130,7 +130,7 @@ function extractCTAs(html: string): CTAInfo[] {
   while ((match = linkRegex.exec(html)) !== null) {
     const href = match[1];
     const text = stripHtml(match[2]).trim();
-    if (!text || text.length > 50) continue;
+    if (!text || text.length > MAX_CTA_TEXT_LENGTH) continue;
 
     const ctaPatterns = /お問い合わせ|資料請求|資料|ダウンロード|無料|申し込|購入|登録|エントリー|相談|見積|体験|トライアル|カウンセリング|予約|始める|導入|詳しく|今すぐ|特典|限定|キャンペーン|お試し|デモ|見学|参加|入会|契約|お申込|ご相談|contact|sign\s?up|free|trial|demo|buy|cart|get\s?started|subscribe|book|order/i;
     if (ctaPatterns.test(text) || ctaPatterns.test(href)) {
@@ -147,7 +147,7 @@ function extractCTAs(html: string): CTAInfo[] {
   const buttonRegex = /<button[^>]*>([\s\S]*?)<\/button>/gi;
   while ((match = buttonRegex.exec(html)) !== null) {
     const text = stripHtml(match[1]).trim();
-    if (text && text.length <= 50) {
+    if (text && text.length <= MAX_CTA_TEXT_LENGTH) {
       ctas.push({
         text,
         href: '',
@@ -157,7 +157,7 @@ function extractCTAs(html: string): CTAInfo[] {
     }
   }
 
-  return ctas.slice(0, 20);
+  return ctas.slice(0, MAX_CTA_COUNT);
 }
 
 function estimatePosition(html: string, index: number): string {
@@ -184,11 +184,7 @@ function extractImages(html: string): { alt: string; width: number; height: numb
     const height = parseInt(match[0].match(/height=["']?(\d+)/i)?.[1] || '0');
     images.push({ alt, width, height });
   }
-  return images.slice(0, 50);
-}
-
-function stripHtml(html: string): string {
-  return sharedStripHtml(html);
+  return images.slice(0, MAX_IMAGE_COUNT);
 }
 
 /**
@@ -201,7 +197,7 @@ async function captureScreenshot(url: string): Promise<string | null> {
   // Use a public screenshot API endpoint
   // In production, replace with self-hosted Puppeteer or paid API
   try {
-    const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&viewport_width=1280&viewport_height=800&format=jpeg&quality=80`;
+    const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&viewport_width=${SCREENSHOT_VIEWPORT.width}&viewport_height=${SCREENSHOT_VIEWPORT.height}&format=jpeg&quality=80`;
 
     // Check if we have an API key
     const apiKey = process.env.SCREENSHOT_API_KEY;
@@ -213,7 +209,7 @@ async function captureScreenshot(url: string): Promise<string | null> {
 
     const response = await fetch(
       `${screenshotUrl}&access_key=${apiKey}`,
-      { signal: AbortSignal.timeout(15000) }
+      { signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS) }
     );
 
     if (!response.ok) return null;

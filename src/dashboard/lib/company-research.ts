@@ -2,7 +2,8 @@
 // Fetches and understands the company behind the URL
 
 import { fetchWithSSRFProtection } from './url-validator';
-import { stripHtml as sharedStripHtml } from './html-utils';
+import { stripHtml } from './html-utils';
+import { FETCH_TIMEOUT_MS, MAX_TEXT_LENGTH } from './constants';
 import type { CompanyResearchResult, BrandTone } from './types';
 
 export async function researchCompany(url: string): Promise<CompanyResearchResult> {
@@ -27,11 +28,10 @@ export async function researchCompany(url: string): Promise<CompanyResearchResul
 
 async function fetchPageHtml(url: string): Promise<string> {
   try {
-    const response = await fetchWithSSRFProtection(url, { timeout: 10000 });
+    const response = await fetchWithSSRFProtection(url, { timeout: FETCH_TIMEOUT_MS });
     if (!response.ok) return '';
     const text = await response.text();
-    // Limit to 50,000 chars as per spec
-    return text.slice(0, 50000);
+    return text.slice(0, MAX_TEXT_LENGTH);
   } catch {
     return '';
   }
@@ -70,10 +70,6 @@ function extractCompanyInfo(
     credentials,
     case_studies: [],
   };
-}
-
-function stripHtml(html: string): string {
-  return sharedStripHtml(html);
 }
 
 function analyzeBrandTone(text: string): BrandTone {
