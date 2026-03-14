@@ -55,6 +55,7 @@
 
 ### Step 5: 完了報告を出す
 
+**単発タスクの場合:**
 ```
 ### Completion Report
 - What changed:
@@ -64,6 +65,10 @@
 - Risks:
 - Suggested next step:
 ```
+
+**一括タスク（複数ファイル変更・バッチ処理等）の場合:**
+`governance/AUDIT_REPORT_TEMPLATE.md` の監査モード報告を使用する。
+`governance/PROGRESS.md` への追記案も含めること。
 
 ---
 
@@ -115,4 +120,6 @@
 | `governance/10_ARCHITECTURE_BOUNDARY.md` | 運用ルール | 変更可能範囲 |
 | `governance/TASK_PROMPT_TEMPLATE.md` | テンプレート | 着手前テンプレート |
 | `governance/COMPLETION_REPORT_TEMPLATE.md` | テンプレート | 完了報告テンプレート |
+| `governance/AUDIT_REPORT_TEMPLATE.md` | テンプレート | 監査モード報告テンプレート（一括タスク用） |
+| `governance/PROGRESS.md` | 進捗ログ | 実装進捗の追記ログ |
 | `docs/` | 仕様書 | 詳細仕様（変更禁止） |
