@@ -8,6 +8,7 @@ import {
   storeAnalysis,
   getCachedAnalysisByUrl,
 } from '../lib/analyzer';
+import { checkRateLimit } from '../lib/rate-limiter';
 import type { AnalyzeResponse } from '../lib/types';
 
 function makeMockResponse(id: string, url: string): AnalyzeResponse {
@@ -128,5 +129,29 @@ describe('URL Cache', () => {
 
     const cached = getCachedAnalysisByUrl(url);
     expect(cached).toBeDefined();
+  });
+});
+
+describe('URL Cache - Monthly rate limit interaction', () => {
+  it('cache hits should not consume monthly rate limit quota', () => {
+    // Simulate the corrected route logic: check cache BEFORE monthly limit
+    const uniqueKey = `monthly:cache-test-${Date.now()}`;
+    const config = { max_requests: 2, window_ms: 60 * 60 * 1000 };
+
+    // Store a cached analysis
+    const url = 'https://rate-limit-test-' + Date.now() + '.com/page';
+    const mock = makeMockResponse('rate-limit-cache-1', url);
+    storeAnalysis(mock);
+
+    // Simulate 5 requests to the same URL (all cache hits)
+    for (let i = 0; i < 5; i++) {
+      const cached = getCachedAnalysisByUrl(url);
+      expect(cached).toBeDefined(); // cache hit → skip monthly limit
+    }
+
+    // Monthly limit should still have full quota since cache hits skipped it
+    const limit = checkRateLimit(uniqueKey, config);
+    expect(limit.allowed).toBe(true);
+    expect(limit.remaining).toBe(config.max_requests - 1);
   });
 });

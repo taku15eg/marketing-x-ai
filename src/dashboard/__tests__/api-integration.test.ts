@@ -81,6 +81,18 @@ describe('POST /api/analyze - Request Validation', () => {
     expect(routeSource).toContain('X-RateLimit-Reset');
   });
 
+  it('route checks URL cache before monthly rate limit so cache hits do not consume quota', () => {
+    const routeSource = fs.readFileSync(
+      path.resolve(__dirname, '../app/api/analyze/route.ts'),
+      'utf-8'
+    );
+    const cacheCheckPos = routeSource.indexOf('getCachedAnalysisByUrl');
+    const monthlyLimitPos = routeSource.indexOf('RATE_LIMITS.free_monthly');
+    expect(cacheCheckPos).toBeGreaterThan(-1);
+    expect(monthlyLimitPos).toBeGreaterThan(-1);
+    expect(cacheCheckPos).toBeLessThan(monthlyLimitPos);
+  });
+
   it('route stores analysis result after completion', () => {
     const routeSource = fs.readFileSync(
       path.resolve(__dirname, '../app/api/analyze/route.ts'),

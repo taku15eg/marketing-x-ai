@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     // --- Rate limiting ---
     const clientIP = getClientIP(request);
 
-    // Per-minute rate limit
+    // Per-minute rate limit (applies to all requests including cache hits)
     const minuteLimit = checkRateLimit(
       `minute:${clientIP}`,
       RATE_LIMITS.per_minute
@@ -118,7 +118,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Monthly free-tier limit
+    // --- Check URL cache before monthly limit ---
+    // Cache hits do NOT consume monthly rate limit.
+    const referralSource = ref === 'share' ? 'share' : 'direct';
+
+    const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
+    if (cached) {
+      logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: {
+          ...CORS_HEADERS,
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
+    // Monthly free-tier limit (only consumed for actual analysis runs)
     const monthlyLimit = checkRateLimit(
       `monthly:${clientIP}`,
       RATE_LIMITS.free_monthly
@@ -141,25 +157,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // --- Check URL cache (same URL analyzed within 1h returns cached result) ---
-    // This avoids redundant Claude API calls, reducing cost significantly.
-    // Cache hit does NOT consume monthly rate limit.
-    const referralSource = ref === 'share' ? 'share' : 'direct';
     logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
-
-    const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
-    if (cached) {
-      logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
-      return NextResponse.json(cached, {
-        status: 200,
-        headers: {
-          ...CORS_HEADERS,
-          'X-Cache': 'HIT',
-          'X-RateLimit-Remaining': String(monthlyLimit.remaining + 1), // refund the count
-          'X-RateLimit-Reset': new Date(monthlyLimit.reset_at).toISOString(),
-        },
-      });
-    }
 
     // --- Run analysis pipeline ---
     const result = await runAnalysis(validation.sanitized_url!);
