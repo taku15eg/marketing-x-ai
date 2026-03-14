@@ -6,6 +6,7 @@ import Link from 'next/link';
 import AnalysisResult from '@/components/AnalysisResult';
 import PoweredByBadge from '@/components/PoweredByBadge';
 import SocialShareButtons from '@/components/SocialShareButtons';
+import { trackEvent } from '@/lib/track';
 import type { AnalyzeResponse } from '@/lib/types';
 
 export default function SharePage() {
@@ -63,6 +64,26 @@ export default function SharePage() {
 
   const analysisUrl = data.url;
   const reanalyzeHref = `/?ref=share_reanalyze&url=${encodeURIComponent(analysisUrl)}`;
+
+  // Wire up click tracking for all [data-track] elements
+  useEffect(() => {
+    function handleTrackClick(e: MouseEvent) {
+      const target = (e.target as HTMLElement).closest('[data-track]');
+      if (!target) return;
+      const eventName = target.getAttribute('data-track');
+      const location = target.getAttribute('data-track-location') || '';
+      const source = target.getAttribute('data-track-source') || '';
+      if (eventName === 'share_cta_clicked') {
+        trackEvent('share_cta_clicked', { share_id: shareId, location });
+      } else if (eventName === 'share_reanalyze_clicked') {
+        trackEvent('share_reanalyze_clicked', { share_id: shareId, url: analysisUrl });
+      } else if (eventName === 'powered_by_clicked') {
+        trackEvent('powered_by_clicked', { source });
+      }
+    }
+    document.addEventListener('click', handleTrackClick);
+    return () => document.removeEventListener('click', handleTrackClick);
+  }, [shareId, analysisUrl]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

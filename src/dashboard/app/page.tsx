@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useState, useRef, useCallback } from 'react';
+import { Suspense, useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import UrlInput from '@/components/UrlInput';
 import LoadingProgress from '@/components/LoadingProgress';
+import { trackEvent } from '@/lib/track';
 
 export default function HomePage() {
   return (
@@ -18,6 +19,19 @@ function HomePageContent() {
   const searchParams = useSearchParams();
   const ref = searchParams.get('ref') || undefined;
   const prefillUrl = searchParams.get('url') || '';
+
+  // Track inbound referral sources (share page, powered_by, extension)
+  useEffect(() => {
+    if (ref === 'share' || ref === 'share_reanalyze') {
+      trackEvent('share_cta_clicked', { location: 'landing', ref: ref });
+    } else if (ref === 'powered_by') {
+      const utmMedium = searchParams.get('utm_medium') || '';
+      trackEvent('powered_by_clicked', { source: utmMedium });
+    } else if (ref === 'extension' || ref === 'extension_powered_by') {
+      trackEvent('extension_to_dashboard', { ref: ref });
+    }
+  }, [ref, searchParams]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [progressMessage, setProgressMessage] = useState('');
