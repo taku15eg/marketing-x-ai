@@ -119,6 +119,27 @@ publish-gate-claude-code/
 
 ---
 
+## Claude Code 開始手順
+
+Claude Code で実装作業を行う場合、以下の順番でファイルを読んでから着手してください。
+
+1. `CLAUDE.md` — プロダクト定義・セキュリティ要件（正本）
+2. `governance/CLAUDE_CODE_OPERATING_PROMPT.md` — 運用ガイド（毎Run必読）
+3. `governance/00_PROJECT_CHARTER.md` — 最上位方針
+4. `governance/05_DO_NOT_DECIDE.md` — 独断禁止リスト
+5. `governance/01_PHASE_0_5_BACKLOG.md` — 現在のバックログ
+
+詳細は `governance/` ディレクトリ内の各ファイルを参照。
+
+| ディレクトリ | 正本の種別 |
+|------------|-----------|
+| `CLAUDE.md` | プロダクト定義 |
+| `governance/` | 運用ガバナンス（バックログ・判断ログ・レビュー基準・テンプレート） |
+| `docs/` | 仕様詳細（技術設計・UX・プロンプト等） |
+| `context/interviews/` | ユーザーインタビュー原文 |
+
+---
+
 ## 使い方
 
 ### 1. 新機能追加時
