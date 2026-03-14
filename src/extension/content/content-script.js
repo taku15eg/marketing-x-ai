@@ -1,7 +1,15 @@
 /**
  * Publish Gate v0.5 - Content Script
  * DOM feature extraction and PII masking.
- * Injected on-demand via chrome.scripting.executeScript from the service worker.
+ *
+ * NOTE: Phase 0.5 では未使用。現在の設計では「URLを入れるだけで全部出る」思想に基づき、
+ * 分析パイプライン（企業調査→ページ読取→診断→提案）はサーバーサイドで完結する。
+ * このスクリプトは将来フェーズでクライアントサイドDOM抽出が必要になった場合に備えて保持。
+ *
+ * 使用する場合:
+ * 1. manifest.json に "scripting" パーミッションを追加
+ * 2. service-worker.js で chrome.scripting.executeScript を使って注入
+ * 3. dashboard API 側で page_features を受け取る処理を追加
  *
  * SECURITY: This file contains NO API keys or sensitive logic.
  * All API communication happens in the service worker.

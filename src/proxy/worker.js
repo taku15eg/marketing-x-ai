@@ -3,6 +3,11 @@
  * 4ステップ分析パイプライン: 企業を知る → ページを見る → 診断する → 依頼パックを出す
  * Progressive Prompt: Layer 0-3 に応じてシステムプロンプトを段階拡張
  *
+ * セキュリティ:
+ * - SSRF防御: プライベートIP・localhost拒否、スキーム制限
+ * - レート制限: IP単位 10req/min、月間5回（Free層）
+ * - リクエストサイズ制限: 10KB
+ *
  * env secrets: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
  */
 
@@ -30,6 +35,12 @@ async function handleAnalyze(request, env, cors) {
     return json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'POST only' } }, cors, 405);
   }
 
+  // Request size limit (10KB)
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 10240) {
+    return json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'リクエストボディが大きすぎます（上限10KB）' } }, cors, 413);
+  }
+
   const body = await request.json();
   const { url, layer = 0, judgment_history = [], gsc_data, ga4_data } = body;
 
@@ -37,27 +48,53 @@ async function handleAnalyze(request, env, cors) {
     return json({ error: { code: 'MISSING_URL', message: 'url is required' } }, cors, 400);
   }
 
-  // Validate URL scheme
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return json({ error: { code: 'INVALID_URL', message: 'http(s):// URLs only' } }, cors, 400);
+  // SSRF defense: validate URL
+  const validation = validateUrl(url);
+  if (!validation.valid) {
+    return json({ error: { code: 'INVALID_URL', message: validation.error } }, cors, 400);
+  }
+
+  // Rate limiting
+  const clientIP = getClientIP(request);
+
+  const minuteCheck = checkRateLimit(`minute:${clientIP}`, RATE_LIMITS.per_minute);
+  if (!minuteCheck.allowed) {
+    return json(
+      { error: { code: 'RATE_LIMITED', message: 'レート制限に達しました。しばらくお待ちください。' } },
+      { ...cors, 'Retry-After': String(Math.ceil((minuteCheck.reset_at - Date.now()) / 1000)) },
+      429
+    );
+  }
+
+  const monthlyCheck = checkRateLimit(`monthly:${clientIP}`, RATE_LIMITS.free_monthly);
+  if (!monthlyCheck.allowed) {
+    return json(
+      { error: { code: 'MONTHLY_LIMIT', message: '月間の無料分析回数（5回）に達しました。' } },
+      { ...cors, 'Retry-After': String(Math.ceil((monthlyCheck.reset_at - Date.now()) / 1000)) },
+      429
+    );
   }
 
   const systemPrompt = buildAnalyzePrompt(layer, judgment_history, gsc_data, ga4_data);
-  const userContent = `以下のURLのLPを分析してください: ${url}`;
+  const userContent = `以下のURLのLPを分析してください: ${validation.sanitized_url}`;
 
   const result = await callClaude(env, systemPrompt, userContent);
 
   // Wrap in AnalyzeResponse format
   const response = {
     id: crypto.randomUUID(),
-    url,
+    url: validation.sanitized_url,
     status: result.parse_error ? 'error' : 'completed',
     result: result.parse_error ? undefined : result,
     error: result.parse_error ? 'AI応答の解析に失敗しました' : undefined,
     created_at: new Date().toISOString(),
   };
 
-  return json(response, cors);
+  return json(response, {
+    ...cors,
+    'X-RateLimit-Remaining': String(monthlyCheck.remaining),
+    'X-RateLimit-Reset': new Date(monthlyCheck.reset_at).toISOString(),
+  });
 }
 
 function buildAnalyzePrompt(layer, history, gsc, ga4) {
@@ -166,6 +203,129 @@ async function handleShare(request, env, cors) {
     url: result.url || '',
     created_at: new Date().toISOString(),
   }, cors);
+}
+
+// ─── SSRF Defense ──────────────────────────────────────────
+// Dashboard の url-validator.ts と同等のロジック
+
+const PRIVATE_IP_RANGES = [
+  /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,           // 127.0.0.0/8
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,             // 10.0.0.0/8
+  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/, // 172.16.0.0/12
+  /^192\.168\.\d{1,3}\.\d{1,3}$/,                // 192.168.0.0/16
+  /^169\.254\.\d{1,3}\.\d{1,3}$/,                // 169.254.0.0/16
+  /^0\.0\.0\.0$/,                                 // 0.0.0.0
+  /^::1$/,                                        // IPv6 loopback
+  /^fc00:/i,                                      // IPv6 unique local
+  /^fe80:/i,                                      // IPv6 link-local
+];
+
+function validateUrl(input) {
+  if (!input || typeof input !== 'string') {
+    return { valid: false, error: 'URLが入力されていません' };
+  }
+
+  const trimmed = input.trim();
+
+  // Block dangerous schemes
+  if (/^(javascript|data|vbscript|file|ftp):/i.test(trimmed)) {
+    return { valid: false, error: '許可されていないURLスキームです' };
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    try {
+      parsed = new URL(`https://${trimmed}`);
+    } catch {
+      return { valid: false, error: '有効なURLを入力してください' };
+    }
+  }
+
+  // Protocol check
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { valid: false, error: 'httpまたはhttpsのURLのみ対応しています' };
+  }
+
+  const hostname = parsed.hostname;
+
+  // Block IPv6 in brackets
+  if (hostname.startsWith('[') || hostname === '::1') {
+    return { valid: false, error: 'IPアドレス直指定は許可されていません' };
+  }
+
+  // Check private IPs
+  if (isIPAddress(hostname) && isPrivateIP(hostname)) {
+    return { valid: false, error: 'プライベートIPアドレスへのアクセスは許可されていません' };
+  }
+
+  // Block localhost
+  if (isLocalhost(hostname)) {
+    return { valid: false, error: 'ローカルアドレスへのアクセスは許可されていません' };
+  }
+
+  return { valid: true, sanitized_url: parsed.toString() };
+}
+
+function isIPAddress(hostname) {
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)) return true;
+  if (/^[\da-f:]+$/i.test(hostname) || hostname.startsWith('[')) return true;
+  return false;
+}
+
+function isPrivateIP(ip) {
+  const cleaned = ip.replace(/^\[|\]$/g, '');
+  return PRIVATE_IP_RANGES.some((range) => range.test(cleaned));
+}
+
+function isLocalhost(hostname) {
+  const lower = hostname.toLowerCase();
+  return (
+    lower === 'localhost' ||
+    lower === '0.0.0.0' ||
+    lower === '::1' ||
+    lower === '[::1]' ||
+    lower.endsWith('.localhost')
+  );
+}
+
+// ─── Rate Limiter ──────────────────────────────────────────
+// In-memory rate limiter (resets on deploy; production should use KV)
+// Dashboard の rate-limiter.ts と同等のロジック
+
+const rateLimitStore = new Map();
+
+const RATE_LIMITS = {
+  free_monthly: { max_requests: 5, window_ms: 30 * 24 * 60 * 60 * 1000 },
+  per_minute:   { max_requests: 10, window_ms: 60 * 1000 },
+};
+
+function checkRateLimit(key, config) {
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+
+  if (!entry || now >= entry.reset_at) {
+    rateLimitStore.set(key, { count: 1, reset_at: now + config.window_ms });
+    return { allowed: true, remaining: config.max_requests - 1, reset_at: now + config.window_ms };
+  }
+
+  if (entry.count >= config.max_requests) {
+    return { allowed: false, remaining: 0, reset_at: entry.reset_at };
+  }
+
+  entry.count++;
+  return { allowed: true, remaining: config.max_requests - entry.count, reset_at: entry.reset_at };
+}
+
+function getClientIP(request) {
+  const cfIP = request.headers.get('cf-connecting-ip');
+  if (cfIP) return cfIP;
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  const real = request.headers.get('x-real-ip');
+  if (real) return real;
+  return 'unknown';
 }
 
 // ─── Claude API ────────────────────────────────────────────
