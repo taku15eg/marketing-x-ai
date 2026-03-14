@@ -8,6 +8,15 @@ import PoweredByBadge from '@/components/PoweredByBadge';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import type { AnalyzeResponse } from '@/lib/types';
 
+function trackShareCTA(shareId: string) {
+  // Fire-and-forget beacon for share CTA click tracking
+  fetch('/api/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'share_cta_clicked', data: { share_id: shareId } }),
+  }).catch(() => { /* tracking failure is non-critical */ });
+}
+
 export default function SharePage() {
   const params = useParams();
   const shareId = params.id as string;
@@ -87,6 +96,7 @@ export default function SharePage() {
           </div>
           <Link
             href="/?ref=share"
+            onClick={() => trackShareCTA(shareId)}
             className="inline-flex items-center gap-2 rounded-lg bg-[#1B3A5C] px-6 py-3 text-sm text-white font-bold hover:bg-[#2A5580] transition-colors shadow-md hover:shadow-lg shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -109,6 +119,7 @@ export default function SharePage() {
         <p className="text-white/80 text-sm mb-5">URLを入れるだけ。アカウント登録不要。完全無料。</p>
         <Link
           href="/?ref=share"
+          onClick={() => trackShareCTA(shareId)}
           className="inline-flex items-center gap-2 rounded-lg bg-white text-[#1B3A5C] px-8 py-3 font-bold hover:bg-gray-100 transition-colors shadow-lg"
         >
           無料で分析を始める
