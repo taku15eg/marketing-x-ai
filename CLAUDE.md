@@ -61,26 +61,78 @@ Webダッシュボードと同じAPIを叩く。
 ④ 依頼パックを出す — デザイナー/エンジニア向けブリーフ。コピー文言は出さず構造変化を図示
 ```
 
-### 出力JSON構造
+### パイプラインステップ名（コード上の定数）
+
+| ステップ | CLAUDE.md名称 | AnalysisStep型 | UI表示名 |
+|----------|--------------|----------------|---------|
+| ① | 企業を知る | `company_research` | 企業調査 |
+| ② | ページを見る | `page_reading` | ページ読取 |
+| ③ | 診断する | `diagnosis` | 課題診断 |
+| ④ | 依頼パックを出す | `brief_generation` | 提案作成 |
+
+### 出力JSON構造（正本 — types.ts AnalysisResult型と完全一致）
 
 ```json
 {
-  "company_understanding": { "summary": "...", "site_cta_structure": "..." },
+  "company_understanding": {
+    "summary": "企業・事業の要約",
+    "industry": "業種",
+    "business_model": "ビジネスモデル",
+    "site_cta_structure": "サイト全体のCTA構造"
+  },
   "page_reading": {
-    "page_type": "...", "fv_main_copy": "...", "cta_map": [...],
-    "trust_elements": "...", "content_structure": "...", "confidence": "..."
+    "page_type": "サービスLP|料金ページ|事例ページ|採用ページ|その他",
+    "fv_main_copy": "FVのメインコピー",
+    "fv_sub_copy": "FVのサブコピー",
+    "cta_map": [{"text": "...", "position": "header|fv|middle|footer", "prominence": "primary|secondary|tertiary"}],
+    "trust_elements": "信頼要素の説明",
+    "content_structure": "コンテンツ構造の説明",
+    "confidence": "high|medium|low",
+    "screenshot_insights": "スクリーンショットからの視覚的分析所見",
+    "dom_insights": "DOM構造からの分析所見"
   },
   "improvement_potential": "+XX%",
   "issues": [
     {
-      "priority": 1, "title": "...", "diagnosis": "...",
-      "handoff_to": "designer|engineer|copywriter+designer",
+      "priority": 1,
+      "title": "課題タイトル",
+      "diagnosis": "診断内容",
+      "impact": "high|medium|low",
+      "handoff_to": "designer|engineer|copywriter+designer|marketer",
       "brief": {
-        "objective": "...", "direction": "...", "specifics": "...",
-        "constraints": [...], "qa_checklist": [...]
-      }
+        "objective": "目的",
+        "direction": "改善の方向性",
+        "specifics": "具体的な変更内容",
+        "constraints": ["制約条件"],
+        "qa_checklist": ["確認項目"]
+      },
+      "evidence": "根拠"
     }
-  ]
+  ],
+  "regulatory": {
+    "yakujiho_risks": [{"expression": "...", "risk_level": "high|medium|low", "reason": "...", "recommendation": "..."}],
+    "keihinhyoujiho_risks": [{"expression": "...", "risk_level": "high|medium|low", "reason": "...", "recommendation": "..."}]
+  },
+  "metadata": {
+    "analyzed_at": "ISO8601",
+    "analysis_duration_ms": 0,
+    "model_used": "claude-sonnet-4-6",
+    "vision_used": true,
+    "dom_extracted": true
+  }
+}
+```
+
+### APIレスポンス型（AnalyzeResponse）
+
+```json
+{
+  "id": "nanoid(21)",
+  "url": "分析対象URL",
+  "status": "processing|completed|error",
+  "result": { "...上記AnalysisResult..." },
+  "error": "エラーメッセージ（statusがerrorの場合のみ）",
+  "created_at": "ISO8601"
 }
 ```
 

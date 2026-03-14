@@ -81,25 +81,25 @@ async function startAnalysis() {
   showScreen('loading');
   resetLoadingSteps();
 
-  // Step 1: Screenshot
+  // Step 1: 企業調査 (Company Research)
   setLoadingStep(1, 'active');
   updateProgress(10);
 
-  // Small delay to show step 1 visually
+  // Step 2: ページ読取 (Page Reading) — show progress while API works
   await delay(300);
   setLoadingStep(1, 'done');
-
-  // Step 2: DOM extraction
   setLoadingStep(2, 'active');
   updateProgress(30);
-  await delay(300);
-  setLoadingStep(2, 'done');
-
-  // Step 3: AI analysis (actual API call)
-  setLoadingStep(3, 'active');
-  updateProgress(50);
 
   try {
+    // The API handles all 4 steps server-side; we show progress to match
+    await delay(300);
+    setLoadingStep(2, 'done');
+
+    // Step 3: 課題診断 (Diagnosis)
+    setLoadingStep(3, 'active');
+    updateProgress(50);
+
     const result = await sendMessage({
       type: 'START_ANALYSIS',
       url: url,
@@ -116,7 +116,7 @@ async function startAnalysis() {
     setLoadingStep(3, 'done');
     updateProgress(85);
 
-    // Step 4: Rendering results
+    // Step 4: 提案作成 (Brief Generation)
     setLoadingStep(4, 'active');
     await delay(400);
     setLoadingStep(4, 'done');

@@ -1,5 +1,6 @@
 /**
- * Publish Gate v2.0 — API Proxy (Cloudflare Workers)
+ * Publish Gate — API Proxy (Cloudflare Workers)
+ * 4ステップ分析パイプライン: 企業を知る → ページを見る → 診断する → 依頼パックを出す
  * Progressive Prompt: Layer 0-3 に応じてシステムプロンプトを段階拡張
  *
  * env secrets: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
@@ -13,10 +14,9 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
     try {
-      if (url.pathname === '/api/v1/analyze') return handleAnalyze(request, env, cors);
-      if (url.pathname === '/api/v1/handoff') return handleHandoff(request, env, cors);
-      if (url.pathname === '/api/v1/memo') return handleMemo(request, env, cors);
-      if (url.pathname === '/health') return json({ status: 'ok', version: '2.0.0' }, cors);
+      if (url.pathname === '/api/analyze') return handleAnalyze(request, env, cors);
+      if (url.pathname === '/api/share') return handleShare(request, env, cors);
+      if (url.pathname === '/health') return json({ status: 'ok', version: '0.5.0' }, cors);
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found' } }, cors, 404);
     } catch (e) {
       return json({ error: { code: 'INTERNAL', message: e.message } }, cors, 500);
@@ -26,60 +26,100 @@ export default {
 
 // ─── Analyze ───────────────────────────────────────────────
 async function handleAnalyze(request, env, cors) {
-  const body = await request.json();
-  const { page_features, layer = 0, judgment_history = [], gsc_data, ga4_data, confirmed_goal } = body;
+  if (request.method !== 'POST') {
+    return json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'POST only' } }, cors, 405);
+  }
 
-  if (!page_features) return json({ error: { code: 'MISSING_FEATURES', message: 'page_features is required' } }, cors, 400);
+  const body = await request.json();
+  const { url, layer = 0, judgment_history = [], gsc_data, ga4_data } = body;
+
+  if (!url || typeof url !== 'string') {
+    return json({ error: { code: 'MISSING_URL', message: 'url is required' } }, cors, 400);
+  }
+
+  // Validate URL scheme
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return json({ error: { code: 'INVALID_URL', message: 'http(s):// URLs only' } }, cors, 400);
+  }
 
   const systemPrompt = buildAnalyzePrompt(layer, judgment_history, gsc_data, ga4_data);
-  const userContent = confirmed_goal
-    ? `以下のページ特徴量と、ユーザーが確認した推定内容に基づいて提案を生成してください。\n\n## 確認済み推定\n${JSON.stringify(confirmed_goal)}\n\n## ページ特徴量\n${JSON.stringify(page_features)}`
-    : `以下のページ特徴量を分析してください。\n\n${JSON.stringify(page_features)}`;
+  const userContent = `以下のURLのLPを分析してください: ${url}`;
 
   const result = await callClaude(env, systemPrompt, userContent);
-  return json(result, cors);
+
+  // Wrap in AnalyzeResponse format
+  const response = {
+    id: crypto.randomUUID(),
+    url,
+    status: result.parse_error ? 'error' : 'completed',
+    result: result.parse_error ? undefined : result,
+    error: result.parse_error ? 'AI応答の解析に失敗しました' : undefined,
+    created_at: new Date().toISOString(),
+  };
+
+  return json(response, cors);
 }
 
 function buildAnalyzePrompt(layer, history, gsc, ga4) {
-  let prompt = `あなたはWebページの公開判断を支援するエキスパートです。
+  let prompt = `あなたはPublish Gate分析エンジンです。日本のLP専門分析。
 
 ## 行動原則
+- 課題をインパクト順に構造化→デザイナー/エンジニア向けブリーフ作成
+- コピー文言は出さず構造変化を提案
+- 薬機法・景表法リスクは必ず検知
 - 観測できる事実と推定を明確に区別する
 - 確からしさが低い場合は断定しない（「〜と推定されます（確度：中）」）
-- 提案は最大3件、優先度順に並べる
-- 各提案に必ず根拠を付ける
-- 禁止ゾーン（価格の具体額・法務判断・規約・薬機法表現）に該当する場合はjudgmentをHOLDにする
-- target_selectorは実在するCSSセレクタを指定する
+- 良い点も認識し無理な提案はしない
+- 根拠のない推測禁止。「もっと良くする」等の曖昧表現禁止
+
+## 検知ルール
+薬機法: 効果効能の直接表現、機能性表示食品の乖離、B/A写真制限、医師推薦（具体名必要）、「個人の感想です」要否
+景品表示法: 優良誤認/有利誤認、「No.1」「業界初」根拠、二重価格適正性、成果数値根拠
+CRO: FV3秒ルール、CTA近接性、社会的証明配置、認知的負荷
 
 ## 出力形式
 以下のJSON形式のみを出力してください。JSON以外のテキストは含めないでください。
 
 {
-  "goal_card": {
-    "company_hypothesis": "会社・事業の推定",
-    "page_role": "獲得LP|サービスページ|料金ページ|事例ページ|記事ページ|採用ページ|その他",
-    "primary_cv": "主要CV",
-    "secondary_cv": "副次CV（あれば）",
-    "good_outcome_hypothesis": "良い成果の仮説",
-    "confidence": "high|medium|low",
-    "confidence_reason": "確からしさの理由"
+  "company_understanding": {
+    "summary": "企業・事業の要約",
+    "industry": "業種",
+    "business_model": "ビジネスモデル",
+    "site_cta_structure": "サイト全体のCTA構造"
   },
-  "judgment": "PASS|FAIL|HOLD",
-  "judgment_reason": "判断理由（1-2文）",
-  "proposals": [
+  "page_reading": {
+    "page_type": "サービスLP|料金ページ|事例ページ|採用ページ|その他",
+    "fv_main_copy": "FVのメインコピー",
+    "fv_sub_copy": "FVのサブコピー",
+    "cta_map": [{"text": "", "position": "", "prominence": "primary|secondary|tertiary"}],
+    "trust_elements": "信頼要素の説明",
+    "content_structure": "コンテンツ構造の説明",
+    "confidence": "high|medium|low",
+    "screenshot_insights": "視覚的な分析所見",
+    "dom_insights": "DOM構造からの分析所見"
+  },
+  "improvement_potential": "+XX%",
+  "issues": [
     {
       "priority": 1,
-      "title": "提案タイトル",
-      "category": "copy|cta|layout|trust|speed|seo",
-      "before": "現状",
-      "after": "変更後",
-      "evidence": "根拠",
-      "confidence": "high|medium|low",
-      "target_selector": "CSSセレクタ",
-      "change_type": "text|style|html",
-      "risk": "リスク（あれば）"
+      "title": "課題タイトル",
+      "diagnosis": "診断内容",
+      "impact": "high|medium|low",
+      "handoff_to": "designer|engineer|copywriter+designer|marketer",
+      "brief": {
+        "objective": "目的",
+        "direction": "改善の方向性",
+        "specifics": "具体的な変更内容",
+        "constraints": ["制約条件"],
+        "qa_checklist": ["確認項目"]
+      },
+      "evidence": "根拠"
     }
-  ]`;
+  ],
+  "regulatory": {
+    "yakujiho_risks": [{"expression": "", "risk_level": "high|medium|low", "reason": "", "recommendation": ""}],
+    "keihinhyoujiho_risks": [{"expression": "", "risk_level": "high|medium|low", "reason": "", "recommendation": ""}]
+  }`;
 
   // Layer 0: add upgrade hint
   if (layer === 0) {
@@ -106,57 +146,26 @@ function buildAnalyzePrompt(layer, history, gsc, ga4) {
   return prompt;
 }
 
-// ─── Handoff ───────────────────────────────────────────────
-async function handleHandoff(request, env, cors) {
+// ─── Share ───────────────────────────────────────────────
+async function handleShare(request, env, cors) {
+  if (request.method !== 'POST') {
+    return json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'POST only' } }, cors, 405);
+  }
+
   const body = await request.json();
-  const { goal_card, selected_proposal, page_features } = body;
+  const { analysis_id, result } = body;
 
-  const systemPrompt = `あなたはWebページの実装依頼パックを生成するエキスパートです。
-デザイナーとエンジニアが「これだけ見れば実装できる」粒度で出力してください。
+  if (!analysis_id || !result) {
+    return json({ error: { code: 'MISSING_FIELDS', message: 'analysis_id and result are required' } }, cors, 400);
+  }
 
-## 品質ゲート
-- 全changesにtarget（セレクタ）が存在すること
-- 全changesにbefore/afterが存在すること
-- qa_checklistが各changeに最低1項目あること
-- rollback_planが空でないこと
-不足がある場合は生成を拒否し、不足項目を返してください。
-
-## 出力JSON
-{
-  "purpose": "施策の目的（1文）",
-  "target_url": "対象URL",
-  "changes": [{ "target": "CSSセレクタ", "type": "text|style|structure|add|remove", "before": "現状", "after": "変更後", "reason": "変更理由", "qa_checklist": ["確認項目"] }],
-  "overall_qa": ["全体確認項目"],
-  "rollback_plan": "戻し方",
-  "expected_impact": "期待される影響"
-}`;
-
-  const userContent = `推定: ${JSON.stringify(goal_card)}\n提案: ${JSON.stringify(selected_proposal)}\nページ: ${JSON.stringify(page_features)}`;
-  const result = await callClaude(env, systemPrompt, userContent);
-  return json(result, cors);
-}
-
-// ─── Memo ──────────────────────────────────────────────────
-async function handleMemo(request, env, cors) {
-  const body = await request.json();
-  const { goal_card, proposals, selected_action } = body;
-
-  const systemPrompt = `あなたは承認メモを生成するエキスパートです。
-上司やチームに共有できる判断メモを生成してください。1枚で完結が原則です。
-
-## 出力JSON
-{
-  "summary": "判断の結論（1文）",
-  "reason": "理由（2-3文）",
-  "risks": ["リスク1"],
-  "exceptions": ["例外条件1"],
-  "next_steps": ["次のアクション1"],
-  "evidence_summary": "根拠の要約"
-}`;
-
-  const userContent = `推定: ${JSON.stringify(goal_card)}\n提案: ${JSON.stringify(proposals)}\nアクション: ${selected_action}`;
-  const result = await callClaude(env, systemPrompt, userContent);
-  return json(result, cors);
+  const shareId = crypto.randomUUID();
+  return json({
+    id: shareId,
+    analysis_id,
+    url: result.url || '',
+    created_at: new Date().toISOString(),
+  }, cors);
 }
 
 // ─── Claude API ────────────────────────────────────────────
@@ -204,7 +213,7 @@ function corsHeaders(request) {
   return {
     'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Extension-Version, X-Layer',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Extension-Version, X-Source',
     'Access-Control-Max-Age': '86400',
   };
 }
