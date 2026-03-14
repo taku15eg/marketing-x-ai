@@ -61,6 +61,9 @@ export default function SharePage() {
     );
   }
 
+  const analysisUrl = data.url;
+  const reanalyzeHref = `/?ref=share_reanalyze&url=${encodeURIComponent(analysisUrl)}`;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
       {/* Share header with prominent CTA */}
@@ -84,16 +87,31 @@ export default function SharePage() {
               />
             </div>
           </div>
-          <Link
-            href="/?ref=share"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#1B3A5C] px-6 py-3 text-sm text-white font-bold hover:bg-[#2A5580] transition-colors shadow-md hover:shadow-lg shrink-0"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
-            </svg>
-            自分のLPも分析する（無料）
-          </Link>
+          <div className="flex flex-col gap-2 shrink-0">
+            <Link
+              href="/?ref=share"
+              data-track="share_cta_clicked"
+              data-track-location="header"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#1B3A5C] px-6 py-3 text-sm text-white font-bold hover:bg-[#2A5580] transition-colors shadow-md hover:shadow-lg"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
+              </svg>
+              自分のLPも分析する（無料）
+            </Link>
+            <Link
+              href={reanalyzeHref}
+              data-track="share_reanalyze_clicked"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#1B3A5C]/30 px-4 py-2 text-xs text-[#1B3A5C] font-medium hover:bg-[#1B3A5C]/5 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              このURLを最新データで再分析
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -107,7 +125,9 @@ export default function SharePage() {
         <h2 className="text-xl font-bold mb-2">あなたのLPも分析してみませんか？</h2>
         <p className="text-white/80 text-sm mb-5">URLを入れるだけ。アカウント登録不要。完全無料。</p>
         <Link
-          href="/"
+          href="/?ref=share"
+          data-track="share_cta_clicked"
+          data-track-location="bottom_banner"
           className="inline-flex items-center gap-2 rounded-lg bg-white text-[#1B3A5C] px-8 py-3 font-bold hover:bg-gray-100 transition-colors shadow-lg"
         >
           無料で分析を始める
@@ -119,7 +139,7 @@ export default function SharePage() {
 
       {/* Powered by badge */}
       <div className="mt-8 flex justify-center">
-        <PoweredByBadge />
+        <PoweredByBadge source="share_page" />
       </div>
     </div>
   );

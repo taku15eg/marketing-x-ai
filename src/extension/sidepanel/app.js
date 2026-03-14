@@ -2,6 +2,18 @@
  * Publish Gate v0.5 - Side Panel Application
  * Phase 0.5 MVP: URL pre-fill, analysis trigger, 4-step loading, results display.
  *
+ * === Extension Responsibility Boundary ===
+ * Extension handles:
+ *   - Quick analysis of current tab (one-click)
+ *   - Recent analysis history (last 5)
+ *   - Navigation to Web dashboard for deep features
+ * Web dashboard handles:
+ *   - Detailed analysis views
+ *   - Comparison / competitive analysis
+ *   - Share URL management
+ *   - Business/Pro tier features
+ *   - Team collaboration
+ *
  * API response structure (from web dashboard):
  * {
  *   id, url, status, result?: {
@@ -21,6 +33,7 @@ if (typeof API_BASE === 'undefined') {
   var API_BASE = 'http://localhost:3000';
 }
 const DASHBOARD_URL = API_BASE;
+const MAX_RECENT = 5;
 
 // --- State ---
 const state = {
@@ -31,19 +44,64 @@ const state = {
   abortController: null,
 };
 
+// --- Recent Analyses (in-memory, persists during extension session) ---
+let recentAnalyses = [];
+
+try {
+  const stored = localStorage.getItem('pg_recent');
+  if (stored) recentAnalyses = JSON.parse(stored);
+} catch (_) { /* ignore */ }
+
+function saveRecent(url, analysisId, topIssue) {
+  recentAnalyses = recentAnalyses.filter(function (r) { return r.url !== url; });
+  recentAnalyses.unshift({
+    url: url,
+    analysisId: analysisId,
+    topIssue: topIssue || '',
+    analyzedAt: new Date().toISOString(),
+  });
+  if (recentAnalyses.length > MAX_RECENT) recentAnalyses = recentAnalyses.slice(0, MAX_RECENT);
+  try { localStorage.setItem('pg_recent', JSON.stringify(recentAnalyses)); } catch (_) { /* ignore */ }
+}
+
+function renderRecent() {
+  var section = document.getElementById('recentSection');
+  var list = document.getElementById('recentList');
+  if (!section || !list) return;
+  if (recentAnalyses.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  var html = '';
+  recentAnalyses.slice(0, 3).forEach(function (item) {
+    var displayUrl = item.url.replace(/^https?:\/\//, '').substring(0, 40);
+    var dashUrl = DASHBOARD_URL + '/analysis/' + escAttr(item.analysisId);
+    html += '<a class="recent-item" href="' + dashUrl + '" target="_blank">';
+    html += '<span class="recent-url">' + escHtml(displayUrl) + '</span>';
+    if (item.topIssue) {
+      html += '<span class="recent-issue">' + escHtml(item.topIssue) + '</span>';
+    }
+    html += '</a>';
+  });
+  list.innerHTML = html;
+}
+
 // --- Messaging ---
 function sendMessage(msg) {
-  return new Promise((resolve) => chrome.runtime.sendMessage(msg, resolve));
+  return new Promise(function (resolve) { chrome.runtime.sendMessage(msg, resolve); });
 }
 
 // --- Init ---
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async function () {
   await loadCurrentTab();
   bindEvents();
+  setupDashboardLinks();
+  renderRecent();
 });
 
 async function loadCurrentTab() {
-  const tab = await sendMessage({ type: 'GET_CURRENT_TAB' });
+  var tab = await sendMessage({ type: 'GET_CURRENT_TAB' });
   if (tab && !tab.error) {
     state.currentUrl = tab.url;
     state.currentTabId = tab.tabId;
@@ -51,10 +109,17 @@ async function loadCurrentTab() {
   }
 }
 
+function setupDashboardLinks() {
+  var promoLink = document.getElementById('dashboardPromoLink');
+  if (promoLink) promoLink.href = DASHBOARD_URL + '/?ref=extension';
+  var poweredByLink = document.getElementById('poweredByLink');
+  if (poweredByLink) poweredByLink.href = DASHBOARD_URL + '/?ref=extension_powered_by';
+}
+
 function bindEvents() {
   document.getElementById('analyzeBtn').addEventListener('click', startAnalysis);
   document.getElementById('cancelBtn').addEventListener('click', cancelAnalysis);
-  document.getElementById('retryBtn').addEventListener('click', () => {
+  document.getElementById('retryBtn').addEventListener('click', function () {
     showScreen('input');
     loadCurrentTab();
   });
@@ -62,8 +127,8 @@ function bindEvents() {
 
 // --- Screen Navigation ---
 function showScreen(name) {
-  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
-  const el = document.getElementById('screen-' + name);
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+  var el = document.getElementById('screen-' + name);
   if (el) el.classList.add('active');
 }
 
@@ -71,7 +136,7 @@ function showScreen(name) {
 async function startAnalysis() {
   if (state.isAnalyzing) return;
 
-  const url = state.currentUrl;
+  var url = state.currentUrl;
   if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
     showError('有効なURLのページを開いてください');
     return;
@@ -100,14 +165,14 @@ async function startAnalysis() {
   updateProgress(50);
 
   try {
-    const result = await sendMessage({
+    var result = await sendMessage({
       type: 'START_ANALYSIS',
       url: url,
     });
 
     if (!result || result.error) {
       state.isAnalyzing = false;
-      const msg = result?.message || 'Analysis failed';
+      var msg = result?.message || 'Analysis failed';
       showError(msg);
       return;
     }
@@ -126,6 +191,12 @@ async function startAnalysis() {
 
     state.analysisData = result.data;
     state.isAnalyzing = false;
+
+    // Save to recent
+    var analysisResult = result.data.result || result.data;
+    var topIssue = analysisResult.issues && analysisResult.issues[0] ? analysisResult.issues[0].title : '';
+    saveRecent(url, result.data.id || '', topIssue);
+
     renderResults(result.data, url);
     showScreen('results');
   } catch (err) {
@@ -141,7 +212,7 @@ function cancelAnalysis() {
 
 // --- Loading Step Management ---
 function resetLoadingSteps() {
-  document.querySelectorAll('.loading-step').forEach((step) => {
+  document.querySelectorAll('.loading-step').forEach(function (step) {
     step.classList.remove('active', 'done');
     step.querySelector('.step-icon').textContent = '\u25CB'; // empty circle
   });
@@ -149,9 +220,9 @@ function resetLoadingSteps() {
 }
 
 function setLoadingStep(stepNum, status) {
-  const step = document.querySelector('.loading-step[data-step="' + stepNum + '"]');
+  var step = document.querySelector('.loading-step[data-step="' + stepNum + '"]');
   if (!step) return;
-  const icon = step.querySelector('.step-icon');
+  var icon = step.querySelector('.step-icon');
 
   step.classList.remove('active', 'done');
   if (status === 'active') {
@@ -175,13 +246,13 @@ function showError(message) {
 
 // --- Results Rendering ---
 function renderResults(data, url) {
-  const container = document.getElementById('resultsContent');
+  var container = document.getElementById('resultsContent');
 
   // Handle both direct result objects and wrapped AnalyzeResponse
-  const result = data.result || data;
-  const analysisId = data.id || '';
+  var result = data.result || data;
+  var analysisId = data.id || '';
 
-  let html = '';
+  var html = '';
 
   // URL header
   html += '<div class="results-header">';
@@ -196,9 +267,9 @@ function renderResults(data, url) {
     html += '</div>';
   }
 
-  // Company Understanding
+  // Company Understanding (summary only in extension)
   if (result.company_understanding) {
-    const cu = result.company_understanding;
+    var cu = result.company_understanding;
     html += '<div class="section-title">企業理解</div>';
     html += '<div class="company-card">';
     html += '<div class="company-card-value">' + escHtml(cu.summary) + '</div>';
@@ -215,77 +286,34 @@ function renderResults(data, url) {
     html += '</div>';
   }
 
-  // Page Reading
-  if (result.page_reading) {
-    const pr = result.page_reading;
-    html += '<div class="section-title">ページ読取</div>';
-    html += '<div class="company-card">';
-    html += '<div class="company-card-title">ページタイプ</div>';
-    html += '<div class="company-card-value">' + escHtml(pr.page_type) + '</div>';
-    if (pr.fv_main_copy) {
-      html += '<div class="company-card-title" style="margin-top:8px">メインコピー</div>';
-      html += '<div class="company-card-value" style="font-size:13px">' + escHtml(pr.fv_main_copy) + '</div>';
-    }
-    if (pr.confidence) {
-      html += '<div style="margin-top:8px">';
-      html += '<span class="badge badge-' + pr.confidence + '">';
-      html += '信頼度: ' + (pr.confidence === 'high' ? '高' : pr.confidence === 'medium' ? '中' : '低');
-      html += '</span></div>';
-    }
-    html += '</div>';
-  }
-
-  // Regulatory Warnings
-  if (result.regulatory) {
-    const reg = result.regulatory;
-    const yakujiho = reg.yakujiho_risks || [];
-    const keihin = reg.keihinhyoujiho_risks || [];
-    if (yakujiho.length > 0 || keihin.length > 0) {
-      html += '<div class="section-title">法規制リスク</div>';
-      yakujiho.forEach(function (risk) {
-        html += renderRegulatoryRisk(risk, '薬機法');
-      });
-      keihin.forEach(function (risk) {
-        html += renderRegulatoryRisk(risk, '景表法');
-      });
-    }
-  }
-
-  // Issues
+  // Issues (top 3 only in extension, with note for more)
   if (result.issues && result.issues.length > 0) {
-    html += '<div class="section-title">改善課題 (' + result.issues.length + '件)</div>';
     var sortedIssues = result.issues.slice().sort(function (a, b) { return a.priority - b.priority; });
-    sortedIssues.forEach(function (issue) {
+    var displayIssues = sortedIssues.slice(0, 3);
+    var remainingCount = sortedIssues.length - 3;
+
+    html += '<div class="section-title">改善課題（上位' + displayIssues.length + '件）</div>';
+    displayIssues.forEach(function (issue) {
       html += renderIssueCard(issue);
     });
+
+    if (remainingCount > 0 && analysisId) {
+      html += '<div class="more-issues-hint">';
+      html += '他 ' + remainingCount + ' 件の課題はWebダッシュボードで確認';
+      html += '</div>';
+    }
   }
 
-  // Metadata
-  if (result.metadata) {
-    const meta = result.metadata;
-    html += '<div style="margin-top:20px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--text-secondary)">';
-    if (meta.analyzed_at) {
-      html += '<div>分析日時: ' + new Date(meta.analyzed_at).toLocaleString('ja-JP') + '</div>';
-    }
-    if (meta.analysis_duration_ms) {
-      html += '<div>処理時間: ' + (meta.analysis_duration_ms / 1000).toFixed(1) + '秒</div>';
-    }
-    if (meta.vision_used) {
-      html += '<div><span class="badge badge-high" style="font-size:10px;padding:1px 6px">Vision API使用</span></div>';
-    }
-    html += '</div>';
-  }
-
-  // Link to full results on web dashboard
+  // Primary CTA: Go to Web Dashboard for full details
   if (analysisId) {
-    html += '<a class="dashboard-link" href="' + DASHBOARD_URL + '/analysis/' + escAttr(analysisId) + '" target="_blank">';
-    html += 'Webダッシュボードで詳細を見る';
+    html += '<a class="btn btn-primary w-full dashboard-cta" href="' + DASHBOARD_URL + '/analysis/' + escAttr(analysisId) + '?ref=extension" target="_blank">';
+    html += 'Webで詳細を見る・共有する';
     html += '</a>';
   }
 
-  // New analysis button
+  // Secondary: New analysis
   html += '<button class="btn btn-outline w-full new-analysis-btn" id="newAnalysisBtn">';
-  html += '新しい分析を開始';
+  html += '新しいページを分析';
   html += '</button>';
 
   container.innerHTML = html;
@@ -294,6 +322,7 @@ function renderResults(data, url) {
   document.getElementById('newAnalysisBtn')?.addEventListener('click', function () {
     showScreen('input');
     loadCurrentTab();
+    renderRecent();
   });
 }
 
@@ -308,24 +337,7 @@ function renderIssueCard(issue) {
     html += '<div class="issue-diagnosis">' + escHtml(issue.diagnosis) + '</div>';
   }
 
-  if (issue.evidence) {
-    html += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;padding:6px 8px;background:var(--bg);border-radius:4px">';
-    html += '根拠: ' + escHtml(issue.evidence);
-    html += '</div>';
-  }
-
-  // Brief (simplified)
-  if (issue.brief) {
-    var brief = issue.brief;
-    if (brief.direction) {
-      html += '<div class="diff">';
-      html += '<div class="diff-label">改善の方向性</div>';
-      html += '<div class="diff-after">' + escHtml(brief.direction) + '</div>';
-      html += '</div>';
-    }
-  }
-
-  // Badges
+  // Badges (simplified for extension)
   html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">';
   if (issue.impact) {
     html += '<span class="badge badge-' + issue.impact + '">';

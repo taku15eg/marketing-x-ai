@@ -5,10 +5,11 @@ import { useState, type FormEvent } from 'react';
 interface UrlInputProps {
   onSubmit: (url: string) => void;
   isLoading?: boolean;
+  initialUrl?: string;
 }
 
-export default function UrlInput({ onSubmit, isLoading = false }: UrlInputProps) {
-  const [url, setUrl] = useState('');
+export default function UrlInput({ onSubmit, isLoading = false, initialUrl = '' }: UrlInputProps) {
+  const [url, setUrl] = useState(initialUrl);
   const [error, setError] = useState('');
 
   function validateUrl(value: string): string | null {

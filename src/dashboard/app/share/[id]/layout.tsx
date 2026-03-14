@@ -5,17 +5,17 @@ import type { Metadata } from 'next';
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'LP分析結果 | Publish Gate',
-    description: 'Publish GateによるLP改善分析の結果が共有されました。あなたのLPも無料で分析できます。',
+    description: 'AIがLPを分析し、改善課題と依頼書を自動生成しました。あなたのLPも無料で分析できます。',
     openGraph: {
-      title: 'LP分析結果が共有されました',
-      description: 'URLを入れるだけで、プロのマーケ責任者がやることを全部やってくれるAI分析ツール。あなたのLPも無料で分析してみませんか？',
+      title: 'LP分析で改善ポイントが見つかりました',
+      description: 'URLを入れるだけで、課題の診断からデザイナーへの依頼書まで自動生成。あなたのLPも無料で分析してみませんか？',
       type: 'website',
       siteName: 'Publish Gate',
     },
     twitter: {
       card: 'summary',
-      title: 'LP分析結果が共有されました | Publish Gate',
-      description: 'URLを入れるだけで、LP改善提案を自動生成。あなたのLPも無料で分析できます。',
+      title: 'LP分析で改善ポイントが見つかりました | Publish Gate',
+      description: 'AIがLP改善点を自動検出。課題の診断から依頼書まで、URLを入れるだけ。無料。',
     },
   };
 }

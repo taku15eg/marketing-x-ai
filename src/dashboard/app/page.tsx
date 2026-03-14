@@ -17,6 +17,7 @@ function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const ref = searchParams.get('ref') || undefined;
+  const prefillUrl = searchParams.get('url') || '';
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [progressMessage, setProgressMessage] = useState('');
@@ -105,7 +106,7 @@ function HomePageContent() {
 
       {/* URL Input */}
       {!isLoading && (
-        <UrlInput onSubmit={handleSubmit} isLoading={isLoading} />
+        <UrlInput onSubmit={handleSubmit} isLoading={isLoading} initialUrl={prefillUrl} />
       )}
 
       {/* Loading Progress */}

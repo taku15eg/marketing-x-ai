@@ -13,7 +13,10 @@ export type EventType =
   | 'analysis_cache_hit'
   | 'share_url_generated'
   | 'share_page_viewed'
-  | 'share_cta_clicked';
+  | 'share_cta_clicked'
+  | 'share_reanalyze_clicked'
+  | 'powered_by_clicked'
+  | 'extension_to_dashboard';
 
 interface EventEntry {
   type: EventType;

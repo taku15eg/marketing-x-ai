@@ -244,7 +244,7 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
             <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">Vision API使用</span>
           )}
         </div>
-        <PoweredByBadge />
+        <PoweredByBadge source="analysis_result" />
       </div>
     </div>
   );

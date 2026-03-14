@@ -2,12 +2,20 @@ import Link from 'next/link';
 
 interface PoweredByBadgeProps {
   className?: string;
+  /** Source context for tracking (e.g., 'share_page', 'analysis_result', 'brief') */
+  source?: string;
 }
 
-export default function PoweredByBadge({ className = '' }: PoweredByBadgeProps) {
+export default function PoweredByBadge({ className = '', source }: PoweredByBadgeProps) {
+  const href = source
+    ? `/?ref=powered_by&utm_source=powered_by&utm_medium=${encodeURIComponent(source)}`
+    : '/?ref=powered_by';
+
   return (
     <Link
-      href="/"
+      href={href}
+      data-track="powered_by_clicked"
+      data-track-source={source}
       className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
         bg-gray-50 border border-gray-200
