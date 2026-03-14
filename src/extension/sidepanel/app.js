@@ -2,7 +2,8 @@
  * Publish Gate v0.5 - Side Panel Application
  * Phase 0.5 MVP: URL pre-fill, analysis trigger, 4-step loading, results display.
  *
- * API response structure (from web dashboard):
+ * Consumes the shared analysis schema (schema_version: 1.0.0).
+ * API response structure (AnalyzeResponse):
  * {
  *   id, url, status, result?: {
  *     company_understanding: { summary, industry, business_model, ... },
@@ -10,7 +11,7 @@
  *     improvement_potential: "+XX%",
  *     issues: [{ priority, title, diagnosis, impact, handoff_to, brief, evidence }],
  *     regulatory?: { yakujiho_risks, keihinhyoujiho_risks },
- *     metadata: { analyzed_at, analysis_duration_ms, vision_used, dom_extracted }
+ *     metadata: { schema_version, analyzed_at, analysis_duration_ms, vision_used, dom_extracted, source }
  *   }
  * }
  */
@@ -21,6 +22,9 @@ if (typeof API_BASE === 'undefined') {
   var API_BASE = 'http://localhost:3000';
 }
 const DASHBOARD_URL = API_BASE;
+
+// Expected schema version — warn if mismatch
+const EXPECTED_SCHEMA_VERSION = '1.0.0';
 
 // --- State ---
 const state = {
@@ -181,6 +185,15 @@ function renderResults(data, url) {
   const result = data.result || data;
   const analysisId = data.id || '';
 
+  // Check schema version compatibility
+  var schemaVersion = result.metadata && result.metadata.schema_version;
+  if (schemaVersion && schemaVersion !== EXPECTED_SCHEMA_VERSION) {
+    console.warn(
+      'Schema version mismatch: expected ' + EXPECTED_SCHEMA_VERSION + ', got ' + schemaVersion +
+      '. Some fields may not render correctly.'
+    );
+  }
+
   let html = '';
 
   // URL header
@@ -272,6 +285,9 @@ function renderResults(data, url) {
     }
     if (meta.vision_used) {
       html += '<div><span class="badge badge-high" style="font-size:10px;padding:1px 6px">Vision API使用</span></div>';
+    }
+    if (meta.source) {
+      html += '<div>ソース: ' + escHtml(meta.source) + '</div>';
     }
     html += '</div>';
   }

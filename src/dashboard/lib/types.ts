@@ -1,120 +1,36 @@
 // Publish Gate - Core Types
+// Re-exported from shared schema (single source of truth)
 
-// === Analysis Request/Response ===
+export type {
+  AnalysisResult,
+  AnalyzeResponse,
+  AnalysisMetadata,
+  CompanyUnderstanding,
+  PageReading,
+  CTAInfo,
+  Issue,
+  HandoffBrief,
+  RegulatoryCheck,
+  RegulatoryRisk,
+  BrandTone,
+} from '../../shared/schema';
+
+// === Analysis Request ===
 
 export interface AnalyzeRequest {
   url: string;
 }
 
-export interface AnalyzeResponse {
-  id: string;
-  url: string;
-  status: 'processing' | 'completed' | 'error';
-  result?: AnalysisResult;
-  error?: string;
-  created_at: string;
-}
-
-// === 4-Step Analysis Pipeline Output ===
-
-export interface AnalysisResult {
-  company_understanding: CompanyUnderstanding;
-  page_reading: PageReading;
-  improvement_potential: string;
-  issues: Issue[];
-  regulatory?: RegulatoryCheck;
-  metadata: AnalysisMetadata;
-}
-
-export interface CompanyUnderstanding {
-  summary: string;
-  industry: string;
-  business_model: string;
-  brand_tone: BrandTone;
-  key_vocabulary: string[];
-  credentials: string[];
-  site_cta_structure: string;
-}
-
-export interface BrandTone {
-  sentence_endings: string[];
-  uses_questions: boolean;
-  tone_keywords: string[];
-  example_phrases: string[];
-}
-
-export interface PageReading {
-  page_type: string;
-  fv_main_copy: string;
-  fv_sub_copy: string;
-  cta_map: CTAInfo[];
-  trust_elements: string;
-  content_structure: string;
-  confidence: 'high' | 'medium' | 'low';
-  screenshot_insights: string;
-  dom_insights: string;
-}
-
-export interface CTAInfo {
-  text: string;
-  href: string;
-  position: string;
-  prominence: 'primary' | 'secondary' | 'tertiary';
-}
-
-export interface Issue {
-  priority: number;
-  title: string;
-  diagnosis: string;
-  impact: 'high' | 'medium' | 'low';
-  handoff_to: 'designer' | 'engineer' | 'copywriter+designer' | 'marketer';
-  brief: HandoffBrief;
-  evidence: string;
-}
-
-export interface HandoffBrief {
-  objective: string;
-  direction: string;
-  specifics: string;
-  constraints: string[];
-  qa_checklist: string[];
-}
-
-export interface RegulatoryCheck {
-  yakujiho_risks: RegulatoryRisk[];
-  keihinhyoujiho_risks: RegulatoryRisk[];
-}
-
-export interface RegulatoryRisk {
-  expression: string;
-  risk_level: 'high' | 'medium' | 'low';
-  reason: string;
-  recommendation: string;
-}
-
-export interface AnalysisMetadata {
-  analyzed_at: string;
-  analysis_duration_ms: number;
-  model_used: string;
-  vision_used: boolean;
-  dom_extracted: boolean;
-}
-
-// === Share ===
-
-export interface ShareData {
-  id: string;
-  analysis_id: string;
-  result: AnalysisResult;
-  url: string;
-  created_at: string;
-}
-
-// === Pipeline Steps ===
+// === Pipeline Steps (dashboard-specific input types) ===
 
 export interface CompanyResearchResult {
   company_overview: string;
-  brand_tone: BrandTone;
+  brand_tone: {
+    sentence_endings: string[];
+    uses_questions: boolean;
+    tone_keywords: string[];
+    example_phrases: string[];
+  };
   key_vocabulary: string[];
   credentials: string[];
   case_studies: { title: string; summary: string }[];
@@ -178,3 +94,6 @@ export const TABS: TabConfig[] = [
   { id: 5, name: '競合分析', locked: true, unlock_tier: 'pro', description: '競合LP構造比較 / 訴求差別化' },
   { id: 6, name: '事業分析', locked: true, unlock_tier: 'business', description: '市場規模推定 / 事業モデル推定' },
 ];
+
+// Re-export CTAInfo type imported above for DOMData usage
+import type { CTAInfo } from '../../shared/schema';

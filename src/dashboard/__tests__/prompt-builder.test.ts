@@ -2,6 +2,7 @@
  * Prompt Builder Unit Tests
  *
  * Tests the prompt construction and response parsing logic.
+ * Normalization/parsing logic has moved to shared/normalize.ts — tested there.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -10,6 +11,11 @@ import path from 'path';
 
 const source = fs.readFileSync(
   path.resolve(__dirname, '../lib/prompt-builder.ts'),
+  'utf-8'
+);
+
+const normalizeSource = fs.readFileSync(
+  path.resolve(__dirname, '../../shared/normalize.ts'),
   'utf-8'
 );
 
@@ -94,23 +100,26 @@ describe('Prompt Builder - Claude API Configuration', () => {
   });
 });
 
-describe('Prompt Builder - Response Parsing', () => {
-  it('handles markdown code block wrapped JSON', () => {
-    // The parser extracts JSON from ```json ... ``` blocks
-    expect(source).toMatch(/```(?:json)?/);
+describe('Prompt Builder - Response Parsing (delegated to shared normalizer)', () => {
+  it('uses shared extractJsonFromResponse for code block handling', () => {
+    expect(source).toContain('extractJsonFromResponse');
   });
 
-  it('normalizes issues with priority sorting', () => {
-    expect(source).toContain('.sort((a, b) => a.priority - b.priority)');
+  it('uses shared normalizeAnalysisResult for normalization', () => {
+    expect(source).toContain('normalizeAnalysisResult');
   });
 
-  it('handles missing regulatory data gracefully', () => {
-    expect(source).toContain('parsed.regulatory');
-    expect(source).toContain('yakujiho_risks');
-    expect(source).toContain('keihinhyoujiho_risks');
+  it('shared normalizer handles issue priority sorting', () => {
+    expect(normalizeSource).toContain('.sort((a, b) => a.priority - b.priority)');
   });
 
-  it('sets default metadata values', () => {
-    expect(source).toContain("dom_extracted: true");
+  it('shared normalizer handles regulatory data', () => {
+    expect(normalizeSource).toContain('yakujiho_risks');
+    expect(normalizeSource).toContain('keihinhyoujiho_risks');
+  });
+
+  it('passes source and vision_used to normalizer', () => {
+    expect(source).toContain("source: 'dashboard'");
+    expect(source).toContain('vision_used: visionUsed');
   });
 });

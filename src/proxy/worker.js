@@ -2,8 +2,13 @@
  * Publish Gate v2.0 — API Proxy (Cloudflare Workers)
  * Progressive Prompt: Layer 0-3 に応じてシステムプロンプトを段階拡張
  *
+ * Output is normalized to the shared analysis schema (schema_version: 1.0.0).
+ * Raw model output is preserved in _raw for debugging.
+ *
  * env secrets: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
  */
+
+const SCHEMA_VERSION = '1.0.0';
 
 export default {
   async fetch(request, env) {
@@ -16,7 +21,7 @@ export default {
       if (url.pathname === '/api/v1/analyze') return handleAnalyze(request, env, cors);
       if (url.pathname === '/api/v1/handoff') return handleHandoff(request, env, cors);
       if (url.pathname === '/api/v1/memo') return handleMemo(request, env, cors);
-      if (url.pathname === '/health') return json({ status: 'ok', version: '2.0.0' }, cors);
+      if (url.pathname === '/health') return json({ status: 'ok', version: '2.0.0', schema_version: SCHEMA_VERSION }, cors);
       return json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found' } }, cors, 404);
     } catch (e) {
       return json({ error: { code: 'INTERNAL', message: e.message } }, cors, 500);
@@ -36,8 +41,89 @@ async function handleAnalyze(request, env, cors) {
     ? `以下のページ特徴量と、ユーザーが確認した推定内容に基づいて提案を生成してください。\n\n## 確認済み推定\n${JSON.stringify(confirmed_goal)}\n\n## ページ特徴量\n${JSON.stringify(page_features)}`
     : `以下のページ特徴量を分析してください。\n\n${JSON.stringify(page_features)}`;
 
-  const result = await callClaude(env, systemPrompt, userContent);
-  return json(result, cors);
+  const rawResult = await callClaude(env, systemPrompt, userContent);
+
+  // Normalize to shared schema format
+  const normalized = normalizeProxyResult(rawResult, body.url || '');
+
+  return json(normalized, cors);
+}
+
+/**
+ * Normalize proxy-specific output (goal_card/proposals/judgment) to shared schema.
+ */
+function normalizeProxyResult(raw, url) {
+  const goalCard = raw.goal_card || {};
+  const proposals = Array.isArray(raw.proposals) ? raw.proposals : [];
+  const judgment = raw.judgment || '';
+
+  const issues = proposals.map((p, index) => ({
+    priority: p.priority || index + 1,
+    title: p.title || '',
+    diagnosis: `${p.before || ''} → ${p.after || ''}`,
+    impact: p.confidence === 'high' ? 'high' : p.confidence === 'low' ? 'low' : 'medium',
+    handoff_to: mapCategoryToHandoff(p.category),
+    brief: {
+      objective: p.title || '',
+      direction: p.after || '',
+      specifics: p.evidence || '',
+      constraints: p.risk ? [p.risk] : [],
+      qa_checklist: [],
+    },
+    evidence: p.evidence || '',
+  }));
+
+  return {
+    company_understanding: {
+      summary: goalCard.company_hypothesis || '',
+      industry: '',
+      business_model: '',
+      brand_tone: { sentence_endings: [], uses_questions: false, tone_keywords: [], example_phrases: [] },
+      key_vocabulary: [],
+      credentials: [],
+      site_cta_structure: goalCard.primary_cv || '',
+    },
+    page_reading: {
+      page_type: goalCard.page_role || '',
+      fv_main_copy: goalCard.primary_cv || '',
+      fv_sub_copy: goalCard.secondary_cv || '',
+      cta_map: [],
+      trust_elements: '',
+      content_structure: '',
+      confidence: goalCard.confidence || 'medium',
+      screenshot_insights: '',
+      dom_insights: '',
+    },
+    improvement_potential: judgment === 'FAIL' ? 'High' : judgment === 'HOLD' ? 'Medium' : 'Low',
+    issues,
+    metadata: {
+      schema_version: SCHEMA_VERSION,
+      analyzed_at: new Date().toISOString(),
+      analysis_duration_ms: 0,
+      model_used: 'claude-sonnet-4-6',
+      vision_used: false,
+      dom_extracted: false,
+      source: 'proxy',
+    },
+    _proxy: {
+      goal_card: goalCard,
+      judgment,
+      judgment_reason: raw.judgment_reason || '',
+      layer_upgrade_hint: raw.layer_upgrade_hint || null,
+    },
+  };
+}
+
+function mapCategoryToHandoff(category) {
+  switch (category) {
+    case 'copy': return 'copywriter+designer';
+    case 'cta':
+    case 'layout':
+    case 'trust': return 'designer';
+    case 'speed':
+    case 'seo': return 'engineer';
+    default: return 'designer';
+  }
 }
 
 function buildAnalyzePrompt(layer, history, gsc, ga4) {
@@ -128,11 +214,16 @@ async function handleHandoff(request, env, cors) {
   "changes": [{ "target": "CSSセレクタ", "type": "text|style|structure|add|remove", "before": "現状", "after": "変更後", "reason": "変更理由", "qa_checklist": ["確認項目"] }],
   "overall_qa": ["全体確認項目"],
   "rollback_plan": "戻し方",
-  "expected_impact": "期待される影響"
+  "expected_impact": "期待される影響",
+  "schema_version": "${SCHEMA_VERSION}"
 }`;
 
   const userContent = `推定: ${JSON.stringify(goal_card)}\n提案: ${JSON.stringify(selected_proposal)}\nページ: ${JSON.stringify(page_features)}`;
   const result = await callClaude(env, systemPrompt, userContent);
+  // Ensure schema_version is present
+  if (result && typeof result === 'object' && !result.parse_error) {
+    result.schema_version = SCHEMA_VERSION;
+  }
   return json(result, cors);
 }
 
@@ -151,11 +242,15 @@ async function handleMemo(request, env, cors) {
   "risks": ["リスク1"],
   "exceptions": ["例外条件1"],
   "next_steps": ["次のアクション1"],
-  "evidence_summary": "根拠の要約"
+  "evidence_summary": "根拠の要約",
+  "schema_version": "${SCHEMA_VERSION}"
 }`;
 
   const userContent = `推定: ${JSON.stringify(goal_card)}\n提案: ${JSON.stringify(proposals)}\nアクション: ${selected_action}`;
   const result = await callClaude(env, systemPrompt, userContent);
+  if (result && typeof result === 'object' && !result.parse_error) {
+    result.schema_version = SCHEMA_VERSION;
+  }
   return json(result, cors);
 }
 

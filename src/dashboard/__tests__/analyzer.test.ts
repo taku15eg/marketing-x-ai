@@ -10,6 +10,7 @@ import {
   getShareAnalysis,
 } from '../lib/analyzer';
 import type { AnalyzeResponse } from '../lib/types';
+import { SCHEMA_VERSION } from '../../shared/version';
 
 function makeMockResponse(id: string): AnalyzeResponse {
   return {
@@ -61,11 +62,13 @@ function makeMockResponse(id: string): AnalyzeResponse {
         },
       ],
       metadata: {
+        schema_version: SCHEMA_VERSION,
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 5000,
-        model_used: 'claude-sonnet-4-5-20250514',
+        model_used: 'claude-sonnet-4-6',
         vision_used: false,
         dom_extracted: true,
+        source: 'dashboard',
       },
     },
     created_at: new Date().toISOString(),

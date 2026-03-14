@@ -2,12 +2,11 @@
 // Builds structured prompts and calls Claude API for diagnosis + brief generation
 
 import type {
-  AnalysisResult,
   CompanyResearchResult,
   DOMData,
-  Issue,
-  RegulatoryCheck,
 } from './types';
+import type { AnalysisResult } from '../../shared/schema';
+import { normalizeAnalysisResult, extractJsonFromResponse } from '../../shared/normalize';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -51,7 +50,7 @@ export async function analyzeWithClaude(params: {
     throw new Error('Claude API returned no text content');
   }
 
-  return parseAnalysisResponse(textBlock.text, params.url);
+  return parseAnalysisResponse(textBlock.text, params.url, params.screenshot_base64 !== null);
 }
 
 function buildSystemPrompt(): string {
@@ -136,102 +135,25 @@ function buildUserContent(params: {
   return content;
 }
 
-function parseAnalysisResponse(responseText: string, url: string): AnalysisResult {
-  // Extract JSON from response (handle markdown code blocks)
-  let jsonStr = responseText;
-  const codeBlockMatch = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (codeBlockMatch) {
-    jsonStr = codeBlockMatch[1];
-  }
+function parseAnalysisResponse(
+  responseText: string,
+  url: string,
+  visionUsed: boolean
+): AnalysisResult {
+  const jsonStr = extractJsonFromResponse(responseText);
 
   try {
     const parsed = JSON.parse(jsonStr);
 
-    // Validate and normalize the response
-    const result: AnalysisResult = {
-      company_understanding: {
-        summary: parsed.company_understanding?.summary || '',
-        industry: parsed.company_understanding?.industry || '',
-        business_model: parsed.company_understanding?.business_model || '',
-        brand_tone: {
-          sentence_endings: [],
-          uses_questions: false,
-          tone_keywords: [],
-          example_phrases: [],
-        },
-        key_vocabulary: [],
-        credentials: [],
-        site_cta_structure: parsed.company_understanding?.site_cta_structure || '',
-      },
-      page_reading: {
-        page_type: parsed.page_reading?.page_type || '',
-        fv_main_copy: parsed.page_reading?.fv_main_copy || '',
-        fv_sub_copy: parsed.page_reading?.fv_sub_copy || '',
-        cta_map: parsed.page_reading?.cta_map || [],
-        trust_elements: parsed.page_reading?.trust_elements || '',
-        content_structure: parsed.page_reading?.content_structure || '',
-        confidence: parsed.page_reading?.confidence || 'medium',
-        screenshot_insights: parsed.page_reading?.screenshot_insights || '',
-        dom_insights: parsed.page_reading?.dom_insights || '',
-      },
-      improvement_potential: parsed.improvement_potential || '',
-      issues: normalizeIssues(parsed.issues || []),
-      metadata: {
-        analyzed_at: new Date().toISOString(),
-        analysis_duration_ms: 0,
-        model_used: 'claude-sonnet-4-6',
-        vision_used: false,
-        dom_extracted: true,
-      },
-    };
-
-    // Add regulatory if present
-    if (parsed.regulatory) {
-      const reg: RegulatoryCheck = {
-        yakujiho_risks: (parsed.regulatory.yakujiho_risks || []).map(
-          (r: { expression?: string; risk_level?: string; reason?: string; recommendation?: string }) => ({
-            expression: r.expression || '',
-            risk_level: r.risk_level || 'medium',
-            reason: r.reason || '',
-            recommendation: r.recommendation || '',
-          })
-        ),
-        keihinhyoujiho_risks: (parsed.regulatory.keihinhyoujiho_risks || []).map(
-          (r: { expression?: string; risk_level?: string; reason?: string; recommendation?: string }) => ({
-            expression: r.expression || '',
-            risk_level: r.risk_level || 'medium',
-            reason: r.reason || '',
-            recommendation: r.recommendation || '',
-          })
-        ),
-      };
-      if (reg.yakujiho_risks.length > 0 || reg.keihinhyoujiho_risks.length > 0) {
-        result.regulatory = reg;
-      }
-    }
-
-    return result;
+    // Use shared normalizer — single source of truth for validation + defaults
+    return normalizeAnalysisResult(parsed, {
+      source: 'dashboard',
+      model_used: 'claude-sonnet-4-6',
+      vision_used: visionUsed,
+      dom_extracted: true,
+      analyzed_at: new Date().toISOString(),
+    });
   } catch (e) {
     throw new Error(`Failed to parse Claude response as JSON: ${e}`);
   }
-}
-
-function normalizeIssues(issues: Array<Record<string, unknown>>): Issue[] {
-  return issues
-    .map((issue, index) => ({
-      priority: (issue.priority as number) || index + 1,
-      title: (issue.title as string) || '',
-      diagnosis: (issue.diagnosis as string) || '',
-      impact: ((issue.impact as string) || 'medium') as 'high' | 'medium' | 'low',
-      handoff_to: ((issue.handoff_to as string) || 'designer') as Issue['handoff_to'],
-      brief: {
-        objective: (issue.brief as Record<string, unknown>)?.objective as string || '',
-        direction: (issue.brief as Record<string, unknown>)?.direction as string || '',
-        specifics: (issue.brief as Record<string, unknown>)?.specifics as string || '',
-        constraints: ((issue.brief as Record<string, unknown>)?.constraints as string[]) || [],
-        qa_checklist: ((issue.brief as Record<string, unknown>)?.qa_checklist as string[]) || [],
-      },
-      evidence: (issue.evidence as string) || '',
-    }))
-    .sort((a, b) => a.priority - b.priority);
 }
