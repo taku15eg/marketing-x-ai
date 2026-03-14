@@ -1,14 +1,25 @@
 # INSTRUCTION.md — 自律実行指示書
 
+> **正本宣言**: 判断規律・運用ルール・バックログ・レビュー基準の正本は `governance/` ディレクトリ配下にある。
+> このファイルは Claude Code の「実行導線」（ビルド手順・テスト手順・リリース準備手順）を定義するものであり、
+> 判断の可否・スコープ管理・独断禁止事項については `governance/` を参照すること。
+>
+> - 毎Runの開始手順 → `governance/CLAUDE_CODE_OPERATING_PROMPT.md`
+> - 独断禁止リスト → `governance/05_DO_NOT_DECIDE.md`
+> - バックログ → `governance/01_PHASE_0_5_BACKLOG.md`
+> - 着手前テンプレート → `governance/TASK_PROMPT_TEMPLATE.md`
+> - 完了報告テンプレート → `governance/COMPLETION_REPORT_TEMPLATE.md`
+
 ## やること
 
 Publish GateのPhase 0.5 MVPを構築し、自律テストでリリース品質まで引き上げる。
 
 **読む順序:**
 1. `CLAUDE.md` → プロダクト定義・セキュリティ要件
-2. この指示書 → 実行手順
-3. `TEST-SCENARIOS.json` → テスト用データ
-4. `PERSONA-MARKET.md` → 判断に迷った時の参照
+2. `governance/CLAUDE_CODE_OPERATING_PROMPT.md` → 運用ガイド（毎Run必読）
+3. この指示書 → 実行手順
+4. `TEST-SCENARIOS.json` → テスト用データ
+5. `PERSONA-MARKET.md` → 判断に迷った時の参照
 
 ---
 
