@@ -1,7 +1,7 @@
 # PROJECT_STATUS.md — Publish Gate
 
 **更新日**: 2026-03-14
-**Phase**: 0 (現状把握と正本確定)
+**Phase**: 8 (最終整備完了)
 
 ---
 
@@ -12,8 +12,8 @@
 | コンポーネント | パス | 技術 | 状態 |
 |---------------|------|------|------|
 | Dashboard (本体) | `src/dashboard/` | Next.js 15 + Tailwind 4 + TypeScript | ✅ 実装済み |
-| Chrome拡張 | `src/extension/` | Manifest V3 + Side Panel API | ✅ 実装済み（API接続に問題あり） |
-| Proxy Worker | `src/proxy/worker.js` | Cloudflare Workers | ⚠️ 旧アーキテクチャ（Dashboard APIと不整合） |
+| Chrome拡張 | `src/extension/` | Manifest V3 + Side Panel API | ✅ 実装済み（Dashboard API直接接続） |
+| Proxy Worker | `src/proxy/worker.js` | Cloudflare Workers | ⚠️ @deprecated（Dashboard APIが正本） |
 
 ### Dashboard (src/dashboard/) — 実装状況
 
@@ -55,7 +55,7 @@
 | モジュール | ファイル | 状態 | 備考 |
 |-----------|---------|------|------|
 | Manifest V3 | `manifest.json` | ✅ 実装済み | 最小権限 (activeTab, sidePanel) |
-| Service Worker | `background/service-worker.js` | ⚠️ 問題あり | 後述のAPI不整合 |
+| Service Worker | `background/service-worker.js` | ✅ 修正済み | URL+ref送信のみ（Phase 1で修正） |
 | Content Script | `content/content-script.js` | ✅ 実装済み | DOM抽出 + PII masking |
 | Side Panel UI | `sidepanel/index.html` | ✅ 実装済み | |
 | Side Panel App | `sidepanel/app.js` | ✅ 実装済み | 結果表示対応 |
@@ -76,47 +76,19 @@
 
 | カテゴリ | ファイル数 | テスト数 | 状態 |
 |---------|----------|---------|------|
-| Unit (vitest) | 9 | 174 | ✅ 全パス |
-| E2E (playwright) | 4 | — | ⚠️ 記述済み・未実行 |
+| Unit (vitest) | 13 | 278 | ✅ 全パス |
+| E2E (playwright) | 4 | 26 | ⚠️ 記述済み・CI実行待ち |
 | TypeCheck | — | — | ✅ エラーなし |
-| Lint | — | — | 未確認 |
+| Lint | — | — | ✅ エラーなし |
+| CI | `.github/workflows/ci.yml` | — | ✅ 設定済み |
 
 ---
 
-## 2. 最重要問題: 2つのAPI アーキテクチャの並存
+## 2. ~~最重要問題~~ 解決済み: APIアーキテクチャ統一
 
-### [事実] コードベースに2つの分析パイプラインが存在する
-
-**Dashboard API** (`src/dashboard/app/api/analyze/route.ts`):
-- 入力: `{ url: string }`
-- サーバーサイドでHTML取得 → DOM抽出 → Screenshot取得 → Claude API
-- 出力: `AnalyzeResponse { id, url, status, result: AnalysisResult }`
-- AnalysisResult = company_understanding + page_reading + issues[] + regulatory
-
-**Worker API** (`src/proxy/worker.js`):
-- 入力: `{ page_features, layer, judgment_history, gsc_data, ga4_data }`
-- クライアント(拡張)がDOM抽出済みデータを送信
-- 出力: `{ goal_card, judgment: PASS|FAIL|HOLD, proposals[] }`
-
-### [事実] 拡張はDashboard APIを向いているが、Worker形式のデータを送る
-
-- `constants.js`: `API_BASE = 'http://localhost:3000'` → Dashboard
-- `service-worker.js`: `{ url, page_features }` を送信
-- Dashboard APIは `page_features` を無視し、`url` だけ使ってサーバーサイドfetch
-
-### [仮説] 実行時の挙動
-
-拡張からの分析リクエストは、Dashboard APIに届く場合:
-- `url`は送っているので、分析自体は動く可能性がある
-- ただし`page_features`や`screenshot`は無視される
-- 拡張のcontent scriptによるDOM抽出は無駄になる
-- 拡張のスクリーンショットも無視される
-
-### [要確認]
-
-1. 拡張経由でDashboard APIを叩いた場合、実際にレスポンスが拡張UIで正しく表示されるか
-2. Worker APIは今後も使うのか、Dashboard APIに統一するのか
-3. 拡張独自のDOM抽出は今後どう活用するか
+**Phase 1で解決**: Dashboard APIを正本とし、Worker APIを@deprecated化。
+拡張はURL+refのみ送信し、Dashboard APIがサーバーサイドで全分析を実行。
+詳細: `DECISIONS.md` DEC-002, DEC-003
 
 ---
 
@@ -163,7 +135,23 @@
 ## 5. 品質指標
 
 - TypeCheck: ✅ パス
-- Unit Tests: ✅ 174/174 パス
-- Build: 未確認（node_modules依存）
-- Lint: 未確認
-- E2E: 未実行
+- Unit Tests: ✅ 278/278 パス
+- Lint: ✅ エラーなし
+- E2E: ⚠️ 26テスト記述済み、CI実行待ち
+- CI: ✅ `.github/workflows/ci.yml` 設定済み
+
+---
+
+## 6. Phase実行サマリ
+
+| Phase | 内容 | テスト数 | 主な成果物 |
+|-------|------|---------|----------|
+| 0 | 現状把握と正本確定 | 174 | PROJECT_STATUS.md, DECISIONS.md, QA_REPORT.md |
+| 1 | API契約統一 | 204 | types.ts拡張, contract.test.ts, Extension修正 |
+| 2 | セキュリティ強化 | 212 | DNS rebinding防御, JSON self-heal, compliance_hold_policy.md |
+| 3 | CTA抽出強化 | 218 | 5種CTA検出, extraction_quality_matrix.md |
+| 4 | パイプライン品質 | 234 | pipeline.test.ts, pipeline_runtime.md |
+| 5 | 価値導線検証 | 260 | flow.test.ts, UXバグ修正, E2E更新 |
+| 6 | β検証基盤 | 278 | metrics API, event beacon, beta_kpi.md |
+| 7 | CI/回帰防止 | 278 | .github/workflows/ci.yml |
+| 8 | 最終整備 | 278 | ドキュメント最終化 |
