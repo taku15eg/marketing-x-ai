@@ -14,7 +14,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { validateUrl } from '../lib/url-validator';
 import { checkRateLimit, RATE_LIMITS } from '../lib/rate-limiter';
-import { storeAnalysis, getAnalysis, createShareId, getShareAnalysis } from '../lib/analyzer';
+import {
+  saveAnalysis,
+  loadAnalysis,
+  saveShare,
+  loadShare,
+  generateShareId,
+  _testing,
+} from '../lib/persistence';
 import type { AnalyzeResponse } from '../lib/types';
 import fs from 'fs';
 import path from 'path';
@@ -171,8 +178,12 @@ describe('API Integration - URL Validation Flow', () => {
   });
 });
 
-describe('API Integration - Analysis Store Flow', () => {
-  it('full flow: store analysis → create share → retrieve via share', () => {
+describe('API Integration - Persistence Flow', () => {
+  beforeEach(() => {
+    _testing.clearAll();
+  });
+
+  it('full flow: store analysis → create share → retrieve via share', async () => {
     const analysisId = 'integration-test-' + Date.now();
     const mockResponse: AnalyzeResponse = {
       id: analysisId,
@@ -218,21 +229,23 @@ describe('API Integration - Analysis Store Flow', () => {
     };
 
     // Step 1: Store analysis
-    storeAnalysis(mockResponse);
-    expect(getAnalysis(analysisId)).toBeDefined();
+    await saveAnalysis(mockResponse);
+    const stored = await loadAnalysis(analysisId);
+    expect(stored).toBeDefined();
 
     // Step 2: Create share link
-    const shareId = createShareId(analysisId);
+    const shareId = generateShareId();
     expect(shareId.length).toBeGreaterThanOrEqual(21);
+    await saveShare(shareId, analysisId);
 
     // Step 3: Retrieve via share
-    const shared = getShareAnalysis(shareId);
+    const shared = await loadShare(shareId);
     expect(shared).toBeDefined();
-    expect(shared?.url).toBe('https://example.com/lp');
-    expect(shared?.result?.issues).toHaveLength(0);
+    expect(shared?.analysis.url).toBe('https://example.com/lp');
+    expect(shared?.analysis.result?.issues).toHaveLength(0);
   });
 
-  it('handles error status in analysis results', () => {
+  it('handles error status in analysis results', async () => {
     const errorResponse: AnalyzeResponse = {
       id: 'error-test-' + Date.now(),
       url: 'https://example.com',
@@ -241,8 +254,8 @@ describe('API Integration - Analysis Store Flow', () => {
       created_at: new Date().toISOString(),
     };
 
-    storeAnalysis(errorResponse);
-    const retrieved = getAnalysis(errorResponse.id);
+    await saveAnalysis(errorResponse);
+    const retrieved = await loadAnalysis(errorResponse.id);
     expect(retrieved?.status).toBe('error');
     expect(retrieved?.error).toContain('ANTHROPIC_API_KEY');
     expect(retrieved?.result).toBeUndefined();

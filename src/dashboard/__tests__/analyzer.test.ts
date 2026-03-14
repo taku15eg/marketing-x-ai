@@ -2,13 +2,14 @@
  * Analyzer (Pipeline Orchestrator) Unit Tests
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   storeAnalysis,
   getAnalysis,
   createShareId,
   getShareAnalysis,
 } from '../lib/analyzer';
+import { _testing } from '../lib/persistence';
 import type { AnalyzeResponse } from '../lib/types';
 
 function makeMockResponse(id: string): AnalyzeResponse {
@@ -73,65 +74,73 @@ function makeMockResponse(id: string): AnalyzeResponse {
 }
 
 describe('Analysis Store', () => {
-  it('stores and retrieves analysis by ID', () => {
+  beforeEach(() => {
+    _testing.clearAll();
+  });
+
+  it('stores and retrieves analysis by ID', async () => {
     const mock = makeMockResponse('test-store-1');
-    storeAnalysis(mock);
-    const retrieved = getAnalysis('test-store-1');
+    await storeAnalysis(mock);
+    const retrieved = await getAnalysis('test-store-1');
     expect(retrieved).toBeDefined();
     expect(retrieved?.url).toBe('https://example.com');
     expect(retrieved?.status).toBe('completed');
   });
 
-  it('returns undefined for non-existent ID', () => {
-    const result = getAnalysis('non-existent-id-' + Date.now());
+  it('returns undefined for non-existent ID', async () => {
+    const result = await getAnalysis('non-existent-id-' + Date.now());
     expect(result).toBeUndefined();
   });
 
-  it('overwrites analysis with same ID', () => {
+  it('overwrites analysis with same ID', async () => {
     const mock1 = makeMockResponse('test-overwrite');
     mock1.url = 'https://first.com';
-    storeAnalysis(mock1);
+    await storeAnalysis(mock1);
 
     const mock2 = makeMockResponse('test-overwrite');
     mock2.url = 'https://second.com';
-    storeAnalysis(mock2);
+    await storeAnalysis(mock2);
 
-    const retrieved = getAnalysis('test-overwrite');
+    const retrieved = await getAnalysis('test-overwrite');
     expect(retrieved?.url).toBe('https://second.com');
   });
 });
 
 describe('Share Store', () => {
-  it('creates share ID and retrieves linked analysis', () => {
-    const mock = makeMockResponse('test-share-1');
-    storeAnalysis(mock);
+  beforeEach(() => {
+    _testing.clearAll();
+  });
 
-    const shareId = createShareId('test-share-1');
+  it('creates share ID and retrieves linked analysis', async () => {
+    const mock = makeMockResponse('test-share-1');
+    await storeAnalysis(mock);
+
+    const shareId = await createShareId('test-share-1');
     expect(shareId).toBeDefined();
     expect(shareId.length).toBeGreaterThanOrEqual(21);
 
-    const shared = getShareAnalysis(shareId);
+    const shared = await getShareAnalysis(shareId);
     expect(shared).toBeDefined();
     expect(shared?.id).toBe('test-share-1');
   });
 
-  it('share IDs are unique for same analysis', () => {
+  it('share IDs are unique for same analysis', async () => {
     const mock = makeMockResponse('test-share-unique');
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
-    const id1 = createShareId('test-share-unique');
-    const id2 = createShareId('test-share-unique');
+    const id1 = await createShareId('test-share-unique');
+    const id2 = await createShareId('test-share-unique');
     expect(id1).not.toBe(id2);
   });
 
-  it('returns undefined for non-existent share ID', () => {
-    const result = getShareAnalysis('non-existent-share-' + Date.now());
+  it('returns undefined for non-existent share ID', async () => {
+    const result = await getShareAnalysis('non-existent-share-' + Date.now());
     expect(result).toBeUndefined();
   });
 
-  it('returns undefined if linked analysis is missing', () => {
-    const shareId = createShareId('missing-analysis-' + Date.now());
-    const result = getShareAnalysis(shareId);
+  it('returns undefined if linked analysis is missing', async () => {
+    const shareId = await createShareId('missing-analysis-' + Date.now());
+    const result = await getShareAnalysis(shareId);
     expect(result).toBeUndefined();
   });
 });

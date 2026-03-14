@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const analysis = getAnalysis(id);
+  const analysis = await getAnalysis(id);
   if (!analysis) {
     return NextResponse.json(
       { error: '指定された分析結果が見つかりません' },
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     const referralSource = ref === 'share' ? 'share' : 'direct';
     logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
 
-    const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
+    const cached = await getCachedAnalysisByUrl(validation.sanitized_url!);
     if (cached) {
       logEvent('analysis_cache_hit', { url: validation.sanitized_url! });
       return NextResponse.json(cached, {
@@ -164,8 +164,8 @@ export async function POST(request: NextRequest) {
     // --- Run analysis pipeline ---
     const result = await runAnalysis(validation.sanitized_url!);
 
-    // --- Store result ---
-    storeAnalysis(result);
+    // --- Store result (persists to Supabase + memory cache) ---
+    await storeAnalysis(result);
 
     if (result.status === 'completed') {
       logEvent('analysis_completed', { url: validation.sanitized_url!, referral_source: referralSource });

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the analysis exists before creating a share link
-    const analysis = getAnalysis(analysis_id);
+    const analysis = await getAnalysis(analysis_id);
     if (!analysis) {
       return NextResponse.json(
         { error: '指定された分析結果が見つかりません' },
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the share ID
-    const shareId = createShareId(analysis_id);
+    // Create the share ID (persisted to Supabase + memory)
+    const shareId = await createShareId(analysis_id);
 
     // Build the share URL using the request origin
     const origin = request.headers.get('origin')
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const analysis = getShareAnalysis(shareId);
+    const analysis = await getShareAnalysis(shareId);
     if (!analysis) {
       return NextResponse.json(
         { error: '指定された共有リンクが見つかりません' },

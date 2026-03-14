@@ -3,11 +3,12 @@
  * Tests getCachedAnalysisByUrl and normalizeUrlForCache behavior
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   storeAnalysis,
   getCachedAnalysisByUrl,
 } from '../lib/analyzer';
+import { _testing } from '../lib/persistence';
 import type { AnalyzeResponse } from '../lib/types';
 
 function makeMockResponse(id: string, url: string): AnalyzeResponse {
@@ -56,56 +57,60 @@ function makeMockResponse(id: string, url: string): AnalyzeResponse {
 }
 
 describe('URL Cache', () => {
-  it('returns cached analysis for same URL', () => {
+  beforeEach(() => {
+    _testing.clearAll();
+  });
+
+  it('returns cached analysis for same URL', async () => {
     const url = 'https://cache-test-' + Date.now() + '.com/page';
     const mock = makeMockResponse('cache-hit-1', url);
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
-    const cached = getCachedAnalysisByUrl(url);
+    const cached = await getCachedAnalysisByUrl(url);
     expect(cached).toBeDefined();
     expect(cached?.id).toBe('cache-hit-1');
   });
 
-  it('returns undefined for uncached URL', () => {
-    const result = getCachedAnalysisByUrl('https://never-cached-' + Date.now() + '.com');
+  it('returns undefined for uncached URL', async () => {
+    const result = await getCachedAnalysisByUrl('https://never-cached-' + Date.now() + '.com');
     expect(result).toBeUndefined();
   });
 
-  it('normalizes URLs with trailing slash', () => {
+  it('normalizes URLs with trailing slash', async () => {
     const url = 'https://trailing-' + Date.now() + '.com/path';
     const mock = makeMockResponse('trailing-1', url);
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
     // Should match with trailing slash
-    const cached = getCachedAnalysisByUrl(url + '/');
+    const cached = await getCachedAnalysisByUrl(url + '/');
     expect(cached).toBeDefined();
     expect(cached?.id).toBe('trailing-1');
   });
 
-  it('normalizes URLs with different query param order', () => {
+  it('normalizes URLs with different query param order', async () => {
     const base = 'https://params-' + Date.now() + '.com/page';
     const url1 = base + '?a=1&b=2';
     const mock = makeMockResponse('params-1', url1);
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
     // Same params in different order should match
-    const cached = getCachedAnalysisByUrl(base + '?b=2&a=1');
+    const cached = await getCachedAnalysisByUrl(base + '?b=2&a=1');
     expect(cached).toBeDefined();
     expect(cached?.id).toBe('params-1');
   });
 
-  it('normalizes URLs by stripping fragment', () => {
+  it('normalizes URLs by stripping fragment', async () => {
     const url = 'https://fragment-' + Date.now() + '.com/page';
     const mock = makeMockResponse('fragment-1', url);
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
     // URL with fragment should match
-    const cached = getCachedAnalysisByUrl(url + '#section1');
+    const cached = await getCachedAnalysisByUrl(url + '#section1');
     expect(cached).toBeDefined();
     expect(cached?.id).toBe('fragment-1');
   });
 
-  it('does not cache error status analyses', () => {
+  it('does not cache error status analyses', async () => {
     const url = 'https://error-' + Date.now() + '.com';
     const mock: AnalyzeResponse = {
       id: 'error-no-cache',
@@ -114,19 +119,19 @@ describe('URL Cache', () => {
       error: 'Something failed',
       created_at: new Date().toISOString(),
     };
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
-    const cached = getCachedAnalysisByUrl(url);
+    const cached = await getCachedAnalysisByUrl(url);
     expect(cached).toBeUndefined();
   });
 
-  it('root URL with trailing slash is preserved', () => {
+  it('root URL with trailing slash is preserved', async () => {
     // Root paths should keep their trailing slash
     const url = 'https://root-' + Date.now() + '.com/';
     const mock = makeMockResponse('root-1', url);
-    storeAnalysis(mock);
+    await storeAnalysis(mock);
 
-    const cached = getCachedAnalysisByUrl(url);
+    const cached = await getCachedAnalysisByUrl(url);
     expect(cached).toBeDefined();
   });
 });
