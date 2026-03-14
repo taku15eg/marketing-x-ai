@@ -183,19 +183,11 @@ Webダッシュボードと同じAPIを叩く。
 
 ---
 
-## 作業ルール
-
-- 自律的に完了まで動く。途中でユーザーに確認を戻さない
-- 結論ファースト。日本語
-- 不確かなことは推測せずツールで確認
-- テストを必ず書く
-
----
-
 ## 運用ガバナンス
 
-実装の運用ルール・バックログ・判断ログ・レビュー基準は `governance/` ディレクトリを参照。
+**実装運用ルールの正本**: `governance/CLAUDE_CODE_OPERATING_PROMPT.md`
 
-**Claude Code の開始手順**: `governance/CLAUDE_CODE_OPERATING_PROMPT.md` を参照。
+Claude Code はセッション開始時に governance ファイル群を読み、同ファイルに定められた運用手順（読み込み順序・着手前テンプレート・絶対ルール・完了報告）に従う。
 
-詳細は `governance/00_PROJECT_CHARTER.md`（正本の所在マップ）を参照。
+実装タスク管理・判断ログ・レビュー基準等の詳細は `governance/` ディレクトリを参照。
+正本の所在マップは `governance/00_PROJECT_CHARTER.md` を参照。
