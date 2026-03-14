@@ -140,15 +140,34 @@ export async function fetchWithSSRFProtection(
 
     while (redirectCount <= maxRedirects) {
       // DNS rebinding defense: resolve hostname and check IP before fetching
+      // Check both IPv4 and IPv6 records to prevent bypass via AAAA records
       const parsedUrl = new URL(currentUrl);
       if (!isIPAddress(parsedUrl.hostname)) {
         try {
-          const { resolve4 } = await import('node:dns/promises');
-          const addresses = await resolve4(parsedUrl.hostname);
-          for (const addr of addresses) {
-            if (!validateResolvedIP(addr)) {
-              throw new SSRFError(`DNSが内部IPに解決されました: ${parsedUrl.hostname} -> ${addr}`);
+          const dns = await import('node:dns/promises');
+          // Check IPv4 addresses
+          try {
+            const v4Addresses = await dns.resolve4(parsedUrl.hostname);
+            for (const addr of v4Addresses) {
+              if (!validateResolvedIP(addr)) {
+                throw new SSRFError(`DNSが内部IPに解決されました: ${parsedUrl.hostname} -> ${addr}`);
+              }
             }
+          } catch (e) {
+            if (e instanceof SSRFError) throw e;
+            // ENODATA / ENOTFOUND for IPv4 is OK — host may be IPv6-only
+          }
+          // Check IPv6 addresses
+          try {
+            const v6Addresses = await dns.resolve6(parsedUrl.hostname);
+            for (const addr of v6Addresses) {
+              if (!validateResolvedIP(addr)) {
+                throw new SSRFError(`DNSが内部IPv6に解決されました: ${parsedUrl.hostname} -> ${addr}`);
+              }
+            }
+          } catch (e) {
+            if (e instanceof SSRFError) throw e;
+            // ENODATA / ENOTFOUND for IPv6 is OK — host may be IPv4-only
           }
         } catch (e) {
           // If DNS resolution fails with SSRFError, re-throw

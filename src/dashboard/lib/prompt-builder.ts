@@ -137,12 +137,7 @@ function buildUserContent(params: {
 }
 
 function parseAnalysisResponse(responseText: string, url: string): AnalysisResult {
-  // Extract JSON from response (handle markdown code blocks)
-  let jsonStr = responseText;
-  const codeBlockMatch = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (codeBlockMatch) {
-    jsonStr = codeBlockMatch[1];
-  }
+  const jsonStr = extractJsonFromText(responseText);
 
   try {
     const parsed = JSON.parse(jsonStr);
@@ -214,6 +209,55 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
   } catch (e) {
     throw new Error(`Failed to parse Claude response as JSON: ${e}`);
   }
+}
+
+/**
+ * Extract JSON from Claude response text.
+ * Handles multiple formats:
+ * 1. Pure JSON string
+ * 2. JSON wrapped in markdown code blocks (```json ... ```)
+ * 3. JSON preceded/followed by non-JSON text (find first { to last })
+ * 4. Multiple JSON attempts (try each extraction method)
+ */
+export function extractJsonFromText(responseText: string): string {
+  const trimmed = responseText.trim();
+
+  // 1. Try direct parse first (pure JSON)
+  if (trimmed.startsWith('{')) {
+    try {
+      JSON.parse(trimmed);
+      return trimmed;
+    } catch {
+      // Fall through to other methods
+    }
+  }
+
+  // 2. Extract from markdown code blocks
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (codeBlockMatch) {
+    try {
+      JSON.parse(codeBlockMatch[1].trim());
+      return codeBlockMatch[1].trim();
+    } catch {
+      // Fall through
+    }
+  }
+
+  // 3. Find the outermost JSON object (first { to matching })
+  const firstBrace = trimmed.indexOf('{');
+  const lastBrace = trimmed.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = trimmed.slice(firstBrace, lastBrace + 1);
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {
+      // Fall through
+    }
+  }
+
+  // 4. Return trimmed text as-is (will fail at JSON.parse and throw descriptive error)
+  return trimmed;
 }
 
 function normalizeIssues(issues: Array<Record<string, unknown>>): Issue[] {

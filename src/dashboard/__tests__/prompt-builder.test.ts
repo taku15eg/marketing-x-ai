@@ -7,6 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { extractJsonFromText } from '../lib/prompt-builder';
 
 const source = fs.readFileSync(
   path.resolve(__dirname, '../lib/prompt-builder.ts'),
@@ -112,5 +113,50 @@ describe('Prompt Builder - Response Parsing', () => {
 
   it('sets default metadata values', () => {
     expect(source).toContain("dom_extracted: true");
+  });
+});
+
+describe('extractJsonFromText - JSON extraction resilience', () => {
+  const validJson = '{"company_understanding":{"summary":"Test"},"improvement_potential":"+10%","issues":[]}';
+
+  it('handles pure JSON string', () => {
+    const result = extractJsonFromText(validJson);
+    expect(JSON.parse(result)).toBeDefined();
+  });
+
+  it('handles JSON wrapped in markdown code block', () => {
+    const result = extractJsonFromText('```json\n' + validJson + '\n```');
+    expect(JSON.parse(result)).toBeDefined();
+    expect(JSON.parse(result).improvement_potential).toBe('+10%');
+  });
+
+  it('handles JSON preceded by text', () => {
+    const result = extractJsonFromText('Here is the analysis:\n' + validJson);
+    expect(JSON.parse(result)).toBeDefined();
+  });
+
+  it('handles JSON followed by text', () => {
+    const result = extractJsonFromText(validJson + '\n\nI hope this helps!');
+    expect(JSON.parse(result)).toBeDefined();
+  });
+
+  it('handles JSON surrounded by text', () => {
+    const result = extractJsonFromText('Analysis result:\n' + validJson + '\nPlease review.');
+    expect(JSON.parse(result)).toBeDefined();
+  });
+
+  it('handles whitespace-padded JSON', () => {
+    const result = extractJsonFromText('  \n  ' + validJson + '  \n  ');
+    expect(JSON.parse(result)).toBeDefined();
+  });
+
+  it('returns original text when no JSON found (will fail at parse)', () => {
+    const result = extractJsonFromText('This is not JSON at all');
+    expect(() => JSON.parse(result)).toThrow();
+  });
+
+  it('handles code block without json marker', () => {
+    const result = extractJsonFromText('```\n' + validJson + '\n```');
+    expect(JSON.parse(result)).toBeDefined();
   });
 });
