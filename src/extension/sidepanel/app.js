@@ -242,12 +242,37 @@ function renderResults(data, url) {
     const keihin = reg.keihinhyoujiho_risks || [];
     if (yakujiho.length > 0 || keihin.length > 0) {
       html += '<div class="section-title">法規制リスク</div>';
+
+      // Pre-check summary
+      if (reg.pre_check_summary) {
+        var pcs = reg.pre_check_summary;
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;font-size:11px">';
+        html += '<span style="color:var(--text-secondary)">ルール一次チェック:</span>';
+        if (pcs.total_prohibited > 0) {
+          html += '<span style="padding:1px 6px;background:var(--danger-bg,#fef2f2);color:var(--danger);border-radius:4px">禁止 ' + pcs.total_prohibited + '</span>';
+        }
+        if (pcs.total_caution > 0) {
+          html += '<span style="padding:1px 6px;background:var(--warning-bg,#fffbeb);color:var(--warning);border-radius:4px">要注意 ' + pcs.total_caution + '</span>';
+        }
+        if (pcs.total_review > 0) {
+          html += '<span style="padding:1px 6px;background:#eff6ff;color:#2563eb;border-radius:4px">要確認 ' + pcs.total_review + '</span>';
+        }
+        html += '</div>';
+      }
+
       yakujiho.forEach(function (risk) {
         html += renderRegulatoryRisk(risk, '薬機法');
       });
       keihin.forEach(function (risk) {
         html += renderRegulatoryRisk(risk, '景表法');
       });
+
+      // Disclaimer
+      if (reg.disclaimer) {
+        html += '<div style="font-size:10px;color:var(--text-secondary);margin-top:8px;padding:6px 8px;background:var(--bg);border-radius:4px;line-height:1.5">';
+        html += escHtml(reg.disclaimer);
+        html += '</div>';
+      }
     }
   }
 
@@ -352,11 +377,33 @@ function renderRegulatoryRisk(risk, category) {
     medium: '中リスク',
     low: '低リスク',
   };
+  var severityLabels = {
+    prohibited: '禁止表現',
+    caution: '要注意',
+    review_recommended: '要確認',
+  };
+  var sourceLabels = {
+    rule: 'ルール検出',
+    llm: 'AI検出',
+    both: 'ルール+AI検出',
+  };
   var colorKey = levelColors[risk.risk_level] || 'warning';
   var html = '<div class="issue-card" style="border-left:3px solid var(--' + colorKey + ')">';
-  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+  html += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;flex-wrap:wrap">';
   html += '<span class="badge badge-' + risk.risk_level + '">' + escHtml(category) + ' - ' + (levelLabels[risk.risk_level] || risk.risk_level) + '</span>';
+  if (risk.severity && severityLabels[risk.severity]) {
+    html += '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:' + (risk.severity === 'prohibited' ? '#dc2626' : risk.severity === 'caution' ? '#f59e0b' : '#3b82f6') + ';color:#fff">' + severityLabels[risk.severity] + '</span>';
+  }
+  if (risk.source && sourceLabels[risk.source]) {
+    html += '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#f3e8ff;color:#7c3aed">' + sourceLabels[risk.source] + '</span>';
+  }
+  if (risk.human_review_required) {
+    html += '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#fff7ed;color:#c2410c;font-weight:500">要専門家確認</span>';
+  }
   html += '</div>';
+  if (risk.category) {
+    html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:2px">' + escHtml(risk.category) + '</div>';
+  }
   html += '<div style="font-size:13px;font-weight:500;margin-bottom:4px">' + escHtml(risk.expression) + '</div>';
   html += '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">' + escHtml(risk.reason) + '</div>';
   if (risk.recommendation) {

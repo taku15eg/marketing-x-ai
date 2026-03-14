@@ -83,13 +83,27 @@ export interface HandoffBrief {
 export interface RegulatoryCheck {
   yakujiho_risks: RegulatoryRisk[];
   keihinhyoujiho_risks: RegulatoryRisk[];
+  pre_check_summary?: {
+    total_prohibited: number;
+    total_caution: number;
+    total_review: number;
+    checked_at: string;
+  };
+  disclaimer?: string;
 }
 
 export interface RegulatoryRisk {
   expression: string;
   risk_level: 'high' | 'medium' | 'low';
+  severity?: 'prohibited' | 'caution' | 'review_recommended';
   reason: string;
   recommendation: string;
+  source?: 'rule' | 'llm' | 'both';
+  rule_id?: string;
+  category?: string;
+  human_review_required?: boolean;
+  llm_reason?: string;
+  llm_recommendation?: string;
 }
 
 export interface AnalysisMetadata {
@@ -98,6 +112,7 @@ export interface AnalysisMetadata {
   model_used: string;
   vision_used: boolean;
   dom_extracted: boolean;
+  compliance_pre_check_used: boolean;
 }
 
 // === Share ===

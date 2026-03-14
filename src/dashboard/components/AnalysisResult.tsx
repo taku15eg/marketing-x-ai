@@ -26,24 +26,75 @@ const RISK_LEVEL_CONFIG = {
   },
 } as const;
 
+const SEVERITY_CONFIG = {
+  prohibited: {
+    label: '禁止表現',
+    className: 'bg-red-600 text-white',
+  },
+  caution: {
+    label: '要注意',
+    className: 'bg-amber-500 text-white',
+  },
+  review_recommended: {
+    label: '要確認',
+    className: 'bg-blue-500 text-white',
+  },
+} as const;
+
+const SOURCE_CONFIG = {
+  rule: { label: 'ルール検出', className: 'bg-purple-100 text-purple-700' },
+  llm: { label: 'AI検出', className: 'bg-blue-100 text-blue-700' },
+  both: { label: 'ルール+AI検出', className: 'bg-indigo-100 text-indigo-700' },
+} as const;
+
 function RegulatoryWarningItem({ risk }: { risk: RegulatoryRisk }) {
   const config = RISK_LEVEL_CONFIG[risk.risk_level];
+  const severityConfig = risk.severity ? SEVERITY_CONFIG[risk.severity] : null;
+  const sourceConfig = risk.source ? SOURCE_CONFIG[risk.source] : null;
 
   return (
     <div className={`p-4 rounded-lg border ${config.className}`}>
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
         <div className={`w-2 h-2 rounded-full ${config.dotClassName}`} />
         <span className="text-xs font-bold">{config.label}</span>
+        {severityConfig && (
+          <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${severityConfig.className}`}>
+            {severityConfig.label}
+          </span>
+        )}
+        {sourceConfig && (
+          <span className={`text-[10px] px-1.5 py-0.5 rounded ${sourceConfig.className}`}>
+            {sourceConfig.label}
+          </span>
+        )}
+        {risk.human_review_required && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-medium">
+            要専門家確認
+          </span>
+        )}
       </div>
+      {risk.category && (
+        <p className="text-[11px] text-gray-500 mb-1">{risk.category}</p>
+      )}
       <p className="text-sm font-medium mb-1">
         {risk.expression}
       </p>
       <p className="text-xs leading-relaxed mb-2">
         {risk.reason}
       </p>
+      {risk.llm_reason && risk.llm_reason !== risk.reason && (
+        <p className="text-xs leading-relaxed mb-2 pl-3 border-l-2 border-blue-300">
+          <span className="text-blue-600 font-medium">AI補足: </span>{risk.llm_reason}
+        </p>
+      )}
       <p className="text-xs">
         <span className="font-semibold">推奨対応:</span> {risk.recommendation}
       </p>
+      {risk.llm_recommendation && risk.llm_recommendation !== risk.recommendation && (
+        <p className="text-xs mt-1 pl-3 border-l-2 border-blue-300">
+          <span className="text-blue-600 font-medium">AI推奨: </span>{risk.llm_recommendation}
+        </p>
+      )}
     </div>
   );
 }
@@ -77,6 +128,8 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
     result.regulatory &&
     (result.regulatory.yakujiho_risks.length > 0 ||
       result.regulatory.keihinhyoujiho_risks.length > 0);
+
+  const preCheckSummary = result.regulatory?.pre_check_summary;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
@@ -183,7 +236,35 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
             <h3 className="text-base font-bold text-red-800">
               法規制リスク
             </h3>
+            {preCheckSummary && preCheckSummary.total_prohibited > 0 && (
+              <span className="ml-auto text-xs px-2 py-0.5 bg-red-600 text-white rounded-full font-medium">
+                禁止表現 {preCheckSummary.total_prohibited}件
+              </span>
+            )}
           </div>
+
+          {/* Pre-check summary bar */}
+          {preCheckSummary && (preCheckSummary.total_prohibited > 0 || preCheckSummary.total_caution > 0 || preCheckSummary.total_review > 0) && (
+            <div className="px-5 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-3 text-xs">
+              <span className="text-gray-500 font-medium">ルール一次チェック:</span>
+              {preCheckSummary.total_prohibited > 0 && (
+                <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded">
+                  禁止 {preCheckSummary.total_prohibited}
+                </span>
+              )}
+              {preCheckSummary.total_caution > 0 && (
+                <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">
+                  要注意 {preCheckSummary.total_caution}
+                </span>
+              )}
+              {preCheckSummary.total_review > 0 && (
+                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                  要確認 {preCheckSummary.total_review}
+                </span>
+              )}
+            </div>
+          )}
+
           <div className="p-5 space-y-6">
             {result.regulatory!.yakujiho_risks.length > 0 && (
               <div>
@@ -213,6 +294,15 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
               </div>
             )}
           </div>
+
+          {/* Disclaimer */}
+          {result.regulatory!.disclaimer && (
+            <div className="px-5 py-3 bg-gray-50 border-t border-gray-200">
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                {result.regulatory!.disclaimer}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -242,6 +332,9 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
           <span>処理時間: {(result.metadata.analysis_duration_ms / 1000).toFixed(1)}秒</span>
           {result.metadata.vision_used && (
             <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">Vision API使用</span>
+          )}
+          {result.metadata.compliance_pre_check_used && (
+            <span className="px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded">ルールチェック併用</span>
           )}
         </div>
         <PoweredByBadge />

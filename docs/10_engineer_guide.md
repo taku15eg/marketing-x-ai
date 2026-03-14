@@ -68,6 +68,7 @@ src/
 │   │   ├── HandoffDownload.tsx    # 依頼書ダウンロード
 │   │   └── YakujiAlert.tsx        # 薬機法チェック表示
 │   ├── lib/
+│   │   ├── compliance-rules.ts   # ルールベース法令一次チェック（薬機法・景表法）
 │   │   ├── supabase.ts           # Supabaseクライアント
 │   │   ├── stripe.ts             # Stripeクライアント
 │   │   ├── analytics.ts          # イベント計測
@@ -493,7 +494,7 @@ CREATE POLICY "shares_insert_owner" ON shares FOR INSERT
 | T2.2 依頼書ダウンロード（Markdown/PDF） | P0 | ダウンロードボタン + クリップボードコピー |
 | T2.3 共有URL生成 | P0 | 共有ボタン → 短縮URL生成 → コピー |
 | T2.4 共有URL閲覧ページ | P0 | OGP対応 + 読み取り専用表示 + 新規分析CTA |
-| T2.5 薬機法/景表法チェック | P1 | 対象業種判定 → 違反リスク指摘 |
+| T2.5 薬機法/景表法チェック | P1 | ルールベース一次チェック（compliance-rules.ts）＋LLMマージ。severity/human_review_required/source出力 |
 | T2.6 ロックタブUI | P1 | タブ2-6のロック表示 + プラン名 + 誘導 |
 | T2.7 共有URLイベント計測 | P1 | share_url_generated, share_url_viewed, share_url_new_user |
 
@@ -638,7 +639,8 @@ CREATE POLICY "events_insert_own" ON events
 - [ ] URL入力 → 分析完了 → タブ1表示が15秒以内
 - [ ] プロンプトインジェクション攻撃パターン10種がすべてブロックされる
 - [ ] Vision APIスクリーンショットが正しく取得・分析される
-- [ ] 薬機法チェックが健康食品LPで正しく動作する
+- [ ] 薬機法チェックが健康食品LPで正しく動作する（ルールベース一次チェック＋LLMマージ）
+- [ ] ルールベースチェックのテスト（compliance-rules.test.ts）が全件パスする
 - [ ] 共有URL生成 → 別ブラウザで閲覧 → OGP表示が正しい
 - [ ] 共有URL閲覧ページの「自分も分析する」CTAが機能する
 - [ ] ロックタブのクリック → Pricingページ遷移が正しい

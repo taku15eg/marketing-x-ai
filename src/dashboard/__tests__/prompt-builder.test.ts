@@ -113,4 +113,23 @@ describe('Prompt Builder - Response Parsing', () => {
   it('sets default metadata values', () => {
     expect(source).toContain("dom_extracted: true");
   });
+
+  it('includes compliance_pre_check_used in metadata', () => {
+    expect(source).toContain('compliance_pre_check_used');
+  });
+});
+
+describe('Prompt Builder - Compliance Pre-Check Integration', () => {
+  it('accepts compliancePreCheck parameter', () => {
+    expect(source).toContain('compliancePreCheck');
+  });
+
+  it('wraps pre-check results in XML tags', () => {
+    expect(source).toContain("'<compliance_pre_check>'");
+    expect(source).toContain("'</compliance_pre_check>'");
+  });
+
+  it('imports CompliancePreCheckResult type', () => {
+    expect(source).toContain('CompliancePreCheckResult');
+  });
 });

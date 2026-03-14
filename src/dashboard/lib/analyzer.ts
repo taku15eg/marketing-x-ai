@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { researchCompany } from './company-research';
 import { readPage } from './page-reader';
 import { analyzeWithClaude } from './prompt-builder';
+import { runCompliancePreCheck, mergeComplianceResults } from './compliance-rules';
 import type { AnalysisResult, AnalyzeResponse, AnalysisProgress } from './types';
 
 export type ProgressCallback = (progress: AnalysisProgress) => void;
@@ -53,16 +54,31 @@ export async function runAnalysis(
       message: '改善提案を作成中...',
     });
 
+    // Step 2.5: Rule-based compliance pre-check (before LLM call)
+    const compliancePreCheck = runCompliancePreCheck(dom.text_content);
+
     const result = await analyzeWithClaude({
       company,
       dom,
       screenshot_base64,
       url,
+      compliancePreCheck,
     });
+
+    // Merge rule-based pre-check with LLM regulatory results
+    const mergedRegulatory = mergeComplianceResults(
+      compliancePreCheck,
+      result.regulatory ? {
+        yakujiho_risks: result.regulatory.yakujiho_risks,
+        keihinhyoujiho_risks: result.regulatory.keihinhyoujiho_risks,
+      } : undefined,
+    );
+    result.regulatory = mergedRegulatory;
 
     // Update metadata
     result.metadata.analysis_duration_ms = Date.now() - startTime;
     result.metadata.vision_used = screenshot_base64 !== null;
+    result.metadata.compliance_pre_check_used = true;
 
     return {
       id,

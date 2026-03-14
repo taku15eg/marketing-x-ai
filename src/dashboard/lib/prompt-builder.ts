@@ -8,6 +8,7 @@ import type {
   Issue,
   RegulatoryCheck,
 } from './types';
+import type { CompliancePreCheckResult } from './compliance-rules';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -16,6 +17,7 @@ export async function analyzeWithClaude(params: {
   dom: DOMData;
   screenshot_base64: string | null;
   url: string;
+  compliancePreCheck?: CompliancePreCheckResult;
 }): Promise<AnalysisResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -77,6 +79,7 @@ function buildUserContent(params: {
   dom: DOMData;
   screenshot_base64: string | null;
   url: string;
+  compliancePreCheck?: CompliancePreCheckResult;
 }): Array<{ type: string; [key: string]: unknown }> {
   const content: Array<{ type: string; [key: string]: unknown }> = [];
 
@@ -114,6 +117,17 @@ function buildUserContent(params: {
     `統計: ${params.dom.word_count}文字 / ${params.dom.link_count}リンク / ${params.dom.images.length}画像`,
     '</page_content>',
   ];
+
+  // ルールベース事前チェック結果をコンテキストとして追加
+  if (params.compliancePreCheck && params.compliancePreCheck.matches.length > 0) {
+    textParts.push('');
+    textParts.push('<compliance_pre_check>');
+    textParts.push('以下はルールベースの一次チェックで検出された法令リスク候補です。これらを考慮して分析してください:');
+    for (const match of params.compliancePreCheck.matches.slice(0, 15)) {
+      textParts.push(`  - [${match.severity}][${match.law}] "${match.matched_text}" (${match.category})`);
+    }
+    textParts.push('</compliance_pre_check>');
+  }
 
   content.push({ type: 'text', text: textParts.join('\n') });
 
@@ -182,6 +196,7 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
         model_used: 'claude-sonnet-4-6',
         vision_used: false,
         dom_extracted: true,
+        compliance_pre_check_used: false,
       },
     };
 
