@@ -149,19 +149,8 @@ export async function incrementShareViews(shareId: string): Promise<void> {
   if (!sb) return;
 
   try {
-    // Simple increment via raw SQL or update
-    const { data } = await sb
-      .from('shares')
-      .select('view_count')
-      .eq('id', shareId)
-      .single();
-
-    if (data) {
-      await sb
-        .from('shares')
-        .update({ view_count: (data.view_count || 0) + 1 })
-        .eq('id', shareId);
-    }
+    // Atomic increment via DB function (avoids SELECT+UPDATE race)
+    await sb.rpc('increment_share_view_count', { share_id_input: shareId });
   } catch {
     // Non-critical: silently fail view count increment
   }

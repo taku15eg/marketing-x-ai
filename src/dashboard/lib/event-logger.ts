@@ -1,10 +1,12 @@
 // Lightweight event logging for growth metrics
-// Phase 0.5: In-memory ring buffer. Phase 1: Supabase insert.
+// Dual-layer: in-memory ring buffer (always) + Supabase insert (when configured).
 //
 // Key metrics for β validation (from 09_beta_plan.md):
 // - H1: analysis_completed count, analysis_viewed_30s count
 // - H2: share_url_generated count per user
 // - H3: analysis_from_referral count (viral coefficient K)
+
+import { getSupabase } from './supabase';
 
 export type EventType =
   | 'analysis_started'
@@ -25,14 +27,21 @@ const MAX_EVENTS = 5000;
 const events: EventEntry[] = [];
 
 export function logEvent(type: EventType, data: Record<string, string | number | boolean> = {}): void {
+  const timestamp = new Date().toISOString();
+
+  // Always write to in-memory ring buffer
   if (events.length >= MAX_EVENTS) {
     events.shift(); // ring buffer: drop oldest
   }
-  events.push({
-    type,
-    timestamp: new Date().toISOString(),
-    data,
-  });
+  events.push({ type, timestamp, data });
+
+  // Persist to Supabase in background (fire-and-forget)
+  const sb = getSupabase();
+  if (sb) {
+    Promise.resolve(
+      sb.from('events').insert({ type, data, created_at: timestamp })
+    ).catch(() => {}); // Non-critical: never block on event logging
+  }
 }
 
 /**

@@ -71,8 +71,40 @@ CREATE POLICY "shares_update_view_count" ON shares
   WITH CHECK (true);
 
 -- ============================================================
--- 4. Cleanup function (call via pg_cron or manual)
+-- 4. Events table (growth metrics)
 -- ============================================================
+CREATE TABLE IF NOT EXISTS events (
+  id            BIGSERIAL PRIMARY KEY,
+  type          TEXT NOT NULL,
+  data          JSONB NOT NULL DEFAULT '{}',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for event type queries and time-range aggregation
+CREATE INDEX IF NOT EXISTS idx_events_type_created
+  ON events (type, created_at DESC);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "events_insert" ON events
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "events_read" ON events
+  FOR SELECT USING (true);
+
+-- ============================================================
+-- 5. Helper functions
+-- ============================================================
+
+-- Atomic view count increment (avoids SELECT+UPDATE race condition)
+CREATE OR REPLACE FUNCTION increment_share_view_count(share_id_input TEXT)
+RETURNS void AS $$
+BEGIN
+  UPDATE shares SET view_count = view_count + 1 WHERE id = share_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Expired records cleanup (call via pg_cron or manual)
 CREATE OR REPLACE FUNCTION cleanup_expired_records()
 RETURNS void AS $$
 BEGIN
