@@ -39,12 +39,20 @@ claude .
 publish-gate-claude-code/
 ├── CLAUDE.md                    # 🔴 最重要 — プロジェクトコンテキスト
 ├── README.md                    # このファイル
-├── SKILL.md                     # Skill Orchestrator定義
-├── skill-orchestrator-architecture.md
-├── EXECUTION-STEPS.md
-├── DEPLOY-GUIDE.md
-├── CROSS-PLATFORM-GUIDE.md
+├── INSTRUCTION.md               # 自律実行指示書
+├── PERSONA-MARKET.md            # ペルソナ・市場情報
 ├── package.json
+│
+├── .claude/                     # Claude Code設定
+│   ├── settings.json            # パーミッション・Hooks設定
+│   ├── hooks/                   # Hook スクリプト
+│   └── skills/                  # カスタムSkills
+│       ├── skill-orchestrator/  # メタスキル
+│       ├── review/              # コードレビュー
+│       ├── test/                # テスト実行
+│       ├── build/               # ビルド
+│       ├── deploy/              # デプロイ
+│       └── interview-research/  # インタビュー調査
 │
 ├── docs/                        # 設計ドキュメント
 │   ├── 00_project_summary.md    # 全24セッション包括記録

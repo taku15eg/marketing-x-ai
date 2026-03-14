@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd src/dashboard && npm run *)",
+      "Bash(cd src/dashboard && npx vitest *)",
+      "Bash(cd src/dashboard && npx playwright *)",
+      "Bash(cd src/proxy && npx wrangler *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git fetch*)",
+      "Bash(git pull*)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(wc *)",
+      "Bash(find *)",
+      "Edit(src/**)",
+      "Read(**)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Edit(.env*)",
+      "Edit(*.pem)",
+      "Edit(*.key)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": [".claude/hooks/block-dangerous.sh"]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": [".claude/hooks/auto-format.sh"]
+      }
+    ]
+  }
+}

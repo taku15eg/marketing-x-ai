@@ -25,8 +25,8 @@
 - `skill-orchestrator/SKILL.md` ← これがルーティングエンジン本体
 
 **推奨（やるとスキルの中身も参照できるようになる）:**
-- `skill-orchestrator-architecture.md` ← 設計全体像と具体例
-- `CROSS-PLATFORM-GUIDE.md` ← 運用ルール
+- `docs/skill-orchestrator-architecture.md` ← 設計全体像と具体例
+- `docs/CROSS-PLATFORM-GUIDE.md` ← 運用ルール
 
 ### 1-3. Project Instructions を設定
 
