@@ -35,7 +35,7 @@ export async function runAnalysis(
       message: 'ページを読み取り中...',
     });
 
-    const { dom, screenshot_base64 } = await readPage(url);
+    const { dom, screenshot_base64, vision_status } = await readPage(url);
 
     // Step 3: Diagnosis
     onProgress?.({
@@ -63,6 +63,12 @@ export async function runAnalysis(
     // Update metadata
     result.metadata.analysis_duration_ms = Date.now() - startTime;
     result.metadata.vision_used = screenshot_base64 !== null;
+    result.metadata.vision_status = vision_status;
+
+    // Vision失敗時: confidence を low に強制（誤った確信を与えない）
+    if (vision_status !== 'used') {
+      result.page_reading.confidence = 'low';
+    }
 
     return {
       id,

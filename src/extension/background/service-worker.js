@@ -90,16 +90,22 @@ async function handleStartAnalysis(msg) {
     return { error: true, message: 'Active tab URL does not match. Please navigate to the target page first.' };
   }
 
-  // --- Step 1: Capture screenshot ---
+  // --- Step 1: Capture screenshot (with 1 retry) ---
   let screenshotDataUrl = null;
-  try {
-    screenshotDataUrl = await chrome.tabs.captureVisibleTab(null, {
-      format: 'jpeg',
-      quality: 80,
-    });
-  } catch (e) {
-    console.warn('Screenshot capture failed, continuing without it:', e.message);
-    // Continue without screenshot - DOM analysis alone is still valuable
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      screenshotDataUrl = await chrome.tabs.captureVisibleTab(null, {
+        format: 'jpeg',
+        quality: 80,
+      });
+      break; // success
+    } catch (e) {
+      console.warn(`Screenshot attempt ${attempt}/2 failed:`, e.message);
+      if (attempt < 2) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      // Continue without screenshot after all retries exhausted
+    }
   }
 
   // --- Step 2: Inject content script and extract DOM ---

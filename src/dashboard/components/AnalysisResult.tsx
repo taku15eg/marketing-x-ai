@@ -78,8 +78,28 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
     (result.regulatory.yakujiho_risks.length > 0 ||
       result.regulatory.keihinhyoujiho_risks.length > 0);
 
+  const visionUnavailable = !result.metadata.vision_used;
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
+      {/* Vision Unavailable Warning */}
+      {visionUnavailable && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-3" role="alert">
+          <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <p className="text-sm font-bold text-amber-800">低信頼モード（Vision分析なし）</p>
+            <p className="text-xs text-amber-700 mt-1">
+              スクリーンショットの取得に失敗したため、DOM情報のみで分析しています。
+              日本のLPは画像ベースの構成が多く、視覚的なレイアウト・配色・画像内テキストの分析が含まれていません。
+              結果の精度が通常より低い可能性があります。
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Improvement Potential Banner */}
       <div className="bg-gradient-to-r from-[#1B3A5C] to-[#2a5a8c] rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
@@ -240,8 +260,10 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
         <div className="flex items-center gap-4">
           <span>分析日時: {new Date(result.metadata.analyzed_at).toLocaleString('ja-JP')}</span>
           <span>処理時間: {(result.metadata.analysis_duration_ms / 1000).toFixed(1)}秒</span>
-          {result.metadata.vision_used && (
+          {result.metadata.vision_used ? (
             <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">Vision API使用</span>
+          ) : (
+            <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded">Vision未使用（低信頼）</span>
           )}
         </div>
         <PoweredByBadge />

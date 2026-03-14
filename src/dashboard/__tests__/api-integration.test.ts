@@ -209,8 +209,9 @@ describe('API Integration - Analysis Store Flow', () => {
         metadata: {
           analyzed_at: new Date().toISOString(),
           analysis_duration_ms: 3000,
-          model_used: 'claude-sonnet-4-5-20250514',
+          model_used: 'claude-sonnet-4-6',
           vision_used: false,
+          vision_status: 'failed',
           dom_extracted: true,
         },
       },

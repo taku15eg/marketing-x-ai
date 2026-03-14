@@ -92,11 +92,14 @@ export interface RegulatoryRisk {
   recommendation: string;
 }
 
+export type VisionStatus = 'used' | 'failed' | 'no_api_key';
+
 export interface AnalysisMetadata {
   analyzed_at: string;
   analysis_duration_ms: number;
   model_used: string;
   vision_used: boolean;
+  vision_status: VisionStatus;
   dom_extracted: boolean;
 }
 

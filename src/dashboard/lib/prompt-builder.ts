@@ -131,6 +131,11 @@ function buildUserContent(params: {
       type: 'text',
       text: '上記はページのファーストビューのスクリーンショットです。DOMデータだけでは読み取れない視覚的な情報（レイアウト、配色、画像内テキスト、空間配置）も含めて分析してください。',
     });
+  } else {
+    content.push({
+      type: 'text',
+      text: '【注意】スクリーンショットが取得できませんでした。DOM情報のみでの分析です。日本のLPは画像ベースの構成が多いため、視覚的レイアウト・配色・画像内テキストに関する判断は不確実です。confidenceは必ず"low"に設定し、screenshot_insightsには「スクリーンショット未取得のため視覚分析なし」と記載してください。',
+    });
   }
 
   return content;
@@ -181,6 +186,7 @@ function parseAnalysisResponse(responseText: string, url: string): AnalysisResul
         analysis_duration_ms: 0,
         model_used: 'claude-sonnet-4-6',
         vision_used: false,
+        vision_status: 'failed',
         dom_extracted: true,
       },
     };

@@ -3,11 +3,17 @@
 
 import { fetchWithSSRFProtection } from './url-validator';
 import { stripHtml as sharedStripHtml, sanitizeHtml as sharedSanitizeHtml } from './html-utils';
-import type { DOMData, CTAInfo } from './types';
+import type { DOMData, CTAInfo, VisionStatus } from './types';
+
+export interface ScreenshotResult {
+  base64: string | null;
+  vision_status: VisionStatus;
+}
 
 export async function readPage(url: string): Promise<{
   dom: DOMData;
   screenshot_base64: string | null;
+  vision_status: VisionStatus;
   raw_html: string;
 }> {
   // Fetch the page HTML
@@ -18,10 +24,10 @@ export async function readPage(url: string): Promise<{
   // Extract DOM data
   const dom = extractDOMData(limitedHtml, url);
 
-  // Capture screenshot via external service
-  const screenshot_base64 = await captureScreenshot(url);
+  // Capture screenshot via external service (with retry)
+  const screenshot = await captureScreenshotWithRetry(url);
 
-  return { dom, screenshot_base64, raw_html: limitedHtml };
+  return { dom, screenshot_base64: screenshot.base64, vision_status: screenshot.vision_status, raw_html: limitedHtml };
 }
 
 function extractDOMData(html: string, url: string): DOMData {
@@ -192,37 +198,45 @@ function stripHtml(html: string): string {
 }
 
 /**
- * Capture screenshot using a headless browser API.
- * In production, this would use Puppeteer/Playwright on a server
- * or a screenshot API like screenshotapi.net / urlbox.io
- * Returns base64-encoded image or null on failure.
+ * Capture screenshot with 1 retry (2 attempts total).
+ * Returns structured result with vision_status for downstream handling.
  */
-async function captureScreenshot(url: string): Promise<string | null> {
-  // Use a public screenshot API endpoint
-  // In production, replace with self-hosted Puppeteer or paid API
-  try {
-    const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&viewport_width=1280&viewport_height=800&format=jpeg&quality=80`;
-
-    // Check if we have an API key
-    const apiKey = process.env.SCREENSHOT_API_KEY;
-    if (!apiKey) {
-      // Fallback: return null, analysis will rely on DOM only
-      console.warn('SCREENSHOT_API_KEY not set, skipping screenshot capture');
-      return null;
-    }
-
-    const response = await fetch(
-      `${screenshotUrl}&access_key=${apiKey}`,
-      { signal: AbortSignal.timeout(15000) }
-    );
-
-    if (!response.ok) return null;
-
-    const buffer = await response.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    return base64;
-  } catch {
-    console.warn('Screenshot capture failed, continuing with DOM analysis only');
-    return null;
+async function captureScreenshotWithRetry(url: string, maxAttempts = 2): Promise<ScreenshotResult> {
+  const apiKey = process.env.SCREENSHOT_API_KEY;
+  if (!apiKey) {
+    console.warn('SCREENSHOT_API_KEY not set — Vision分析は利用できません');
+    return { base64: null, vision_status: 'no_api_key' };
   }
+
+  const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&viewport_width=1280&viewport_height=800&format=jpeg&quality=80&access_key=${apiKey}`;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(screenshotUrl, {
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!response.ok) {
+        console.warn(`Screenshot attempt ${attempt}/${maxAttempts} failed: HTTP ${response.status}`);
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
+        }
+        return { base64: null, vision_status: 'failed' };
+      }
+
+      const buffer = await response.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString('base64');
+      return { base64, vision_status: 'used' };
+    } catch (error) {
+      console.warn(`Screenshot attempt ${attempt}/${maxAttempts} error:`, error instanceof Error ? error.message : error);
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+      return { base64: null, vision_status: 'failed' };
+    }
+  }
+
+  return { base64: null, vision_status: 'failed' };
 }
