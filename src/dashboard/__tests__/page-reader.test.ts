@@ -39,8 +39,8 @@ describe('Page Reader - Sanitization Patterns', () => {
     expect(htmlUtilsSource).toContain('on\\w+');
   });
 
-  it('limits CTA extraction to 20 items', () => {
-    expect(source).toContain('.slice(0, 20)');
+  it('limits CTA extraction to 30 items', () => {
+    expect(source).toContain('.slice(0, 30)');
   });
 
   it('limits image extraction to 50 items', () => {
@@ -111,6 +111,38 @@ describe('Page Reader - CTA Detection Patterns', () => {
     expect(ctaPatterns.test('Sign Up')).toBe(true);
     expect(ctaPatterns.test('Buy Now')).toBe(true);
     expect(ctaPatterns.test('普通のテキスト')).toBe(false);
+  });
+});
+
+describe('Page Reader - Enhanced CTA Detection', () => {
+  const pageReaderSource = fs.readFileSync(
+    path.resolve(__dirname, '../lib/page-reader.ts'),
+    'utf-8'
+  );
+
+  it('detects role="button" pseudo-buttons', () => {
+    expect(pageReaderSource).toContain('role=');
+    expect(pageReaderSource).toContain('button');
+  });
+
+  it('detects input submit buttons', () => {
+    expect(pageReaderSource).toContain('submit');
+  });
+
+  it('detects image CTAs (a > img)', () => {
+    expect(pageReaderSource).toContain('画像CTA');
+  });
+
+  it('detects CTA links by href patterns', () => {
+    expect(pageReaderSource).toContain('CTA_HREF_PATTERNS');
+  });
+
+  it('detects links with btn/button CSS classes', () => {
+    expect(pageReaderSource).toContain('btn|button|cta');
+  });
+
+  it('deduplicates CTAs by text', () => {
+    expect(pageReaderSource).toContain('seenTexts');
   });
 });
 

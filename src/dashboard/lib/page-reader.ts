@@ -121,43 +121,83 @@ function extractLink(html: string, rel: string): string | null {
   return match2 ? match2[1] : null;
 }
 
+// CTA keyword patterns shared across all CTA detection methods
+const CTA_TEXT_PATTERNS = /お問い合わせ|資料請求|資料|ダウンロード|無料|申し込|購入|登録|エントリー|相談|見積|体験|トライアル|カウンセリング|予約|始める|導入|詳しく|今すぐ|特典|限定|キャンペーン|お試し|デモ|見学|参加|入会|契約|お申込|ご相談|contact|sign\s?up|free|trial|demo|buy|cart|get\s?started|subscribe|book|order|apply|request|inquiry|consultation/i;
+
+const CTA_HREF_PATTERNS = /contact|inquiry|demo|trial|signup|sign-up|register|request|download|apply|form|entry|consultation|reserve|booking/i;
+
 function extractCTAs(html: string): CTAInfo[] {
   const ctas: CTAInfo[] = [];
+  const seenTexts = new Set<string>();
 
-  // Links with button-like text
-  const linkRegex = /<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  function addCTA(text: string, href: string, index: number, tag: string) {
+    const normalized = text.toLowerCase().trim();
+    if (seenTexts.has(normalized)) return;
+    seenTexts.add(normalized);
+    ctas.push({
+      text,
+      href,
+      position: estimatePosition(html, index),
+      prominence: estimateProminence(tag),
+    });
+  }
+
   let match;
+
+  // 1. Links with CTA-like text or href
+  const linkRegex = /<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
   while ((match = linkRegex.exec(html)) !== null) {
     const href = match[1];
     const text = stripHtml(match[2]).trim();
-    if (!text || text.length > 50) continue;
+    if (!text || text.length > 80) continue;
 
-    const ctaPatterns = /お問い合わせ|資料請求|資料|ダウンロード|無料|申し込|購入|登録|エントリー|相談|見積|体験|トライアル|カウンセリング|予約|始める|導入|詳しく|今すぐ|特典|限定|キャンペーン|お試し|デモ|見学|参加|入会|契約|お申込|ご相談|contact|sign\s?up|free|trial|demo|buy|cart|get\s?started|subscribe|book|order/i;
-    if (ctaPatterns.test(text) || ctaPatterns.test(href)) {
-      ctas.push({
-        text,
-        href,
-        position: estimatePosition(html, match.index),
-        prominence: estimateProminence(match[0]),
-      });
+    // Match on text content, href path, or button-like CSS classes
+    if (
+      CTA_TEXT_PATTERNS.test(text) ||
+      CTA_HREF_PATTERNS.test(href) ||
+      /class=["'][^"']*(btn|button|cta)/i.test(match[0])
+    ) {
+      addCTA(text, href, match.index, match[0]);
     }
   }
 
-  // Buttons
+  // 2. <button> elements (all are CTAs)
   const buttonRegex = /<button[^>]*>([\s\S]*?)<\/button>/gi;
   while ((match = buttonRegex.exec(html)) !== null) {
     const text = stripHtml(match[1]).trim();
-    if (text && text.length <= 50) {
-      ctas.push({
-        text,
-        href: '',
-        position: estimatePosition(html, match.index),
-        prominence: 'primary',
-      });
+    if (text && text.length <= 80) {
+      addCTA(text, '', match.index, match[0]);
     }
   }
 
-  return ctas.slice(0, 20);
+  // 3. Elements with role="button" (pseudo-buttons: <div role="button">, <span>)
+  const roleButtonRegex = /<(?:div|span|li)[^>]*role=["']button["'][^>]*>([\s\S]*?)<\/(?:div|span|li)>/gi;
+  while ((match = roleButtonRegex.exec(html)) !== null) {
+    const text = stripHtml(match[1]).trim();
+    if (text && text.length <= 80 && CTA_TEXT_PATTERNS.test(text)) {
+      addCTA(text, '', match.index, match[0]);
+    }
+  }
+
+  // 4. Input submit buttons
+  const inputSubmitRegex = /<input[^>]*type=["']submit["'][^>]*>/gi;
+  while ((match = inputSubmitRegex.exec(html)) !== null) {
+    const valueMatch = match[0].match(/value=["']([^"']*)["']/i);
+    const text = valueMatch?.[1]?.trim() || '送信';
+    addCTA(text, '', match.index, match[0]);
+  }
+
+  // 5. Image links (a > img with alt text containing CTA keywords)
+  const imgLinkRegex = /<a[^>]*href=["']([^"']*)["'][^>]*>\s*<img[^>]*alt=["']([^"']*)["'][^>]*>\s*<\/a>/gi;
+  while ((match = imgLinkRegex.exec(html)) !== null) {
+    const href = match[1];
+    const altText = match[2].trim();
+    if (altText && (CTA_TEXT_PATTERNS.test(altText) || CTA_HREF_PATTERNS.test(href))) {
+      addCTA(`[画像CTA] ${altText}`, href, match.index, match[0]);
+    }
+  }
+
+  return ctas.slice(0, 30);
 }
 
 function estimatePosition(html: string, index: number): string {
@@ -169,8 +209,10 @@ function estimatePosition(html: string, index: number): string {
 }
 
 function estimateProminence(tag: string): 'primary' | 'secondary' | 'tertiary' {
-  if (/class=["'][^"']*(primary|main|hero|cta|btn-lg)/i.test(tag)) return 'primary';
-  if (/class=["'][^"']*(secondary|outline|ghost)/i.test(tag)) return 'secondary';
+  if (/class=["'][^"']*(primary|main|hero|cta|btn-lg|btn-primary|btn-cta|submit)/i.test(tag)) return 'primary';
+  if (/type=["']submit["']/i.test(tag)) return 'primary';
+  if (/class=["'][^"']*(secondary|outline|ghost|btn-sm|text-link)/i.test(tag)) return 'secondary';
+  if (/class=["'][^"']*(btn|button)/i.test(tag)) return 'secondary';
   return 'tertiary';
 }
 
