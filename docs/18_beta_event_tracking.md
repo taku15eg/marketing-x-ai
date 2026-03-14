@@ -139,9 +139,49 @@ Phase 0.5 βの GO/NO-GO 判定に必要な定量データを収集する。
 
 ---
 
+## β指標確認エンドポイント
+
+### GET /api/metrics
+
+βチームがファネル指標を確認するためのエンドポイント。
+
+**Response:**
+```json
+{
+  "summary": {
+    "analysis_started": 15,
+    "analysis_completed": 13,
+    "analysis_failed": 2,
+    "share_created": 5,
+    "share_opened": 3,
+    "shared_visitor_reanalyzed": 1,
+    "tab_viewed": 12,
+    "brief_viewed": 8
+  },
+  "referral": {
+    "total_shares": 5,
+    "analyses_from_referral": 1,
+    "conversion_rate": 0.2
+  },
+  "funnel": {
+    "started": 15,
+    "completed": 13,
+    "shared": 5,
+    "share_opened": 3,
+    "reanalyzed": 1
+  },
+  "generated_at": "2026-03-14T12:00:00.000Z"
+}
+```
+
+**デバッグ用**: `GET /api/metrics?raw=1` で全イベントログを含む
+
+---
+
 ## テスト
 
 | テストファイル | 内容 |
 |---|---|
-| `__tests__/event-logger.test.ts` | 全イベントタイプの記録・集計・ファネル・リファラル統計 |
-| `__tests__/tracker.test.ts` | クライアントサイド tracker の送信・dedup・エラーハンドリング |
+| `__tests__/event-logger.test.ts` | 全イベントタイプの記録・集計・ファネル・リファラル統計（14テスト） |
+| `__tests__/tracker.test.ts` | クライアントサイド tracker の送信・dedup・エラーハンドリング（6テスト） |
+| `__tests__/beta-metrics.test.ts` | ファネル統合テスト・ルート検証・計装確認（16テスト） |
