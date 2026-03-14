@@ -1,7 +1,7 @@
 # QA_REPORT.md — Publish Gate
 
 **更新日**: 2026-03-14
-**Phase**: 5
+**Phase**: 7
 
 ---
 
@@ -10,7 +10,7 @@
 ### Unit Tests (vitest)
 
 **実行日**: 2026-03-14
-**結果**: ✅ 260/260 パス（1.08s）
+**結果**: ✅ 278/278 パス（1.18s）
 
 | テストファイル | テスト数 | 結果 |
 |---------------|---------|------|
@@ -19,6 +19,7 @@
 | prompt-builder.test.ts | 28 | ✅ パス |
 | flow.test.ts | 26 | ✅ パス |
 | page-reader.test.ts | 22 | ✅ パス |
+| metrics.test.ts | 18 | ✅ パス |
 | company-research.test.ts | 20 | ✅ パス |
 | api-integration.test.ts | 17 | ✅ パス |
 | pipeline.test.ts | 16 | ✅ パス |
@@ -49,7 +50,16 @@
 
 ### Lint
 
-**結果**: 未確認
+**結果**: ✅ エラーなし（`next lint`）
+
+### CI Pipeline
+
+**結果**: ✅ `.github/workflows/ci.yml` 追加
+
+| ジョブ | 内容 | 依存 |
+|--------|------|------|
+| quality | lint + typecheck + unit tests | — |
+| e2e | Playwright E2E tests | quality |
 
 ---
 
@@ -76,6 +86,7 @@
 | パイプライン | ✅ 良 | ステップ順序・設定確認 |
 | API契約 | ✅ 良 | リクエスト/レスポンス型検証 |
 | フロー（価値導線） | ✅ 良 | URL入力→分析→共有→再閲覧 |
+| メトリクス/KPI | ✅ 良 | 全7イベント発火確認、KPI計算、バイラルファネル |
 
 ### カバーされていない領域
 
@@ -111,3 +122,5 @@
 | 3 | 218 | page-reader.test.ts 拡張 |
 | 4 | 234 | pipeline.test.ts + prompt-builder.test.ts 拡張 |
 | 5 | 260 | flow.test.ts + E2E更新 |
+| 6 | 278 | metrics.test.ts + event/metrics API |
+| 7 | 278 | CI workflow追加 |
