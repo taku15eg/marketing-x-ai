@@ -1,7 +1,7 @@
 # QA_REPORT.md — Publish Gate
 
 **更新日**: 2026-03-14
-**Phase**: 0
+**Phase**: 5
 
 ---
 
@@ -10,15 +10,18 @@
 ### Unit Tests (vitest)
 
 **実行日**: 2026-03-14
-**結果**: ✅ 174/174 パス（994ms）
+**結果**: ✅ 260/260 パス（1.08s）
 
 | テストファイル | テスト数 | 結果 |
 |---------------|---------|------|
 | security.test.ts | 65 | ✅ パス |
-| prompt-builder.test.ts | 20 | ✅ パス |
+| contract.test.ts | 30 | ✅ パス |
+| prompt-builder.test.ts | 28 | ✅ パス |
+| flow.test.ts | 26 | ✅ パス |
+| page-reader.test.ts | 22 | ✅ パス |
 | company-research.test.ts | 20 | ✅ パス |
 | api-integration.test.ts | 17 | ✅ パス |
-| page-reader.test.ts | 16 | ✅ パス |
+| pipeline.test.ts | 16 | ✅ パス |
 | rate-limiter.test.ts | 14 | ✅ パス |
 | event-logger.test.ts | 8 | ✅ パス |
 | url-cache.test.ts | 7 | ✅ パス |
@@ -30,15 +33,15 @@
 
 ### E2E Tests (Playwright)
 
-**結果**: ⚠️ 未実行
+**結果**: ⚠️ 未実行（ブラウザDL不可環境）
 
-テストファイルは存在:
-- `e2e/homepage.spec.ts`
-- `e2e/analysis-flow.spec.ts`
-- `e2e/share.spec.ts`
-- `e2e/api.spec.ts`
+テストファイル:
+- `e2e/homepage.spec.ts` — 9テスト（URL入力、バリデーション、ref追跡）
+- `e2e/analysis-flow.spec.ts` — 5テスト（ローディング、遷移、エラー、429、リトライ）
+- `e2e/share.spec.ts` — 3テスト（無効リンク、CTA表示、共有結果表示）
+- `e2e/api.spec.ts` — 9テスト（SSRF防御、CORS、share API）
 
-**ブロッカー**: Playwright未インストール。`npx playwright install` 必要。
+**ブロッカー**: Playwright chromiumダウンロード不可。CI環境で実行必要。
 
 ### Build
 
@@ -68,29 +71,43 @@
 | URLキャッシュ | ✅ 良 | 正規化・fragment除去 |
 | 企業リサーチ | ✅ 良 | HTML抽出ロジック |
 | ページリーダー | ✅ 良 | DOM抽出・CTA検出 |
-| プロンプトビルダー | ✅ 良 | 構造確認 |
+| プロンプトビルダー | ✅ 良 | JSON self-heal + fallback |
 | API統合 | ✅ 良 | エンドポイント動作確認 |
+| パイプライン | ✅ 良 | ステップ順序・設定確認 |
+| API契約 | ✅ 良 | リクエスト/レスポンス型検証 |
+| フロー（価値導線） | ✅ 良 | URL入力→分析→共有→再閲覧 |
 
 ### カバーされていない領域
 
 | 領域 | リスク | 備考 |
 |------|--------|------|
 | Claude API実呼び出し | HIGH | モック依存。実レスポンスの構造検証なし |
-| JSON逸脱時のfallback | HIGH | parseAnalysisResponseのエラーパス |
 | Screenshot API連携 | MEDIUM | 外部API依存 |
-| 拡張↔Dashboard API連携 | HIGH | 統合テストなし |
 | UIコンポーネント単体 | MEDIUM | Reactコンポーネントテストなし |
-| ブラウザE2E | HIGH | 全導線の結合テストなし |
+| ブラウザE2E | MEDIUM | テスト記述済み、Playwright実行待ち |
 | DNS rebinding防御 | MEDIUM | fetchWithSSRFProtectionの実環境テスト |
 
 ---
 
 ## 既知の問題
 
-| ID | 深刻度 | 内容 | 発見方法 |
-|----|--------|------|---------|
-| QA-001 | HIGH | 拡張→Dashboard API接続が未検証（スキーマ不一致の可能性） | コードレビュー |
-| QA-002 | MEDIUM | プログレス表示がsetTimeoutシミュレーション | コードレビュー |
-| QA-003 | MEDIUM | Claude APIレスポンスがJSON以外の場合のfallbackが不十分（throwのみ） | コードレビュー |
-| QA-004 | LOW | E2Eテスト未実行 | CI未整備 |
-| QA-005 | INFO | インメモリストアの揮発性 | 設計判断 |
+| ID | 深刻度 | 内容 | 状態 |
+|----|--------|------|------|
+| QA-001 | ~~HIGH~~ RESOLVED | 拡張→Dashboard API接続スキーマ不一致 | Phase 1で修正済み |
+| QA-002 | LOW | プログレス表示がsetTimeoutシミュレーション | 設計上許容 |
+| QA-003 | ~~HIGH~~ RESOLVED | Claude APIレスポンスがJSON以外の場合のfallback不十分 | Phase 2でself-heal実装済み |
+| QA-004 | MEDIUM | E2Eテスト未実行 | テスト記述済み、CI環境で実行必要 |
+| QA-005 | INFO | インメモリストアの揮発性 | 設計判断（MVP） |
+
+---
+
+## Phase別テスト推移
+
+| Phase | テスト数 | 新規テストファイル |
+|-------|---------|-----------------|
+| 0 | 174 | 9ファイル（初期） |
+| 1 | 204 | contract.test.ts |
+| 2 | 212 | pipeline.test.ts 拡張 |
+| 3 | 218 | page-reader.test.ts 拡張 |
+| 4 | 234 | pipeline.test.ts + prompt-builder.test.ts 拡張 |
+| 5 | 260 | flow.test.ts + E2E更新 |

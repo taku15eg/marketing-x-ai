@@ -86,6 +86,9 @@ function HomePageContent() {
       setIsLoading(false);
     } finally {
       progressTimers.forEach(clearTimeout);
+      // Ensure loading state resets if we didn't navigate away
+      // (setTimeout to avoid flash if navigation is in progress)
+      setTimeout(() => setIsLoading(false), 500);
     }
   }
 

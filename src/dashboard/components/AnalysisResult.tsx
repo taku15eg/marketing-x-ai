@@ -226,13 +226,20 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
             {result.issues.length}件の課題
           </span>
         </div>
-        <div className="space-y-3">
-          {result.issues
-            .sort((a, b) => a.priority - b.priority)
-            .map((issue) => (
-              <IssueCard key={issue.priority} issue={issue} />
-            ))}
-        </div>
+        {result.issues.length > 0 ? (
+          <div className="space-y-3">
+            {result.issues
+              .sort((a, b) => a.priority - b.priority)
+              .map((issue) => (
+                <IssueCard key={issue.priority} issue={issue} />
+              ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
+            <p className="text-green-700 font-medium">重大な課題は検出されませんでした</p>
+            <p className="text-green-600 text-sm mt-1">ページは概ね良好な状態です</p>
+          </div>
+        )}
       </div>
 
       {/* Analysis Metadata */}

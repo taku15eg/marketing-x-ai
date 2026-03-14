@@ -111,8 +111,8 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
         )}
       </button>
 
-      {/* Share URL display */}
-      {shareUrl && state === 'copied' && (
+      {/* Share URL display - persistent once generated */}
+      {shareUrl && (
         <div className="mt-2 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
           <input
             type="text"
