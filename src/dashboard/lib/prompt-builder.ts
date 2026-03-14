@@ -81,8 +81,18 @@ function buildUserContent(params: {
   const content: Array<{ type: string; [key: string]: unknown }> = [];
 
   // Text content with XML-wrapped page data
+  // Build regulatory context if flags are set
+  const regulatoryContext = params.company.regulatory_flags?.pharmaceutical_affairs_law
+    ? '\n⚠️ 薬機法対象業種です。効果効能表現・機能性表示の適正性を重点的にチェックしてください。'
+    : '';
+  const representationContext = params.company.regulatory_flags?.premiums_labeling_act
+    ? '\n⚠️ 景品表示法に注意が必要な表現が検出されました。根拠の有無を確認してください。'
+    : '';
+
   const textParts = [
     `以下のURLのLPを分析してください: ${params.url}`,
+    regulatoryContext,
+    representationContext,
     '',
     '<company_research>',
     JSON.stringify(params.company, null, 2),

@@ -5,23 +5,68 @@ import { fetchWithSSRFProtection } from './url-validator';
 import { stripHtml as sharedStripHtml, sanitizeHtml as sharedSanitizeHtml } from './html-utils';
 import type { DOMData, CTAInfo } from './types';
 
+export class ContentTypeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentTypeError';
+  }
+}
+
+export class EmptyDOMError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EmptyDOMError';
+  }
+}
+
+const ALLOWED_CONTENT_TYPES = [
+  'text/html',
+  'application/xhtml+xml',
+  'text/plain', // some servers misconfigure this for HTML
+];
+
 export async function readPage(url: string): Promise<{
   dom: DOMData;
   screenshot_base64: string | null;
   raw_html: string;
+  warnings: string[];
 }> {
   // Fetch the page HTML
   const response = await fetchWithSSRFProtection(url, { timeout: 10000, maxSize: 5 * 1024 * 1024 });
+
+  // Validate content-type: only allow HTML-like content
+  const contentType = response.headers.get('content-type') || '';
+  const mimeType = contentType.split(';')[0].trim().toLowerCase();
+  if (mimeType && !ALLOWED_CONTENT_TYPES.some(allowed => mimeType.includes(allowed))) {
+    throw new ContentTypeError(
+      `HTMLページのみ分析可能です。検出されたコンテンツタイプ: ${mimeType}`
+    );
+  }
+
+  // Check for auth-required responses
+  if (response.status === 401 || response.status === 403) {
+    throw new ContentTypeError(
+      'このページは認証が必要なため、分析できませんでした'
+    );
+  }
+
   const html = await response.text();
   const limitedHtml = html.slice(0, 50000);
+  const warnings: string[] = [];
 
   // Extract DOM data
   const dom = extractDOMData(limitedHtml, url);
 
+  // Check for empty DOM (SPA or auth wall)
+  const hasContent = dom.headings.h1.length > 0 || dom.headings.h2.length > 0 || dom.ctas.length > 0 || dom.text_content.length > 200;
+  if (!hasContent) {
+    warnings.push('ページコンテンツの取得が不十分でした。SPAや認証が必要なページの可能性があります。');
+  }
+
   // Capture screenshot via external service
   const screenshot_base64 = await captureScreenshot(url);
 
-  return { dom, screenshot_base64, raw_html: limitedHtml };
+  return { dom, screenshot_base64, raw_html: limitedHtml, warnings };
 }
 
 function extractDOMData(html: string, url: string): DOMData {

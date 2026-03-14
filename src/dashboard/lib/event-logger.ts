@@ -3,17 +3,23 @@
 //
 // Key metrics for β validation (from 09_beta_plan.md):
 // - H1: analysis_completed count, analysis_viewed_30s count
-// - H2: share_url_generated count per user
+// - H2: share_url_created count per user
 // - H3: analysis_from_referral count (viral coefficient K)
 
 export type EventType =
+  | 'url_submitted'
   | 'analysis_started'
   | 'analysis_completed'
   | 'analysis_error'
   | 'analysis_cache_hit'
-  | 'share_url_generated'
+  | 'analysis_timeout'
+  | 'analysis_empty_dom'
+  | 'brief_opened'
+  | 'share_url_created'
+  | 'share_url_opened'
   | 'share_page_viewed'
-  | 'share_cta_clicked';
+  | 'share_cta_clicked'
+  | 'return_visit';
 
 interface EventEntry {
   type: EventType;
@@ -52,7 +58,7 @@ export function getEventSummary(): Record<EventType, number> {
  * This is the viral coefficient K numerator.
  */
 export function getReferralStats(): { total_shares: number; analyses_from_referral: number; conversion_rate: number } {
-  const totalShares = events.filter(e => e.type === 'share_url_generated').length;
+  const totalShares = events.filter(e => e.type === 'share_url_created').length;
   const fromReferral = events.filter(e => e.type === 'analysis_completed' && e.data.referral_source === 'share').length;
   return {
     total_shares: totalShares,

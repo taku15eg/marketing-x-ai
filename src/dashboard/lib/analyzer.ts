@@ -3,8 +3,9 @@
 
 import { nanoid } from 'nanoid';
 import { researchCompany } from './company-research';
-import { readPage } from './page-reader';
+import { readPage, ContentTypeError } from './page-reader';
 import { analyzeWithClaude } from './prompt-builder';
+import { logEvent } from './event-logger';
 import type { AnalysisResult, AnalyzeResponse, AnalysisProgress } from './types';
 
 export type ProgressCallback = (progress: AnalysisProgress) => void;
@@ -35,7 +36,12 @@ export async function runAnalysis(
       message: 'ページを読み取り中...',
     });
 
-    const { dom, screenshot_base64 } = await readPage(url);
+    const { dom, screenshot_base64, warnings } = await readPage(url);
+
+    // Log empty DOM warning if applicable
+    if (warnings.length > 0) {
+      logEvent('analysis_empty_dom', { url, warnings: warnings.join('; ') });
+    }
 
     // Step 3: Diagnosis
     onProgress?.({
@@ -63,6 +69,14 @@ export async function runAnalysis(
     // Update metadata
     result.metadata.analysis_duration_ms = Date.now() - startTime;
     result.metadata.vision_used = screenshot_base64 !== null;
+    if (warnings.length > 0) {
+      result.metadata.warnings = warnings;
+    }
+
+    // Set regulatory hold flag if company research detected high-risk industry
+    if (company.regulatory_flags?.pharmaceutical_affairs_law) {
+      result.metadata.regulatory_hold = true;
+    }
 
     return {
       id,
@@ -72,6 +86,11 @@ export async function runAnalysis(
       created_at: new Date().toISOString(),
     };
   } catch (error) {
+    // Re-throw ContentTypeError so the API route can return 400 instead of 500
+    if (error instanceof ContentTypeError) {
+      throw error;
+    }
+
     return {
       id,
       url,

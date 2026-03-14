@@ -145,6 +145,7 @@ export async function POST(request: NextRequest) {
     // This avoids redundant Claude API calls, reducing cost significantly.
     // Cache hit does NOT consume monthly rate limit.
     const referralSource = ref === 'share' ? 'share' : 'direct';
+    logEvent('url_submitted', { url: validation.sanitized_url!, referral_source: referralSource });
     logEvent('analysis_started', { url: validation.sanitized_url!, referral_source: referralSource });
 
     const cached = getCachedAnalysisByUrl(validation.sanitized_url!);
@@ -185,6 +186,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[/api/analyze] Unhandled error:', error);
+
+    // ContentTypeError or SSRFError → 400 (client error, not server error)
+    const isClientError = error instanceof Error &&
+      (error.name === 'ContentTypeError' || error.name === 'SSRFError');
+
     return NextResponse.json(
       {
         error:
@@ -192,7 +198,7 @@ export async function POST(request: NextRequest) {
             ? error.message
             : '分析中に予期せぬエラーが発生しました',
       },
-      { status: 500, headers: CORS_HEADERS }
+      { status: isClientError ? 400 : 500, headers: CORS_HEADERS }
     );
   }
 }

@@ -36,11 +36,11 @@ describe('Event Logger', () => {
   });
 
   it('getEventSummary returns counts for all logged event types', () => {
-    logEvent('share_url_generated', { analysis_id: 'abc' });
+    logEvent('share_url_created', { analysis_id: 'abc' });
     logEvent('share_page_viewed', { share_id: 'xyz' });
 
     const summary = getEventSummary();
-    expect(summary.share_url_generated).toBeGreaterThanOrEqual(1);
+    expect(summary.share_url_created).toBeGreaterThanOrEqual(1);
     expect(summary.share_page_viewed).toBeGreaterThanOrEqual(1);
   });
 
@@ -70,7 +70,7 @@ describe('Referral Stats', () => {
     const before = getReferralStats();
 
     // Simulate viral flow: user shares → new user analyzes from share link
-    logEvent('share_url_generated', { analysis_id: 'ref-test-1' });
+    logEvent('share_url_created', { analysis_id: 'ref-test-1' });
     logEvent('analysis_completed', { url: 'https://new.com', referral_source: 'share' });
 
     const after = getReferralStats();

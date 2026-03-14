@@ -98,6 +98,8 @@ export interface AnalysisMetadata {
   model_used: string;
   vision_used: boolean;
   dom_extracted: boolean;
+  warnings?: string[];
+  regulatory_hold?: boolean;
 }
 
 // === Share ===
@@ -118,6 +120,21 @@ export interface CompanyResearchResult {
   key_vocabulary: string[];
   credentials: string[];
   case_studies: { title: string; summary: string }[];
+  industry_category: IndustryCategory;
+  regulatory_flags: RegulatoryFlags;
+  business_model_hint: string;
+}
+
+export interface IndustryCategory {
+  primary: string;
+  secondary: string | null;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface RegulatoryFlags {
+  pharmaceutical_affairs_law: boolean;
+  premiums_labeling_act: boolean;
+  flagged_categories: string[];
 }
 
 export interface PageReadingInput {
