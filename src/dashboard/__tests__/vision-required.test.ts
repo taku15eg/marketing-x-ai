@@ -159,3 +159,28 @@ describe('Vision Required - Chrome Extension Retry', () => {
     expect(swSource).toContain('Screenshot attempt');
   });
 });
+
+describe('Vision Required - Parallel Fetch Optimization', () => {
+  const pageReaderSource = fs.readFileSync(
+    path.resolve(__dirname, '../lib/page-reader.ts'),
+    'utf-8'
+  );
+
+  it('runs HTML fetch and screenshot capture in parallel', () => {
+    expect(pageReaderSource).toContain('Promise.all');
+    expect(pageReaderSource).toContain('fetchWithSSRFProtection');
+    expect(pageReaderSource).toContain('captureScreenshotWithRetry');
+  });
+});
+
+describe('Vision Required - Cache Skips Low-Confidence Results', () => {
+  const analyzerSource = fs.readFileSync(
+    path.resolve(__dirname, '../lib/analyzer.ts'),
+    'utf-8'
+  );
+
+  it('only caches results where vision was successfully used', () => {
+    expect(analyzerSource).toContain('visionUsed');
+    expect(analyzerSource).toContain("response.status === 'completed' && visionUsed");
+  });
+});

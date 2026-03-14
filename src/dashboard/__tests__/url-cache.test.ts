@@ -47,8 +47,8 @@ function makeMockResponse(id: string, url: string): AnalyzeResponse {
         analyzed_at: new Date().toISOString(),
         analysis_duration_ms: 3000,
         model_used: 'claude-sonnet-4-6',
-        vision_used: false,
-        vision_status: 'failed',
+        vision_used: true,
+        vision_status: 'used',
         dom_extracted: true,
       },
     },
@@ -104,6 +104,18 @@ describe('URL Cache', () => {
     const cached = getCachedAnalysisByUrl(url + '#section1');
     expect(cached).toBeDefined();
     expect(cached?.id).toBe('fragment-1');
+  });
+
+  it('does not cache vision-failed analyses by URL', () => {
+    const url = 'https://no-vision-' + Date.now() + '.com';
+    const mock = makeMockResponse('no-vision-1', url);
+    mock.result!.metadata.vision_used = false;
+    mock.result!.metadata.vision_status = 'failed';
+    storeAnalysis(mock);
+
+    // Should NOT be in URL cache (forces re-analysis with vision)
+    const cached = getCachedAnalysisByUrl(url);
+    expect(cached).toBeUndefined();
   });
 
   it('does not cache error status analyses', () => {

@@ -160,8 +160,9 @@ export function storeAnalysis(response: AnalyzeResponse): void {
   }
   analysisStore.set(response.id, { ...response, _stored_at: Date.now() });
 
-  // Index by URL for cache hits
-  if (response.url && response.status === 'completed') {
+  // Index by URL for cache hits (only cache vision-successful results)
+  const visionUsed = response.result?.metadata?.vision_used ?? false;
+  if (response.url && response.status === 'completed' && visionUsed) {
     const cacheKey = normalizeUrlForCache(response.url);
     urlCacheStore.set(cacheKey, { analysis_id: response.id, _stored_at: Date.now() });
   }

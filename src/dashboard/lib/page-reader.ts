@@ -16,16 +16,15 @@ export async function readPage(url: string): Promise<{
   vision_status: VisionStatus;
   raw_html: string;
 }> {
-  // Fetch the page HTML
-  const response = await fetchWithSSRFProtection(url, { timeout: 10000, maxSize: 5 * 1024 * 1024 });
-  const html = await response.text();
+  // Fetch HTML and capture screenshot in parallel to reduce latency
+  const [htmlResponse, screenshot] = await Promise.all([
+    fetchWithSSRFProtection(url, { timeout: 10000, maxSize: 5 * 1024 * 1024 }),
+    captureScreenshotWithRetry(url),
+  ]);
+
+  const html = await htmlResponse.text();
   const limitedHtml = html.slice(0, 50000);
-
-  // Extract DOM data
   const dom = extractDOMData(limitedHtml, url);
-
-  // Capture screenshot via external service (with retry)
-  const screenshot = await captureScreenshotWithRetry(url);
 
   return { dom, screenshot_base64: screenshot.base64, vision_status: screenshot.vision_status, raw_html: limitedHtml };
 }
