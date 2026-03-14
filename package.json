@@ -4,8 +4,16 @@
   "description": "ページを開くだけで、改善の判断が前に進む",
   "private": true,
   "scripts": {
-    "deploy:proxy": "cd src/proxy && npx wrangler deploy",
-    "dev:proxy": "cd src/proxy && npx wrangler dev"
+    "dev": "cd src/dashboard && npm run dev",
+    "build": "cd src/dashboard && npm run build",
+    "start": "cd src/dashboard && npm run start",
+    "lint": "cd src/dashboard && npm run lint",
+    "test": "cd src/dashboard && npm run test",
+    "test:watch": "cd src/dashboard && npm run test:watch",
+    "test:e2e": "cd src/dashboard && npm run test:e2e",
+    "setup": "cd src/dashboard && npm install",
+    "dev:proxy": "cd src/proxy && npx wrangler dev",
+    "deploy:proxy": "cd src/proxy && npx wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"
