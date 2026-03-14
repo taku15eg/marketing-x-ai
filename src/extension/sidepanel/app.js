@@ -10,7 +10,7 @@
  *     improvement_potential: "+XX%",
  *     issues: [{ priority, title, diagnosis, impact, handoff_to, brief, evidence }],
  *     regulatory?: { yakujiho_risks, keihinhyoujiho_risks },
- *     metadata: { analyzed_at, analysis_duration_ms, vision_used, dom_extracted }
+ *     metadata: { analyzed_at, analysis_duration_ms, vision_used, vision_status, dom_extracted }
  *   }
  * }
  */
@@ -188,6 +188,19 @@ function renderResults(data, url) {
   html += '<p class="results-url">' + escHtml(url) + '</p>';
   html += '</div>';
 
+  // Vision unavailable warning
+  var visionUsed = result.metadata && result.metadata.vision_used;
+  if (!visionUsed) {
+    html += '<div class="vision-warning" role="alert">';
+    html += '<div class="vision-warning-title">&#9888; 低信頼モード（Vision分析なし）</div>';
+    html += '<div class="vision-warning-text">';
+    html += 'スクリーンショットの取得に失敗したため、DOM情報のみで分析しています。';
+    html += '日本のLPは画像ベースの構成が多く、視覚的なレイアウト・配色・画像内テキストの分析が含まれていません。';
+    html += '結果の精度が通常より低い可能性があります。';
+    html += '</div>';
+    html += '</div>';
+  }
+
   // Improvement Potential
   if (result.improvement_potential) {
     html += '<div class="improvement-potential">';
@@ -272,6 +285,8 @@ function renderResults(data, url) {
     }
     if (meta.vision_used) {
       html += '<div><span class="badge badge-high" style="font-size:10px;padding:1px 6px">Vision API使用</span></div>';
+    } else {
+      html += '<div><span class="badge badge-medium" style="font-size:10px;padding:1px 6px">Vision未使用（低信頼）</span></div>';
     }
     html += '</div>';
   }

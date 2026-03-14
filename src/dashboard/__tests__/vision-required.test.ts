@@ -160,6 +160,41 @@ describe('Vision Required - Chrome Extension Retry', () => {
   });
 });
 
+describe('Vision Required - Chrome Extension UI Warning', () => {
+  const appSource = fs.readFileSync(
+    path.resolve(__dirname, '../../extension/sidepanel/app.js'),
+    'utf-8'
+  );
+  const cssSource = fs.readFileSync(
+    path.resolve(__dirname, '../../extension/sidepanel/styles.css'),
+    'utf-8'
+  );
+
+  it('shows low-confidence warning banner when vision is not used', () => {
+    expect(appSource).toContain('vision-warning');
+    expect(appSource).toContain('低信頼モード');
+    expect(appSource).toContain('Vision分析なし');
+  });
+
+  it('checks vision_used from metadata', () => {
+    expect(appSource).toContain('metadata.vision_used');
+  });
+
+  it('shows Vision未使用 badge when vision is not used', () => {
+    expect(appSource).toContain('Vision未使用（低信頼）');
+  });
+
+  it('uses role="alert" for accessibility', () => {
+    expect(appSource).toContain('role="alert"');
+  });
+
+  it('has CSS styles for vision warning', () => {
+    expect(cssSource).toContain('.vision-warning');
+    expect(cssSource).toContain('.vision-warning-title');
+    expect(cssSource).toContain('.vision-warning-text');
+  });
+});
+
 describe('Vision Required - Parallel Fetch Optimization', () => {
   const pageReaderSource = fs.readFileSync(
     path.resolve(__dirname, '../lib/page-reader.ts'),
