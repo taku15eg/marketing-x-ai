@@ -2,7 +2,7 @@
 
 > **バックログ**: B-101
 > **目的**: 20サイトの実サイト検証を通じて、分析パイプラインの精度を計測し、合格基準を満たすか判定する
-> **ステータス**: 計画確定・検証実行待ち
+> **ステータス**: URL確定済み・検証実行準備中
 
 ---
 
@@ -51,8 +51,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 中小SaaS企業のLP。機能列挙型で「何が嬉しいか」が弱いもの |
 | 選定メモ（難しめ b枠） | 大手 or 成熟SaaSでFVはそこそこ整っている。改善余地が微妙なもの |
 
-- **S01-a URL**: （ここに記入）
-- **S01-b URL**: （ここに記入）
+- **S01-a URL**: https://www.helpfeel.com/
+- **S01-b URL**: https://tebiki.jp/
 
 ---
 
@@ -73,8 +73,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 - 栄養機能食品/機能性表示食品の許可表現 → 偽陽性にしない
 - Before/After写真 + 効果を暗示するキャプション → 検知すべき
 
-- **S02-a URL**: （ここに記入）
-- **S02-b URL**: （ここに記入）
+- **S02-a URL**: https://www.fancl.co.jp/healthy/enkin/index.html
+- **S02-b URL**: https://www.suntory-kenko.com/supplement/43322/
 
 ---
 
@@ -89,8 +89,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 中小制作会社。「お客様に寄り添う」系の抽象コピー。実績が少ない |
 | 選定メモ（難しめ b枠） | それなりに実績はあるが見せ方が弱い。課題が「構造」よりも「見せ方」にある |
 
-- **S03-a URL**: （ここに記入）
-- **S03-b URL**: （ここに記入）
+- **S03-a URL**: https://solution.toppan.co.jp/bx/service/btob_marketing.html
+- **S03-b URL**: https://www.leading-solutions.co.jp/
 
 ---
 
@@ -105,8 +105,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 中小企業の採用LP。「やりがい」「成長」等の抽象ワード中心 |
 | 選定メモ（難しめ b枠） | 大手 or ベンチャーで採用ブランディングが一定あるが、具体性にムラがある |
 
-- **S04-a URL**: （ここに記入）
-- **S04-b URL**: （ここに記入）
+- **S04-a URL**: https://hajimari.inc/recruit
+- **S04-b URL**: https://special.dmm.com/recruit-comic-editor/
 
 ---
 
@@ -121,8 +121,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 3-4プランが横並びだが差が分かりにくい。推奨プランの強調が弱い |
 | 選定メモ（難しめ b枠） | プラン設計自体はよいが、CTAの配置やFAQの構成に改善余地がある |
 
-- **S05-a URL**: （ここに記入）
-- **S05-b URL**: （ここに記入）
+- **S05-a URL**: https://smarthr.jp/pricing/
+- **S05-b URL**: https://biz.moneyforward.com/price
 
 ---
 
@@ -137,8 +137,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 典型的な製造業コーポレートサイト。情報が散在してどこを見ればいいか不明 |
 | 選定メモ（難しめ b枠） | BtoB企業でデザインはモダンだが、ターゲット別導線が弱い |
 
-- **S06-a URL**: （ここに記入）
-- **S06-b URL**: （ここに記入）
+- **S06-a URL**: https://www.misumi.co.jp/
+- **S06-b URL**: https://jp.corp-sansan.com/
 
 ---
 
@@ -160,8 +160,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 - 「※個人の感想です」で効果効能を暗示する口コミ → 検知すべき
 - 化粧品の効能効果56項目の範囲内表現 → 偽陽性にしない
 
-- **S07-a URL**: （ここに記入）
-- **S07-b URL**: （ここに記入）
+- **S07-a URL**: https://www.pola.co.jp/index.html
+- **S07-b URL**: https://www.orbis.co.jp/mid/163/
 
 ---
 
@@ -176,8 +176,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 | 選定メモ（典型例 a枠） | 国内有名SaaSのLP。プロが作った高品質ページ |
 | 選定メモ（難しめ b枠） | 海外SaaSの日本語LP。品質は高いが日本市場特有の改善余地がわずかにある |
 
-- **S08-a URL**: （ここに記入）
-- **S08-b URL**: （ここに記入）
+- **S08-a URL**: https://bakuraku.jp/
+- **S08-b URL**: https://www.kaonavi.jp/price/
 
 ---
 
@@ -198,8 +198,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 - 「今だけ半額」→ 二重価格表示の根拠（通常販売実績）が必要。検知すべき
 - 卒業生の声で年収UPを暗示 → 「※個人の成果です」があっても全体の印象として検知すべき
 
-- **S09-a URL**: （ここに記入）
-- **S09-b URL**: （ここに記入）
+- **S09-a URL**: https://codecamp.jp/
+- **S09-b URL**: https://techacademy.jp/
 
 ---
 
@@ -221,8 +221,8 @@ TEST-SCENARIOS.json の10パターンを基盤に、各パターンにつき実�
 - シミュレーション数値の前提条件が不明瞭 → 検知すべき
 - 過去実績の注記（※将来の成果を保証するものではありません）があれば偽陽性にしない
 
-- **S10-a URL**: （ここに記入）
-- **S10-b URL**: （ここに記入）
+- **S10-a URL**: https://www.renosy.com/
+- **S10-b URL**: https://www.ownersbook.jp/
 
 ### 2-3. サイト選定の制約
 
