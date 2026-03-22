@@ -17,10 +17,19 @@ export interface AnalyzeResponse {
 
 // === 4-Step Analysis Pipeline Output ===
 
+export interface StrategicCommand {
+  primary_order: string;
+  reason: string;
+  do_not_touch: { issue: string; reason: string }[];
+  success_condition: string;
+  time_box: string;
+}
+
 export interface AnalysisResult {
   company_understanding: CompanyUnderstanding;
   page_reading: PageReading;
   improvement_potential: string;
+  command: StrategicCommand;
   issues: Issue[];
   regulatory?: RegulatoryCheck;
   metadata: AnalysisMetadata;

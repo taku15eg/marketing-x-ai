@@ -94,6 +94,36 @@ describe('Prompt Builder - Claude API Configuration', () => {
   });
 });
 
+describe('Prompt Builder - Strategic Command (軍令)', () => {
+  it('includes command generation instruction in system prompt', () => {
+    expect(source).toContain('今やるべき1手');
+    expect(source).toContain('primary_order');
+  });
+
+  it('requires do_not_touch field for explicit exclusion', () => {
+    expect(source).toContain('do_not_touch');
+    expect(source).toContain('今やるべきでない');
+  });
+
+  it('enforces single primary order constraint', () => {
+    expect(source).toContain('commandのprimary_orderは必ず1つに絞れ');
+  });
+
+  it('includes success condition and time box in command schema', () => {
+    expect(source).toContain('success_condition');
+    expect(source).toContain('time_box');
+  });
+
+  it('includes normalizeCommand function for safe parsing', () => {
+    expect(source).toContain('normalizeCommand');
+  });
+
+  it('prioritizes speed over perfection (拙速)', () => {
+    expect(source).toContain('拙速');
+    expect(source).toContain('完璧より速度を優先');
+  });
+});
+
 describe('Prompt Builder - Response Parsing', () => {
   it('handles markdown code block wrapped JSON', () => {
     // The parser extracts JSON from ```json ... ``` blocks

@@ -93,6 +93,63 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
         </div>
       </div>
 
+      {/* Strategic Command */}
+      {result.command && result.command.primary_order && (
+        <div className="bg-white border-2 border-[#1B3A5C] rounded-xl overflow-hidden">
+          <div className="bg-[#1B3A5C] px-5 py-3 flex items-center gap-2">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <h3 className="text-base font-bold text-white">
+              今やるべき1手
+            </h3>
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <p className="text-lg font-bold text-gray-900">{result.command.primary_order}</p>
+              <p className="text-sm text-gray-600 mt-1">{result.command.reason}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {result.command.time_box && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 rounded-lg">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium text-blue-700">{result.command.time_box}</span>
+                </div>
+              )}
+              {result.command.success_condition && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 rounded-lg">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-green-700">{result.command.success_condition}</span>
+                </div>
+              )}
+            </div>
+            {result.command.do_not_touch.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs font-bold text-gray-500 mb-2">今はやらなくていい</p>
+                <div className="space-y-1.5">
+                  {result.command.do_not_touch.map((item, index) => (
+                    <div key={index} className="flex items-start gap-2 text-sm text-gray-500">
+                      <span className="text-gray-300 mt-0.5">-</span>
+                      <div>
+                        <span className="line-through">{item.issue}</span>
+                        <span className="text-xs text-gray-400 ml-2">{item.reason}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Company Understanding */}
