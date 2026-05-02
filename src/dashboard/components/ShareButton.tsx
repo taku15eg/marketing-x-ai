@@ -74,7 +74,7 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
               ? 'bg-red-50 text-red-700 border border-red-200'
               : state === 'loading'
                 ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                : 'bg-white text-[#1B3A5C] border border-[#1B3A5C]/30 hover:bg-[#1B3A5C]/5 hover:border-[#1B3A5C]/50 cursor-pointer'
+                : 'bg-white text-[#2563EB] border border-[#2563EB]/30 hover:bg-[#2563EB]/5 hover:border-[#2563EB]/50 cursor-pointer'
           }
         `}
       >
@@ -127,7 +127,7 @@ export default function ShareButton({ analysisId }: ShareButtonProps) {
               setState('copied');
               setTimeout(() => setState('idle'), 2000);
             }}
-            className="text-[#1B3A5C] hover:text-[#152e4a] cursor-pointer"
+            className="text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer"
             aria-label="URLをコピー"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

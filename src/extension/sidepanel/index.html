@@ -17,75 +17,96 @@
         <span class="header-logo">PG</span>
         <span class="header-title">Publish Gate</span>
       </div>
-      <span class="header-version">v0.5</span>
+      <span class="header-version">v4.0</span>
     </header>
 
-    <!-- Screen: Input (default) -->
-    <section id="screen-input" class="screen active">
-      <div class="screen-body">
-        <div class="input-section">
-          <label class="input-label" for="urlInput">分析するページのURL</label>
-          <input
-            type="url"
-            id="urlInput"
-            class="url-input"
-            placeholder="https://example.com"
-            readonly
-          >
-          <p class="input-hint">現在開いているタブのURLが自動で入力されます</p>
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="analysis">分析</button>
+      <button class="tab-btn" data-tab="experiment">実験ノート</button>
+    </nav>
+
+    <!-- Tab: Analysis -->
+    <div id="tab-analysis" class="tab-content active">
+      <!-- Screen: Input (default) -->
+      <section id="screen-input" class="screen active">
+        <div class="screen-body">
+          <div class="input-section">
+            <label class="input-label" for="urlInput">分析するページのURL</label>
+            <input
+              type="url"
+              id="urlInput"
+              class="url-input"
+              placeholder="https://example.com"
+              readonly
+            >
+            <p class="input-hint">現在開いているタブのURLが自動で入力されます</p>
+          </div>
+
+          <button class="btn btn-primary btn-lg w-full" id="analyzeBtn">
+            分析開始
+          </button>
         </div>
+      </section>
 
-        <button class="btn btn-primary btn-lg w-full" id="analyzeBtn">
-          分析開始
-        </button>
-      </div>
-    </section>
+      <!-- Screen: Loading -->
+      <section id="screen-loading" class="screen">
+        <div class="screen-body center-content">
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
 
-    <!-- Screen: Loading -->
-    <section id="screen-loading" class="screen">
+          <div class="loading-steps" id="loadingSteps">
+            <div class="loading-step" data-step="1">
+              <span class="step-icon">&#9675;</span>
+              <span class="step-text">企業情報を調査中...</span>
+            </div>
+            <div class="loading-step" data-step="2">
+              <span class="step-icon">&#9675;</span>
+              <span class="step-text">ページを読み取り中...</span>
+            </div>
+            <div class="loading-step" data-step="3">
+              <span class="step-icon">&#9675;</span>
+              <span class="step-text">AIが診断中...</span>
+            </div>
+            <div class="loading-step" data-step="4">
+              <span class="step-icon">&#9675;</span>
+              <span class="step-text">依頼パックを生成中...</span>
+            </div>
+          </div>
+
+          <button class="btn-text" id="cancelBtn">キャンセル</button>
+        </div>
+      </section>
+
+      <!-- Screen: Results -->
+      <section id="screen-results" class="screen">
+        <div class="screen-body">
+          <div id="resultsContent"></div>
+        </div>
+      </section>
+
+      <!-- Screen: Error -->
+      <section id="screen-error" class="screen">
+        <div class="screen-body center-content">
+          <div class="error-icon">!</div>
+          <p class="error-message" id="errorMessage">エラーが発生しました</p>
+          <button class="btn btn-outline" id="retryBtn">もう一度試す</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tab: Experiment Notes -->
+    <div id="tab-experiment" class="tab-content">
       <div class="screen-body center-content">
-        <div class="progress-container">
-          <div class="progress-bar" id="progressBar"></div>
+        <div class="experiment-placeholder">
+          <div style="font-size:32px;margin-bottom:12px">📓</div>
+          <p class="experiment-title">実験ノート</p>
+          <p class="experiment-desc">施策のBefore/After・数値変化を記録。<br>蓄積するほどAIの提案精度が向上します。</p>
+          <p class="experiment-hint">分析を実行して施策を記録してください</p>
         </div>
-
-        <div class="loading-steps" id="loadingSteps">
-          <div class="loading-step" data-step="1">
-            <span class="step-icon">&#9675;</span>
-            <span class="step-text">ページのスクリーンショットを取得中...</span>
-          </div>
-          <div class="loading-step" data-step="2">
-            <span class="step-icon">&#9675;</span>
-            <span class="step-text">ページ構造を抽出中...</span>
-          </div>
-          <div class="loading-step" data-step="3">
-            <span class="step-icon">&#9675;</span>
-            <span class="step-text">AIが分析中...</span>
-          </div>
-          <div class="loading-step" data-step="4">
-            <span class="step-icon">&#9675;</span>
-            <span class="step-text">結果を整理中...</span>
-          </div>
-        </div>
-
-        <button class="btn-text" id="cancelBtn">キャンセル</button>
       </div>
-    </section>
-
-    <!-- Screen: Results -->
-    <section id="screen-results" class="screen">
-      <div class="screen-body">
-        <div id="resultsContent"></div>
-      </div>
-    </section>
-
-    <!-- Screen: Error -->
-    <section id="screen-error" class="screen">
-      <div class="screen-body center-content">
-        <div class="error-icon">!</div>
-        <p class="error-message" id="errorMessage">エラーが発生しました</p>
-        <button class="btn btn-outline" id="retryBtn">もう一度試す</button>
-      </div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">

@@ -1,7 +1,7 @@
 'use client';
 
 import type { AnalysisResult as AnalysisResultType, RegulatoryRisk } from '../lib/types';
-import IssueCard from './IssueCard';
+import ProposalCard from './ProposalCard';
 import PoweredByBadge from './PoweredByBadge';
 
 interface AnalysisResultProps {
@@ -60,7 +60,7 @@ function SummaryCard({
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-[#1B3A5C]/10 flex items-center justify-center text-[#1B3A5C]">
+        <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB]">
           {icon}
         </div>
         <h3 className="text-sm font-bold text-gray-900">{title}</h3>
@@ -80,16 +80,13 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
-      {/* Improvement Potential Banner */}
-      <div className="bg-gradient-to-r from-[#1B3A5C] to-[#2a5a8c] rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold">改善ポテンシャル</h2>
-            <p className="text-white/80 text-sm mt-1">
-              分析に基づく推定改善幅
-            </p>
-          </div>
-          <div className="text-4xl font-bold">{result.improvement_potential}</div>
+      {/* Insight Banner */}
+      <div className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] rounded-xl p-6 text-white">
+        <div>
+          <h2 className="text-lg font-bold mb-2">インサイト</h2>
+          <p className="text-white/90 text-sm leading-relaxed">
+            {result.insight}
+          </p>
         </div>
       </div>
 
@@ -138,6 +135,14 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
               <span className="text-xs">{result.page_reading.fv_main_copy}</span>
             </div>
             <div>
+              <span className="text-xs text-gray-500">主CTA: </span>
+              <span className="text-xs font-medium">{result.page_reading.primary_cta}</span>
+            </div>
+            <div>
+              <span className="text-xs text-gray-500">ターゲット: </span>
+              <span className="text-xs">{result.page_reading.target_audience}</span>
+            </div>
+            <div>
               <span className="text-xs text-gray-500">信頼性: </span>
               <span className={`
                 text-xs font-medium px-1.5 py-0.5 rounded
@@ -154,9 +159,9 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
           </div>
         </SummaryCard>
 
-        {/* Content Structure */}
+        {/* Evidence Data */}
         <SummaryCard
-          title="コンテンツ構造"
+          title="ページ内の実績データ"
           icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -164,7 +169,17 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
             </svg>
           }
         >
-          <p>{result.page_reading.content_structure}</p>
+          {result.page_reading.evidence_data && result.page_reading.evidence_data.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {result.page_reading.evidence_data.map((data, i) => (
+                <span key={i} className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
+                  {data}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">実績データなし</p>
+          )}
           <div className="mt-3">
             <span className="text-xs text-gray-500">CTA数: </span>
             <span className="text-xs font-medium">{result.page_reading.cta_map.length}</span>
@@ -216,21 +231,21 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
         </div>
       )}
 
-      {/* Issues List */}
+      {/* Proposals List */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">
-            改善課題
+            改善提案
           </h2>
           <span className="text-sm text-gray-500">
-            {result.issues.length}件の課題
+            {result.proposals.length}件の提案
           </span>
         </div>
         <div className="space-y-3">
-          {result.issues
-            .sort((a, b) => a.priority - b.priority)
-            .map((issue) => (
-              <IssueCard key={issue.priority} issue={issue} />
+          {result.proposals
+            .sort((a, b) => a.id - b.id)
+            .map((proposal) => (
+              <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
         </div>
       </div>

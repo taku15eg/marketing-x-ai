@@ -55,13 +55,13 @@ describe('POST /api/analyze - Request Validation', () => {
     expect(routeSource).toContain('status: 429');
   });
 
-  it('route applies monthly free-tier rate limit', () => {
+  it('route applies daily free-tier rate limit', () => {
     const routeSource = fs.readFileSync(
       path.resolve(__dirname, '../app/api/analyze/route.ts'),
       'utf-8'
     );
-    expect(routeSource).toContain('RATE_LIMITS.free_monthly');
-    expect(routeSource).toContain('月間の無料分析回数');
+    expect(routeSource).toContain('RATE_LIMITS.free_daily');
+    expect(routeSource).toContain('本日の無料分析回数');
   });
 
   it('route includes Retry-After header on 429', () => {
@@ -201,11 +201,15 @@ describe('API Integration - Analysis Store Flow', () => {
           trust_elements: '',
           content_structure: '',
           confidence: 'high',
+          primary_cta: '',
+          primary_cv: '',
+          target_audience: '',
+          evidence_data: [],
           screenshot_insights: '',
           dom_insights: '',
         },
-        improvement_potential: '+10%',
-        issues: [],
+        insight: 'Integration test insight',
+        proposals: [],
         metadata: {
           analyzed_at: new Date().toISOString(),
           analysis_duration_ms: 3000,
@@ -229,7 +233,7 @@ describe('API Integration - Analysis Store Flow', () => {
     const shared = getShareAnalysis(shareId);
     expect(shared).toBeDefined();
     expect(shared?.url).toBe('https://example.com/lp');
-    expect(shared?.result?.issues).toHaveLength(0);
+    expect(shared?.result?.proposals).toHaveLength(0);
   });
 
   it('handles error status in analysis results', () => {

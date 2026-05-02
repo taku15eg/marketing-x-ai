@@ -556,6 +556,48 @@ describe('SEC-17: CORS Configuration', () => {
 });
 
 // ---------------------------------------------------------------------------
+// SEC-18: PII Auto-Masking
+// ---------------------------------------------------------------------------
+describe('SEC-18: PII Auto-Masking', () => {
+  it('masks email addresses', async () => {
+    const { maskPII } = await import('../lib/html-utils');
+    const text = 'お問い合わせ: support@example.com まで';
+    expect(maskPII(text)).toBe('お問い合わせ: [EMAIL] まで');
+  });
+
+  it('masks Japanese phone numbers', async () => {
+    const { maskPII } = await import('../lib/html-utils');
+    expect(maskPII('電話: 03-1234-5678')).toContain('[PHONE]');
+    expect(maskPII('携帯: 090-1234-5678')).toContain('[PHONE]');
+    expect(maskPII('フリーダイヤル: 0120-123-456')).toContain('[PHONE]');
+  });
+
+  it('masks postal codes', async () => {
+    const { maskPII } = await import('../lib/html-utils');
+    expect(maskPII('〒123-4567')).toContain('[POSTAL]');
+    expect(maskPII('123-4567 東京都')).toContain('[POSTAL]');
+  });
+
+  it('masks credit card-like numbers', async () => {
+    const { maskPII } = await import('../lib/html-utils');
+    expect(maskPII('カード: 4111-1111-1111-1111')).toContain('[CARD]');
+    expect(maskPII('カード: 4111 1111 1111 1111')).toContain('[CARD]');
+  });
+
+  it('preserves non-PII text', async () => {
+    const { maskPII } = await import('../lib/html-utils');
+    const text = '導入企業3000社以上の実績があります。';
+    expect(maskPII(text)).toBe(text);
+  });
+
+  it('prompt-builder uses maskPII for text content', () => {
+    const source = readLib('prompt-builder.ts');
+    expect(source).toContain("import { maskPII }");
+    expect(source).toContain("maskPII(");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

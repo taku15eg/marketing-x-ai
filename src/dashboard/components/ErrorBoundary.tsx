@@ -54,7 +54,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               </button>
               <Link
                 href="/"
-                className="rounded-lg bg-[#1B3A5C] px-5 py-2 text-sm font-medium text-white hover:bg-[#2A5580]"
+                className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8]"
               >
                 トップに戻る
               </Link>

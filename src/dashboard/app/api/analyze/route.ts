@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     if (!monthlyLimit.allowed) {
       return NextResponse.json(
         {
-          error: '月間の無料分析回数（5回）に達しました。',
+          error: '今月の無料分析回数（5回）に達しました。Starterプラン（¥4,980/月）で月30回まで利用できます。',
           reset_at: new Date(monthlyLimit.reset_at).toISOString(),
         },
         {

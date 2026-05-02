@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import TabNavigation from '@/components/TabNavigation';
 import AnalysisResult from '@/components/AnalysisResult';
+import ExperimentLogList from '@/components/ExperimentLogList';
 import ShareButton from '@/components/ShareButton';
 import type { AnalyzeResponse } from '@/lib/types';
 
@@ -14,6 +15,7 @@ export default function AnalysisPage() {
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
     async function fetchAnalysis() {
@@ -54,7 +56,7 @@ export default function AnalysisPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="flex items-center justify-center py-24" role="status" aria-busy="true">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1B3A5C] border-t-transparent" aria-hidden="true" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2563EB] border-t-transparent" aria-hidden="true" />
           <span className="ml-3 text-[#64748B]">読み込み中...</span>
         </div>
       </div>
@@ -66,7 +68,7 @@ export default function AnalysisPage() {
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
           <p className="text-red-700 mb-4">{error || '分析結果が見つかりません'}</p>
-          <Link href="/" className="text-[#1B3A5C] underline hover:no-underline">
+          <Link href="/" className="text-[#2563EB] underline hover:no-underline">
             トップに戻って再分析
           </Link>
         </div>
@@ -80,7 +82,7 @@ export default function AnalysisPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-sm text-[#64748B] shrink-0">分析対象:</span>
-          <span className="text-sm font-medium text-[#1B3A5C] truncate">{data.url}</span>
+          <span className="text-sm font-medium text-[#2563EB] truncate">{data.url}</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <Link
@@ -93,8 +95,8 @@ export default function AnalysisPage() {
       </div>
 
       {/* Share CTA banner - prominent placement for viral conversion */}
-      <div className="mb-6 rounded-xl border border-[#1B3A5C]/10 bg-[#1B3A5C]/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm text-[#1B3A5C]">
+      <div className="mb-6 rounded-xl border border-[#2563EB]/10 bg-[#2563EB]/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm text-[#2563EB]">
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -105,18 +107,28 @@ export default function AnalysisPage() {
       </div>
 
       {/* Tab Navigation */}
-      <TabNavigation activeTab={1} />
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Results */}
-      {data.result ? (
-        <div className="mt-6">
-          <AnalysisResult result={data.result} />
-        </div>
-      ) : (
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
-          <p className="text-amber-700">分析中にエラーが発生しました: {data.error}</p>
-        </div>
-      )}
+      {/* Tab Content */}
+      <div className="mt-6">
+        {activeTab === 1 && (
+          <>
+            {data.result ? (
+              <AnalysisResult result={data.result} />
+            ) : (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
+                <p className="text-amber-700">分析中にエラーが発生しました: {data.error}</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 2 && (
+          <div className="w-full max-w-4xl mx-auto">
+            <ExperimentLogList />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

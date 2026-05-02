@@ -76,17 +76,17 @@ describe('Rate Limiter', () => {
   });
 
   describe('RATE_LIMITS constants', () => {
-    it('free_monthly allows 5 requests', () => {
-      expect(RATE_LIMITS.free_monthly.max_requests).toBe(5);
+    it('free_daily allows 3 requests', () => {
+      expect(RATE_LIMITS.free_daily.max_requests).toBe(3);
     });
 
     it('per_minute allows 10 requests', () => {
       expect(RATE_LIMITS.per_minute.max_requests).toBe(10);
     });
 
-    it('free_monthly window is ~30 days', () => {
-      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-      expect(RATE_LIMITS.free_monthly.window_ms).toBe(thirtyDaysMs);
+    it('free_daily window is 24 hours', () => {
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      expect(RATE_LIMITS.free_daily.window_ms).toBe(oneDayMs);
     });
 
     it('per_minute window is 60 seconds', () => {

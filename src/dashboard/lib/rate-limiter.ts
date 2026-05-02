@@ -15,7 +15,7 @@ export interface RateLimitConfig {
 
 export const RATE_LIMITS = {
   free_monthly: { max_requests: 5, window_ms: 30 * 24 * 60 * 60 * 1000 },
-  per_minute: { max_requests: 10, window_ms: 60 * 1000 },
+  per_minute: { max_requests: 5, window_ms: 60 * 1000 },
 } as const;
 
 export interface RateLimitResult {

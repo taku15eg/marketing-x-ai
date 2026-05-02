@@ -15,7 +15,7 @@ const source = fs.readFileSync(
 
 describe('Prompt Builder - System Prompt', () => {
   it('includes role definition as LP analysis engine', () => {
-    expect(source).toContain('課題をインパクト順に構造化');
+    expect(source).toContain('根拠チェーン（4ステップ）で課題を特定');
   });
 
   it('prohibits copy text generation', () => {
@@ -81,8 +81,8 @@ describe('Prompt Builder - Claude API Configuration', () => {
     expect(source).toContain('https://api.anthropic.com/v1/messages');
   });
 
-  it('sets max_tokens to 4096', () => {
-    expect(source).toContain('4096');
+  it('sets max_tokens to 8192', () => {
+    expect(source).toContain('8192');
   });
 
   it('requires ANTHROPIC_API_KEY from env', () => {
@@ -100,8 +100,8 @@ describe('Prompt Builder - Response Parsing', () => {
     expect(source).toMatch(/```(?:json)?/);
   });
 
-  it('normalizes issues with priority sorting', () => {
-    expect(source).toContain('.sort((a, b) => a.priority - b.priority)');
+  it('normalizes proposals with id sorting', () => {
+    expect(source).toContain('.sort((a, b) => a.id - b.id)');
   });
 
   it('handles missing regulatory data gracefully', () => {

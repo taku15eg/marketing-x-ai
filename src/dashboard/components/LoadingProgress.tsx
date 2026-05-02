@@ -69,9 +69,9 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
                   className={`
                     relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500
                     ${isCompleted
-                      ? 'bg-[#1B3A5C] text-white'
+                      ? 'bg-[#2563EB] text-white'
                       : isActive
-                        ? 'bg-[#1B3A5C] text-white ring-4 ring-[#1B3A5C]/20'
+                        ? 'bg-[#2563EB] text-white ring-4 ring-[#2563EB]/20'
                         : 'bg-gray-100 text-gray-400'
                     }
                   `}
@@ -86,7 +86,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
 
                   {/* Pulse animation for active step */}
                   {isActive && (
-                    <span className="absolute inset-0 rounded-full animate-ping bg-[#1B3A5C]/20" />
+                    <span className="absolute inset-0 rounded-full animate-ping bg-[#2563EB]/20" />
                   )}
                 </div>
 
@@ -94,7 +94,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
                 <span
                   className={`
                     mt-2 text-xs font-medium transition-colors duration-300
-                    ${isCompleted || isActive ? 'text-[#1B3A5C]' : 'text-gray-400'}
+                    ${isCompleted || isActive ? 'text-[#2563EB]' : 'text-gray-400'}
                   `}
                 >
                   {step.label}
@@ -107,7 +107,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
                   <div className="h-0.5 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={`
-                        h-full bg-[#1B3A5C] rounded-full transition-all duration-700 ease-out
+                        h-full bg-[#2563EB] rounded-full transition-all duration-700 ease-out
                         ${isCompleted ? 'w-full' : isActive ? 'w-1/2 animate-pulse' : 'w-0'}
                       `}
                     />
@@ -122,7 +122,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
       {/* Progress bar */}
       <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-6">
         <div
-          className="h-full bg-gradient-to-r from-[#1B3A5C] to-[#2a5a8c] rounded-full transition-all duration-700 ease-out"
+          className="h-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] rounded-full transition-all duration-700 ease-out"
           style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
           role="progressbar"
           aria-valuenow={currentStep}
@@ -134,7 +134,7 @@ export default function LoadingProgress({ currentStep, message }: LoadingProgres
 
       {/* Message */}
       <div className="text-center">
-        <p className="text-base text-[#1B3A5C] font-medium animate-pulse">
+        <p className="text-base text-[#2563EB] font-medium animate-pulse">
           {message}
         </p>
         <p className="mt-2 text-sm text-gray-400">
