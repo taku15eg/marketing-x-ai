@@ -5,3 +5,21 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Workspace symlinks (local-only, do not commit)
+.claude/agents
+.claude/protocols
+.claude/rules
+.claude/skills/analyzing-customers
+.claude/skills/analyzing-pricing
+.claude/skills/analyzing-strategy
+.claude/skills/framing
+.claude/skills/orchestrating-tasks
+.claude/skills/proposing
+.claude/skills/researching
+.claude/skills/reviewing
+.claude/skills/validation-design
+.claude/skills/writing-content
+.claude/skills/writing-dm
+.claude/skills/writing-pr-article
+.claude/skills/writing-seo-article
